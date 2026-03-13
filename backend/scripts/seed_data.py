@@ -4,8 +4,7 @@ Populate database with initial test data
 
 import json
 
-from app.database import SessionLocal
-from app.models import Spec, User
+from app.database_mongodb import SessionLocal
 
 
 def seed_database():

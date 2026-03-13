@@ -4,8 +4,7 @@ import sys
 
 sys.path.insert(0, ".")
 
-from app.database import engine
-from sqlalchemy import text
+from app.database_mongodb import engine
 
 
 def check_specs_count():

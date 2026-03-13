@@ -3,7 +3,6 @@ Test cases for POST /api/v1/generate endpoint
 """
 
 import pytest
-from app.models import Spec
 
 
 def test_generate_valid_prompt(client, auth_headers):

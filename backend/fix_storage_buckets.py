@@ -45,7 +45,6 @@ ALTERNATIVE: Use service_role key instead of anon key for bucket creation.
 # Test current bucket access
 try:
     from app.config import settings
-    from supabase import create_client
 
     supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
     buckets = supabase.storage.list_buckets()

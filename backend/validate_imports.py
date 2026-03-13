@@ -11,8 +11,7 @@ def validate_minimal_integration():
     """Validate the minimal Prefect integration works"""
     try:
         # Test importing the minimal integration
-        from app.prefect_integration_minimal import (
-            check_workflow_status,
+                    check_workflow_status,
             get_workflow_status,
             minimal_client,
             trigger_automation_workflow,

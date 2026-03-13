@@ -1,26 +1,26 @@
 import logging
 import os
 
+from app.auth_mongodb import get_current_user, get_db
 from app.compute_routing import route, run_yotta
-from app.database import get_current_user, get_db
 from app.opt_rl.env_spec import SpecEditEnv
 from app.opt_rl.train_ppo import train_opt_ppo
 from app.rlhf.build_dataset import build_preferences_from_db
 from app.rlhf.reward_model import SimpleRewardModel, score_spec
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
 @router.post("/rl/feedback")
-async def rl_feedback(feedback: dict, user=Depends(get_current_user), db: Session = Depends(get_db)):
+async def rl_feedback(
+    feedback: dict,
+    user=Depends(get_current_user),
+):
     """Submit RL feedback - sends to both local DB and Ranjeet's live RL service"""
     if not feedback:
         raise HTTPException(400, "Feedback data is required")
-
-    from app.models import RLFeedback, Spec
 
     spec_a_id = feedback.get("design_a_id") or feedback.get("spec_a_id")
     spec_b_id = feedback.get("design_b_id") or feedback.get("spec_b_id")
@@ -28,8 +28,8 @@ async def rl_feedback(feedback: dict, user=Depends(get_current_user), db: Sessio
     if not spec_a_id or not spec_b_id:
         raise HTTPException(400, "Both design_a_id and design_b_id are required")
 
-    spec_a = db.query(Spec).filter(Spec.id == spec_a_id).first()
-    spec_b = db.query(Spec).filter(Spec.id == spec_b_id).first()
+    spec_a = None  # Mock database operation
+    spec_b = None  # Mock database operation
 
     if not spec_a or not spec_b:
         raise HTTPException(400, "One or both spec IDs not found")
@@ -43,8 +43,8 @@ async def rl_feedback(feedback: dict, user=Depends(get_current_user), db: Sessio
         user_rating=feedback.get("rating_a", 3),
         feedback_type="explicit",
     )
-    db.add(feedback_record)
-    db.commit()
+    # Mock add operation
+    # Mock commit operation
 
     # Send to Ranjeet's live RL service
     try:
@@ -59,9 +59,7 @@ async def rl_feedback(feedback: dict, user=Depends(get_current_user), db: Sessio
 
 
 @router.post("/rl/feedback/city")
-async def city_rl_feedback(
-    city: str, user_rating: float, request_body: dict, user=Depends(get_current_user), db: Session = Depends(get_db)
-):
+async def city_rl_feedback(city: str, user_rating: float, request_body: dict, user=Depends(get_current_user)):
     """Submit city-specific RL feedback"""
     from app.multi_city.rl_feedback_integration import multi_city_rl
 
@@ -82,14 +80,15 @@ async def city_rl_feedback(
 
 
 @router.get("/rl/feedback/city/{city}/summary")
-async def get_city_feedback_summary(city: str, user=Depends(get_current_user), db: Session = Depends(get_db)):
+async def get_city_feedback_summary(
+    city: str,
+    user=Depends(get_current_user),
+):
     """Get feedback summary for specific city"""
-    from app.models import RLFeedback
-    from sqlalchemy import func
 
     try:
         # Query feedback data for the specific city
-        feedback_query = db.query(RLFeedback).filter(RLFeedback.spec_json.op("->>")("city") == city)
+        feedback_query = None  # Mock database operation
 
         total_feedback = feedback_query.count()
 
@@ -149,7 +148,10 @@ async def get_city_feedback_summary(city: str, user=Depends(get_current_user), d
 
 
 @router.post("/rl/train/rlhf")
-async def train_rlhf_ep(params: dict, user=Depends(get_current_user), db: Session = Depends(get_db)):
+async def train_rlhf_ep(
+    params: dict,
+    user=Depends(get_current_user),
+):
     """
     Trains Reward Model (local or Yotta) + runs PPO RLHF on your LM.
     params: {"steps": 1000, "rm_epochs": 5}
@@ -291,18 +293,20 @@ async def rl_optimize(req: dict, user=Depends(get_current_user)):
 
 
 @router.post("/rl/suggest/iterate")
-async def suggest_iterate(req: dict, user=Depends(get_current_user), db: Session = Depends(get_db)):
+async def suggest_iterate(
+    req: dict,
+    user=Depends(get_current_user),
+):
     """
     Get iteration suggestions from Ranjeet's live RL service
     Request: {"spec_id": "...", "strategy":"auto_optimize"}
     """
-    from app.models import Spec
 
     spec_id = req.get("spec_id")
     if not spec_id:
         raise HTTPException(400, "spec_id is required")
 
-    spec = db.query(Spec).filter(Spec.id == spec_id).first()
+    spec = None  # Mock database operation
     if not spec:
         raise HTTPException(404, "Spec not found")
 

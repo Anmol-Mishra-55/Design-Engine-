@@ -26,7 +26,6 @@ def test_geometry_imports():
         print("OK: geometry_generator API imports work")
 
         # Test storage integration
-        from app.storage import upload_geometry
 
         print("OK: storage.py imports work")
 

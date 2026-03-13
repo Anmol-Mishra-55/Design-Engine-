@@ -4,8 +4,6 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.storage import upload_to_bucket
-
 
 async def test_upload():
     try:

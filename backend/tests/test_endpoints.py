@@ -7,11 +7,9 @@ import json
 from datetime import datetime, timedelta
 
 import pytest
-from app.database import get_db
+from app.database_mongodb import get_database
 from app.main import app
-from app.models import Evaluation, Iteration, Spec
 from fastapi.testclient import TestClient
-from sqlalchemy.orm import Session
 
 client = TestClient(app)
 

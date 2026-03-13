@@ -11,6 +11,7 @@ class GenerateRequest(BaseModel):
     style: Optional[str] = "modern"
     project_id: Optional[str] = None
     context: Optional[Dict] = None
+    constraints: Optional[Dict] = None
 
 
 class GenerateResponse(BaseModel):
@@ -22,3 +23,10 @@ class GenerateResponse(BaseModel):
     created_at: datetime
     spec_version: int = 1
     user_id: str
+    city: Optional[str] = None
+    lm_provider: Optional[str] = None
+    generation_time_ms: Optional[int] = None
+    export_urls: Optional[Dict[str, str]] = None
+    glb_url: Optional[str] = None
+    stl_url: Optional[str] = None
+    step_url: Optional[str] = None

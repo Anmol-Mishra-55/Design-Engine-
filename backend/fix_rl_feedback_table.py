@@ -4,8 +4,7 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from app.database import engine
-from sqlalchemy import text
+from app.database_mongodb import engine
 
 # Drop indexes and table
 with engine.connect() as conn:
@@ -16,7 +15,6 @@ with engine.connect() as conn:
     print("Dropped table and indexes")
 
 # Recreate table
-from app.models import RLLiveFeedback
 
 RLLiveFeedback.__table__.create(engine)
 print("RLLiveFeedback table created successfully")

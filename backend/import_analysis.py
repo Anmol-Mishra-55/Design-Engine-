@@ -37,8 +37,7 @@ def test_prefect_integration():
     """Test Prefect integration imports"""
     try:
         sys.path.insert(0, ".")
-        from app.prefect_integration_minimal import (
-            PREFECT_AVAILABLE,
+                    PREFECT_AVAILABLE,
             check_workflow_status,
             trigger_automation_workflow,
         )

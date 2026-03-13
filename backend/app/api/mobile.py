@@ -4,10 +4,9 @@ from app.api.evaluate import evaluate
 from app.api.iterate import iterate
 
 # from app.api.switch import switch  # Avoid circular import
-from app.database import get_current_user, get_db
+from app.auth_mongodb import get_current_user, get_db
 from app.schemas import EvaluateRequest, GenerateRequest, IterateRequest, SwitchRequest
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
 
 router = APIRouter()
 
@@ -16,7 +15,6 @@ router = APIRouter()
 async def mobile_generate(
     req: GenerateRequest,
     current_user: str = Depends(get_current_user),
-    db: Session = Depends(get_db),
 ):
     """Mobile wrapper for generate endpoint"""
     # Import locally to avoid circular dependency
@@ -29,7 +27,6 @@ async def mobile_generate(
 async def mobile_evaluate(
     req: EvaluateRequest,
     current_user: str = Depends(get_current_user),
-    db: Session = Depends(get_db),
 ):
     """Mobile wrapper for evaluate endpoint"""
     return await evaluate(req, current_user, db)
@@ -39,7 +36,6 @@ async def mobile_evaluate(
 async def mobile_iterate(
     req: IterateRequest,
     current_user: str = Depends(get_current_user),
-    db: Session = Depends(get_db),
 ):
     """Mobile wrapper for iterate endpoint"""
     return await iterate(req, current_user, db)
@@ -49,7 +45,6 @@ async def mobile_iterate(
 async def mobile_switch(
     req: SwitchRequest,
     current_user: str = Depends(get_current_user),
-    db: Session = Depends(get_db),
 ):
     """Mobile wrapper for switch endpoint - converts to query format"""
     from app.api.switch import SwitchRequest as SwitchReq

@@ -1,0 +1,13 @@
+Defaulting to user installation because normal site-packages is not writeable
+Collecting motor
+  Using cached motor-3.7.1-py3-none-any.whl.metadata (21 kB)
+Collecting dnspython
+  Using cached dnspython-2.8.0-py3-none-any.whl.metadata (5.7 kB)
+Collecting pymongo<5.0,>=4.9 (from motor)
+  Using cached pymongo-4.16.0-cp313-cp313-win_amd64.whl.metadata (10.0 kB)
+Using cached motor-3.7.1-py3-none-any.whl (74 kB)
+Using cached pymongo-4.16.0-cp313-cp313-win_amd64.whl (959 kB)
+Using cached dnspython-2.8.0-py3-none-any.whl (331 kB)
+Installing collected packages: dnspython, pymongo, motor
+
+Successfully installed dnspython-2.8.0 motor-3.7.1 pymongo-4.16.0

@@ -4,9 +4,7 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from app.database import get_db
-from app.models import AuditLog, WorkflowRun
-from sqlalchemy import desc
+from app.database_mongodb import get_database
 
 db = next(get_db())
 

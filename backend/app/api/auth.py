@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta, timezone
 
-import jwt
 from app.config import settings
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
+from jose import JWTError, jwt
 
 router = APIRouter()
 
@@ -58,7 +58,5 @@ async def refresh_token(token: str = Depends(security)):
         new_token = jwt.encode(token_data, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
         return {"access_token": new_token, "token_type": "bearer"}
 
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Token has expired")
-    except jwt.JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")

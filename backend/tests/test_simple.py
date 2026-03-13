@@ -3,7 +3,6 @@ Simple tests without authentication
 """
 
 import pytest
-from app.models import Spec, User
 
 
 def test_user_model():

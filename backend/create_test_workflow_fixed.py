@@ -7,8 +7,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import uuid
 from datetime import datetime
 
-from app.database import get_db
-from sqlalchemy import text
+from app.database_mongodb import get_database
 
 
 def create_test_workflow_run():

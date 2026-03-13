@@ -6,7 +6,6 @@ Validates database connections and creates missing tables
 import logging
 from typing import Dict, List, Optional
 
-from sqlalchemy import inspect, text
 from sqlalchemy.exc import SQLAlchemyError
 
 logger = logging.getLogger(__name__)
@@ -66,8 +65,6 @@ class DatabaseValidator:
     def create_missing_tables(self):
         """Create missing tables using SQLAlchemy models"""
         try:
-            from app.models import Base
-
             # Create all tables defined in models
             Base.metadata.create_all(bind=self.engine)
             logger.info("✅ Database tables created/updated")
@@ -104,8 +101,6 @@ class DatabaseValidator:
         try:
             import uuid
             from datetime import datetime
-
-            from app.models import Spec, User
 
             with self.session_factory() as session:
                 # Create test user first
@@ -187,7 +182,7 @@ class DatabaseValidator:
 def validate_database():
     """Convenience function to validate database on startup"""
     try:
-        from app.database import engine, get_db
+        from app.database_mongodb import engine, get_db
         from sqlalchemy.orm import sessionmaker
 
         SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

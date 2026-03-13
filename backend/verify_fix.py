@@ -24,8 +24,7 @@ if r.status_code == 201:
     time.sleep(1)
 
     # Check if in DB
-    from app.database import SessionLocal
-    from app.models import Spec
+    from app.database_mongodb import SessionLocal
 
     db = SessionLocal()
     spec = db.query(Spec).filter(Spec.id == spec_id).first()

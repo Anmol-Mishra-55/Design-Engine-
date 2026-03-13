@@ -3,7 +3,7 @@
 Create missing database tables using SQLAlchemy models
 """
 
-from app.database import init_db
+from app.database_mongodb import init_db
 
 
 def create_tables():

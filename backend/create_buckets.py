@@ -6,7 +6,6 @@ Create required Supabase storage buckets for the Design Engine API
 import logging
 
 from app.config import settings
-from supabase import create_client
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

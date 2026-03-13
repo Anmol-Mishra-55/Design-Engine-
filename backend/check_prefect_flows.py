@@ -6,8 +6,6 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import asyncio
 
-from app.prefect_integration_minimal import minimal_client
-
 
 async def get_available_flow_runs():
     print("CHECKING AVAILABLE FLOW RUNS")

@@ -10,7 +10,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from app.config import settings
-from supabase import create_client
 
 
 def check_and_fix_buckets():

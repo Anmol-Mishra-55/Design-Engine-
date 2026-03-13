@@ -3,7 +3,6 @@ Test cases for POST /api/v1/switch endpoint
 """
 
 import pytest
-from app.models import Iteration, Spec
 
 
 def test_switch_valid_material(client, auth_headers):

@@ -1,8 +1,9 @@
-from sqlalchemy import text
-from sqlalchemy.orm import Session
+from typing import Any, List, Tuple
+
+from sqlalchemy.sql import text
 
 
-def build_preferences_from_db(db: Session, min_delta: float = 0.5):
+def build_preferences_from_db(db: Any, min_delta: float = 0.5):
     """
     Produce (prompt, before_spec, after_spec, preferred) tuples
     using iterations + evaluations. preferred == "B" if rating improved.

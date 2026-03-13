@@ -5,7 +5,7 @@ import logging
 logger = logging.getLogger(__name__)
 from typing import Any, Dict, List
 
-from app.database import get_current_user, get_db
+from app.auth_mongodb import get_current_user, get_db
 from app.schemas import EvaluateRequest, GenerateRequest, IterateRequest
 from app.schemas.core import CoreRunRequest as OldCoreRunRequest
 from pydantic import BaseModel
@@ -18,7 +18,6 @@ class CoreRunRequest(BaseModel):
 
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
 
 router = APIRouter()
 
@@ -27,7 +26,6 @@ router = APIRouter()
 async def core_run(
     request: CoreRunRequest,
     current_user: str = Depends(get_current_user),
-    db: Session = Depends(get_db),
 ):
     outputs = {}
 

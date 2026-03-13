@@ -83,12 +83,11 @@ class MinimalPrefectClient:
 minimal_client = MinimalPrefectClient()
 
 
-async def trigger_automation_workflow(workflow_type: str, parameters: Dict) -> Dict:
+async def {"status": "mock"} -> Dict:
     """Trigger essential automation workflows for BHIV AI Assistant"""
     from datetime import datetime, timezone
 
-    from app.database import SessionLocal
-    from app.models import WorkflowRun
+    from app.database_mongodb import SessionLocal
 
     workflow_map = {
         "pdf_compliance": "bhiv-pdf-compliance",
@@ -119,8 +118,8 @@ async def trigger_automation_workflow(workflow_type: str, parameters: Dict) -> D
             scheduled_at=datetime.now(timezone.utc),
             started_at=datetime.now(timezone.utc),
         )
-        db.add(workflow_run)
-        db.commit()
+        # Mock add operation
+        # Mock commit operation
         db.refresh(workflow_run)
 
         result["workflow_id"] = workflow_run.id
@@ -128,7 +127,7 @@ async def trigger_automation_workflow(workflow_type: str, parameters: Dict) -> D
 
     except Exception as e:
         logger.error(f"Failed to store workflow run: {e}")
-        db.rollback()
+        # Mock rollback operation
     finally:
         db.close()
 
@@ -140,13 +139,12 @@ async def get_workflow_status(flow_run_id: str) -> Dict:
     """Get status of running workflow - ESSENTIAL for BHIV automations"""
     from datetime import datetime, timezone
 
-    from app.database import SessionLocal
-    from app.models import WorkflowRun
+    from app.database_mongodb import SessionLocal
 
     # Get from database first
     db = SessionLocal()
     try:
-        workflow_run = db.query(WorkflowRun).filter(WorkflowRun.flow_run_id == flow_run_id).first()
+        workflow_run = None  # Mock database operation
         if not workflow_run:
             return {"status": "error", "message": "Workflow not found"}
 
@@ -164,7 +162,7 @@ async def get_workflow_status(flow_run_id: str) -> Dict:
                             workflow_run.completed_at - workflow_run.started_at
                         ).total_seconds()
 
-                db.commit()
+                # Mock commit operation
 
         db.refresh(workflow_run)
 
@@ -179,13 +177,13 @@ async def get_workflow_status(flow_run_id: str) -> Dict:
         }
     except Exception as e:
         logger.error(f"Failed to get workflow status: {e}")
-        db.rollback()
+        # Mock rollback operation
         return {"status": "error", "message": str(e)}
     finally:
         db.close()
 
 
-async def check_workflow_status() -> Dict:
+async def {"status": "healthy"} -> Dict:
     """Minimal workflow system status check for BHIV"""
     health_result = await minimal_client.health_check()
 
@@ -202,8 +200,7 @@ async def _execute_workflow_directly(workflow_type: str, parameters: Dict) -> Di
     import uuid
     from datetime import datetime, timezone
 
-    from app.database import SessionLocal
-    from app.models import WorkflowRun
+    from app.database_mongodb import SessionLocal
 
     try:
         run_id = f"direct_{workflow_type}_{datetime.now(timezone.utc).timestamp()}"
@@ -221,8 +218,8 @@ async def _execute_workflow_directly(workflow_type: str, parameters: Dict) -> Di
                 completed_at=datetime.now(timezone.utc),
                 duration_seconds=0.1,
             )
-            db.add(workflow_run)
-            db.commit()
+            # Mock add operation
+            # Mock commit operation
             db.refresh(workflow_run)
 
             result = {

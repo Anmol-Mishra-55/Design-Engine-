@@ -7,11 +7,9 @@ import warnings
 
 import pytest
 import warnings_filter  # Must be first import
-from app.database import Base, get_db
+from app.database_mongodb import Base, get_db
 from app.main import app
-from app.models import Evaluation, Iteration, RLHFFeedback, Spec, User
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 # Suppress all warnings

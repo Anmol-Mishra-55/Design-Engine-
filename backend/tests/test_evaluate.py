@@ -3,7 +3,6 @@ Test cases for POST /api/v1/evaluate endpoint
 """
 
 import pytest
-from app.models import Evaluation
 
 
 def test_evaluate_valid_spec(client, auth_headers):

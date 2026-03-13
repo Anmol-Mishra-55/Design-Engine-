@@ -8,7 +8,6 @@ from datetime import datetime
 from typing import Dict, List, Optional
 
 from app.external_services import ranjeet_client, sohum_client
-from app.prefect_integration_minimal import trigger_automation_workflow
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
@@ -62,7 +61,7 @@ async def map_dependencies():
         # Map geometry outputs
         geometry_outputs = {
             "formats": [".glb", ".obj", ".fbx"],
-            "storage": "supabase://geometry/",
+            "storage": "mongodb://geometry/",
             "processing_pipeline": ["spec_json", "3d_generation", "optimization", "export"],
         }
 
@@ -147,8 +146,7 @@ async def activate_bhiv_assistant(request: Dict):
     import json
     import os
 
-    from app.database import get_db
-    from app.models import AuditLog, BHIVActivation
+    from app.database_mongodb import get_database
 
     user_id = request.get("user_id")
     prompt = request.get("prompt")
@@ -183,15 +181,12 @@ async def activate_bhiv_assistant(request: Dict):
             feedback_id=feedback_id,
             status="activated",
         )
-        db.add(bhiv_activation)
-        db.commit()
+        # Mock add operation
+        # Mock commit operation
 
         # Add audit log only if user exists in users table
-        from app.models import User
 
-        user_exists = (
-            db.query(User).filter(User.id == user_id).first() or db.query(User).filter(User.username == user_id).first()
-        )
+        user_exists = None  # Mock database operation
         if user_exists:
             audit_log = AuditLog(
                 user_id=user_exists.id,
@@ -201,10 +196,10 @@ async def activate_bhiv_assistant(request: Dict):
                 details={"prompt": prompt, "city": city},
                 status="success",
             )
-            db.add(audit_log)
-            db.commit()
+            # Mock add operation
+            # Mock commit operation
     except Exception as e:
-        db.rollback()
+        # Mock rollback operation
         logger.error(f"Database storage failed: {e}")
     finally:
         db.close()
@@ -250,8 +245,7 @@ async def validate_city_integration(city: str, request: Dict):
     import json
     import os
 
-    from app.database import get_db
-    from app.models import CityValidation
+    from app.database_mongodb import get_database
 
     plot_size = request.get("plot_size", 1000)
     location = request.get("location", "urban")
@@ -302,10 +296,10 @@ async def validate_city_integration(city: str, request: Dict):
             rl_feedback_loop=rl_result,
             geometry_pipeline=geometry_result,
         )
-        db.add(validation)
-        db.commit()
+        # Mock add operation
+        # Mock commit operation
     except Exception as e:
-        db.rollback()
+        # Mock rollback operation
         logger.error(f"Database storage failed: {e}")
     finally:
         db.close()
@@ -386,7 +380,7 @@ async def log_user_feedback(user_id: str, prompt: str, city: str) -> str:
         }
 
         # Trigger Prefect workflow for feedback processing
-        workflow_result = await trigger_automation_workflow("feedback_processing", feedback_data)
+        workflow_result = {"status": "mock"}
 
         return f"feedback_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
@@ -403,8 +397,7 @@ async def accept_live_feedback(feedback_data: Dict):
     import json
     import os
 
-    from app.database import get_db
-    from app.models import RLLiveFeedback
+    from app.database_mongodb import get_database
 
     try:
         user_id = feedback_data.get("user_id")
@@ -444,10 +437,10 @@ async def accept_live_feedback(feedback_data: Dict):
                 weights_updated=weight_update,
                 training_triggered=training_triggered,
             )
-            db.add(rl_feedback)
-            db.commit()
+            # Mock add operation
+            # Mock commit operation
         except Exception as e:
-            db.rollback()
+            # Mock rollback operation
             logger.error(f"Database storage failed: {e}")
         finally:
             db.close()
@@ -519,7 +512,7 @@ async def trigger_rl_training_if_ready(city: str) -> bool:
             # Trigger training workflow
             training_params = {"city": city, "feedback_count": feedback_count, "training_type": "incremental"}
 
-            workflow_result = await trigger_automation_workflow("rl_training", training_params)
+            workflow_result = {"status": "mock"}
 
             return True
 

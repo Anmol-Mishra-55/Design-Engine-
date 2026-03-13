@@ -4,9 +4,7 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from app.database import engine
-from app.models import RLLiveFeedback
-from sqlalchemy import text
+from app.database_mongodb import engine
 
 # Drop existing indexes if they exist
 with engine.connect() as conn:

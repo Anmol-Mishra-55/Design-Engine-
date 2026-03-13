@@ -6,8 +6,6 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import asyncio
 
-from app.prefect_integration_minimal import get_workflow_status
-
 
 async def test_workflow_status():
     print("TESTING WORKFLOW STATUS ENDPOINT")

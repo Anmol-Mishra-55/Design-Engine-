@@ -271,8 +271,6 @@ def test_prefect_automation():
 
     # Test 5.3: Check WorkflowRun model has workflow_id and run_id
     try:
-        from app.models import WorkflowRun
-
         has_fields = hasattr(WorkflowRun, "id") and hasattr(WorkflowRun, "flow_run_id")
         tests.append(("✅" if has_fields else "❌", "WorkflowRun model complete", has_fields))
     except Exception as e:

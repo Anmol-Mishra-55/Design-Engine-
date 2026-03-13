@@ -177,8 +177,7 @@ async def verify_database_storage():
     print("=" * 70)
 
     try:
-        from app.database import SessionLocal
-        from app.models import WorkflowRun
+        from app.database_mongodb import SessionLocal
 
         db = SessionLocal()
         try:

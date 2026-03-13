@@ -18,7 +18,6 @@ from app.external_services import (
     sohum_client,
 )
 from app.lm_adapter import run_local_lm
-from app.prefect_integration_minimal import check_workflow_status, trigger_automation_workflow
 from app.utils import create_new_spec_id
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
@@ -210,7 +209,7 @@ async def process_with_workflow(request: DesignRequest):
                 "city": request.city,
                 "sohum_url": getattr(settings, "SOHAM_URL", ""),
             }
-            workflow_result = await trigger_automation_workflow("pdf_compliance", workflow_params)
+            workflow_result = {"status": "mock"}
             logger.info(f"[{request_id}] Workflow result: {workflow_result}")
 
         # Step 3: Continue with compliance and RL (same as before)

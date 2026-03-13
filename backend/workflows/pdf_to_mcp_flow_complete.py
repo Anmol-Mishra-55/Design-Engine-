@@ -35,10 +35,10 @@ from prefect.tasks import task_input_hash
 )
 def download_pdf_from_storage(pdf_url: str, local_path: str) -> str:
     """
-    Download PDF from Supabase storage
+    Download PDF from MongoDB GridFS or external URL
 
     Args:
-        pdf_url: Supabase storage URL
+        pdf_url: MongoDB GridFS URL or external URL
         local_path: Local file path to save
 
     Returns:
@@ -215,7 +215,7 @@ async def pdf_to_mcp_flow(pdf_url: str, city: str, sohum_mcp_url: str) -> Dict:
     Complete PDF to MCP ingestion flow
 
     Args:
-        pdf_url: URL of PDF in Supabase storage
+        pdf_url: URL of PDF in MongoDB GridFS or external storage
         city: City name for rules
         sohum_mcp_url: MCP service endpoint
 

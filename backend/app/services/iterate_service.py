@@ -10,14 +10,11 @@ import os
 from datetime import datetime, timezone
 from typing import Dict, Tuple
 
-from app.database import get_db
+from app.database_mongodb import get_database
 from app.error_handler import APIException
 from app.lm_adapter import lm_run
-from app.models import Iteration, Spec
 from app.schemas.error_schemas import ErrorCode
-from app.storage import get_signed_url, upload_to_bucket
 from app.utils import create_iter_id, generate_glb_from_spec
-from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +22,8 @@ logger = logging.getLogger(__name__)
 class IterateService:
     """Service for iterating/improving design specs with RL support"""
 
-    def __init__(self, db: Session):
-        self.db = db
+    def __init__(self, db=None):
+        self.db = db or get_database()
 
     async def iterate_spec(self, user_id: str, spec_id: str, strategy: str) -> Dict:
         """
@@ -50,13 +47,13 @@ class IterateService:
         else:
             # Fallback to database
             try:
-                spec = self.db.query(Spec).filter(Spec.id == spec_id).first()
+                spec = await self.db.specs.find_one({"_id": spec_id})
                 if not spec:
                     raise APIException(
                         status_code=404, error_code=ErrorCode.NOT_FOUND, message=f"Spec {spec_id} not found"
                     )
-                spec_json = spec.spec_json
-                spec_version = spec.version
+                spec_json = spec.get("spec_json")
+                spec_version = spec.get("version", 1)
             except APIException:
                 raise
             except Exception as e:
@@ -146,38 +143,42 @@ class IterateService:
             # Try database save
             try:
                 # Create iteration record
-                iteration = Iteration(
-                    id=iter_id,
-                    spec_id=spec_id,
-                    user_id=user_id,
-                    query=f"Apply {strategy} improvement",
-                    nlp_confidence=0.95,
-                    diff={"strategy": strategy, "changes": "material_upgrades"},
-                    spec_json=improved_spec,
-                    changed_objects="auto_generated",
-                    preview_url="https://mock-preview.glb",
-                    cost_delta=improved_spec.get("estimated_cost", {}).get("total", 0)
+                iteration_doc = {
+                    "_id": iter_id,
+                    "spec_id": spec_id,
+                    "user_id": user_id,
+                    "query": f"Apply {strategy} improvement",
+                    "nlp_confidence": 0.95,
+                    "diff": {"strategy": strategy, "changes": "material_upgrades"},
+                    "spec_json": improved_spec,
+                    "changed_objects": "auto_generated",
+                    "preview_url": "https://mock-preview.glb",
+                    "cost_delta": improved_spec.get("estimated_cost", {}).get("total", 0)
                     - before_spec.get("estimated_cost", {}).get("total", 0),
-                    new_total_cost=improved_spec.get("estimated_cost", {}).get("total", 0),
-                    processing_time_ms=500,
-                )
-                self.db.add(iteration)
+                    "new_total_cost": improved_spec.get("estimated_cost", {}).get("total", 0),
+                    "processing_time_ms": 500,
+                    "created_at": datetime.now(timezone.utc),
+                }
+                await self.db.iterations.insert_one(iteration_doc)
 
                 # Update spec version and data
-                spec = self.db.query(Spec).filter(Spec.id == spec_id).first()
-                if spec:
-                    spec.spec_json = improved_spec
-                    spec.version += 1
-                    spec.updated_at = datetime.now(timezone.utc)
-                    spec_version = spec.version
+                spec_update = {
+                    "spec_json": improved_spec,
+                    "$inc": {"version": 1},
+                    "updated_at": datetime.now(timezone.utc),
+                }
+                result = await self.db.specs.update_one({"_id": spec_id}, {"$set": spec_update})
+
+                if result.matched_count > 0:
+                    # Get updated version
+                    updated_spec = await self.db.specs.find_one({"_id": spec_id})
+                    spec_version = updated_spec.get("version", 2) if updated_spec else 2
                 else:
                     spec_version = 2
 
-                self.db.commit()
                 print(f"✅ Saved iteration {iter_id} to database")
 
             except Exception as e:
-                self.db.rollback()
                 logger.error(f"Error saving iteration: {str(e)}")
                 print(f"⚠️ Database save failed: {e}")
                 iter_id = "iter_mock_123"
@@ -188,8 +189,15 @@ class IterateService:
         try:
             preview_bytes = generate_glb_from_spec(improved_spec)
             preview_path = f"{spec_id}_v{spec_version}.glb"
-            await upload_to_bucket("previews", preview_path, preview_bytes)
-            preview_url = get_signed_url("previews", preview_path, expires=600)
+            # Try to import bucket functions, fallback to mock if not available
+            try:
+                from app.storage_mongodb import get_signed_url, upload_to_bucket
+
+                await upload_to_bucket("previews", preview_path, preview_bytes)
+                preview_url = get_signed_url("previews", preview_path, expires=600)
+            except ImportError:
+                logger.warning("Storage functions not available, using mock preview URL")
+                preview_url = "https://mock-preview.glb"
         except Exception as e:
             logger.warning(f"Preview generation failed: {str(e)}")
             preview_url = "https://mock-preview.glb"

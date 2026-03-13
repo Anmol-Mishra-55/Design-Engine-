@@ -10,8 +10,7 @@ sys.path.append(".")
 import json
 from datetime import datetime, timezone
 
-from app.database import get_db
-from app.models import Evaluation, Spec
+from app.database_mongodb import get_database
 from app.schemas import EvaluateRequest
 
 

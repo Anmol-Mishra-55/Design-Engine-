@@ -5,7 +5,6 @@ All tables with relationships, indexes, and constraints
 import uuid
 from datetime import datetime, timezone
 
-from sqlalchemy import (
     JSON,
     Boolean,
     CheckConstraint,

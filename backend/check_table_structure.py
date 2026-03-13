@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 """Check table structures"""
 
-from app.database import engine
-from sqlalchemy import text
+from app.database_mongodb import engine
 
 
 def check_table_structure(table_name):

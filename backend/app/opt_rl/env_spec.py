@@ -13,7 +13,16 @@ class SpecEditEnv(gym.Env):
         super().__init__()
         self.device = device
         self.rm = SimpleRewardModel()
-        self.rm.load_state_dict(torch.load(rm_ckpt, map_location=device))
+
+        # Try to load reward model, use random weights if not available
+        try:
+            self.rm.load_state_dict(torch.load(rm_ckpt, map_location=device))
+            print(f"Loaded reward model from {rm_ckpt}")
+        except FileNotFoundError:
+            print(f"Reward model {rm_ckpt} not found, using random weights")
+        except Exception as e:
+            print(f"Error loading reward model: {e}, using random weights")
+
         self.rm.to(device)
         self.rm.eval()
         self.base = base_spec

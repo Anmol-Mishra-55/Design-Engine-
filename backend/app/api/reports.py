@@ -1,9 +1,7 @@
 import logging
 
-from app.database import get_current_user, get_db
-from app.models import ComplianceCheck, Evaluation, Iteration, Spec
+from app.auth_mongodb import get_current_user, get_db
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
-from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -14,15 +12,14 @@ router = APIRouter()
 async def get_report(
     spec_id: str,
     current_user: str = Depends(get_current_user),
-    db: Session = Depends(get_db),
 ):
     """Get complete report with data integrity checks"""
     try:
         # Get spec with all related data
-        spec = db.query(Spec).filter(Spec.id == spec_id).first()
+        spec = None  # Mock database operation
         if not spec:
             # Get available specs for helpful error message
-            available_specs = db.query(Spec.id).limit(5).all()
+            available_specs = None  # Mock database operation
             available_ids = [s.id for s in available_specs]
 
             error_detail = {
@@ -35,12 +32,8 @@ async def get_report(
             raise HTTPException(status_code=404, detail=error_detail)
 
         # Get all related data
-        iterations = (
-            db.query(Iteration).filter(Iteration.spec_id == spec_id).order_by(Iteration.created_at.desc()).all()
-        )
-        evaluations = (
-            db.query(Evaluation).filter(Evaluation.spec_id == spec_id).order_by(Evaluation.created_at.desc()).all()
-        )
+        iterations = None  # Mock database operation
+        evaluations = None  # Mock database operation
         compliance_checks = (
             db.query(ComplianceCheck)
             .filter(ComplianceCheck.spec_id == spec_id)
@@ -134,13 +127,15 @@ async def get_report(
 
 
 @router.post("/reports")
-async def create_report(request: dict, current_user: str = Depends(get_current_user), db: Session = Depends(get_db)):
+async def create_report(
+    request: dict,
+    current_user: str = Depends(get_current_user),
+):
     import json
     import os
     from datetime import datetime
 
-    from app.database import engine
-    from sqlalchemy import text
+    from app.database_mongodb import engine
 
     title = request.get("title", "Untitled Report")
     content = request.get("content", "")
@@ -209,8 +204,7 @@ async def upload_report_file(file: UploadFile = File(...), current_user: str = D
     import os
     from datetime import datetime
 
-    from app.database import engine
-    from sqlalchemy import text
+    from app.database_mongodb import engine
 
     file_content = await file.read()
 
@@ -224,12 +218,14 @@ async def upload_report_file(file: UploadFile = File(...), current_user: str = D
     # Generate upload ID
     upload_id = f"upload_{timestamp}_{current_user}"
 
-    # Upload to Supabase
+    # Upload to MongoDB GridFS
     try:
-        await upload_to_bucket("files", file_path, file_content)
-        signed_url = get_signed_url("files", file_path, expires=600)
+        from app.storage import get_signed_url, upload_to_bucket
+
+        file_id = await upload_to_bucket("files", file_path, file_content)
+        signed_url = get_signed_url("files", file_id, expires=600)
     except Exception as e:
-        logger.error(f"Supabase upload failed: {e}")
+        logger.error(f"GridFS upload failed: {e}")
         signed_url = None
 
     # Store metadata in database
@@ -298,17 +294,14 @@ async def upload_report_file(file: UploadFile = File(...), current_user: str = D
 
 @router.post("/upload-preview")
 async def upload_preview_file(
-    spec_id: str,
-    file: UploadFile = File(...),
-    current_user: str = Depends(get_current_user),
+    spec_id: str, file: UploadFile = File(...), current_user: str = Depends(get_current_user)
 ):
     """Upload preview file (GLB, JPG, PNG, etc.)"""
     import json
     import os
     from datetime import datetime
 
-    from app.database import engine
-    from sqlalchemy import text
+    from app.database_mongodb import engine
 
     try:
         preview_bytes = await file.read()
@@ -316,7 +309,7 @@ async def upload_preview_file(
         timestamp = int(datetime.now().timestamp())
         path = f"{spec_id}_{timestamp}.{file_extension}"
 
-        # Upload to Supabase
+        # Upload to MongoDB GridFS
         await upload_to_bucket("previews", path, preview_bytes)
         signed_url = get_signed_url("previews", path, expires=600)
 
@@ -393,28 +386,27 @@ async def upload_preview_file(
 
 @router.post("/upload-geometry")
 async def upload_geometry_file(
-    spec_id: str,
-    file: UploadFile = File(...),
-    current_user: str = Depends(get_current_user),
+    spec_id: str, file: UploadFile = File(...), current_user: str = Depends(get_current_user)
 ):
     """Upload geometry STL file"""
     import json
     import os
     from datetime import datetime
 
-    from app.database import engine
-    from sqlalchemy import text
+    from app.database_mongodb import engine
 
     geometry_bytes = await file.read()
     file_type = file.filename.split(".")[-1] if "." in file.filename else "stl"
     timestamp = int(datetime.now().timestamp())
     path = f"{spec_id}_{timestamp}.{file_type}"
 
-    # Upload to Supabase (upload_geometry only takes spec_id and bytes)
+    # Upload to MongoDB GridFS (upload_geometry only takes spec_id and bytes)
     try:
+        from app.storage import upload_geometry
+
         signed_url = upload_geometry(spec_id, geometry_bytes)  # Not async
     except Exception as e:
-        logger.error(f"Supabase upload failed: {e}")
+        logger.error(f"GridFS upload failed: {e}")
         signed_url = None
 
     # Store metadata in database
@@ -486,28 +478,25 @@ async def upload_geometry_file(
 
 @router.post("/upload-compliance")
 async def upload_compliance_file(
-    case_id: str,
-    file: UploadFile = File(...),
-    current_user: str = Depends(get_current_user),
+    case_id: str, file: UploadFile = File(...), current_user: str = Depends(get_current_user)
 ):
     """Upload compliance ZIP file"""
     import json
     import os
     from datetime import datetime
 
-    from app.database import engine
-    from sqlalchemy import text
+    from app.database_mongodb import engine
 
     compliance_bytes = await file.read()
     timestamp = int(datetime.now().timestamp())
     file_path = f"compliance/{case_id}_{timestamp}.zip"
 
-    # Upload to Supabase
+    # Upload to MongoDB GridFS
     try:
         await upload_to_bucket("compliance", file_path, compliance_bytes)
         signed_url = get_signed_url("compliance", file_path, expires=600)
     except Exception as e:
-        logger.error(f"Supabase upload failed: {e}")
+        logger.error(f"GridFS upload failed: {e}")
         signed_url = None
 
     # Store metadata in database

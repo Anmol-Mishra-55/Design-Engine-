@@ -5,7 +5,6 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.config import settings
-from supabase import create_client
 
 try:
     # Use service role key to check buckets

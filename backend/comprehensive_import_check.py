@@ -87,8 +87,7 @@ def analyze_prefect_integration():
         # Check if prefect_integration_minimal can be imported
         sys.path.insert(0, ".")
 
-        from app.prefect_integration_minimal import (
-            PREFECT_AVAILABLE,
+                    PREFECT_AVAILABLE,
             check_workflow_status,
             get_workflow_status,
             trigger_automation_workflow,

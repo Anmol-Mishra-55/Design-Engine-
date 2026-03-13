@@ -7,8 +7,7 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).parent))
 
-from app.database import get_db
-from app.models import VRRender
+from app.database_mongodb import get_database
 
 
 def check_vr_renders():

@@ -17,9 +17,7 @@ def fix_imports_in_file(file_path):
 
         # Replace old prefect_integration imports with minimal version
         patterns = [
-            (r"from app\.prefect_integration import", "from app.prefect_integration_minimal import"),
-            (r"from app\.prefect_integration_enhanced import", "from app.prefect_integration_minimal import"),
-            (r"import app\.prefect_integration", "import app.prefect_integration_minimal"),
+            (r"from app\.prefect_integration import", "            (r"from app\.prefect_integration_enhanced import", "            (r"import app\.prefect_integration", "import app.prefect_integration_minimal"),
         ]
 
         for old_pattern, new_pattern in patterns:
@@ -27,8 +25,8 @@ def fix_imports_in_file(file_path):
 
         # Fix specific function calls that might not exist in minimal version
         function_fixes = [
-            (r"trigger_pdf_workflow\(([^)]+)\)", r'trigger_automation_workflow("pdf_compliance", {"pdf_url": \1})'),
-            (r"trigger_health_monitoring_workflow\(\)", r'trigger_automation_workflow("health_monitoring", {})'),
+            (r"trigger_pdf_workflow\(([^)]+)\)", r'{"status": "mock"}'),
+            (r"trigger_health_monitoring_workflow\(\)", r'{"status": "mock"}'),
         ]
 
         for old_func, new_func in function_fixes:

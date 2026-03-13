@@ -9,8 +9,6 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 
-from app.storage import get_bucket_name, get_signed_url, upload_to_bucket
-
 
 async def test_storage_operations():
     """Test all storage operations"""

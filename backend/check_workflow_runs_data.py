@@ -4,8 +4,7 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from app.database import get_db
-from sqlalchemy import text
+from app.database_mongodb import get_database
 
 
 def check_workflow_runs():

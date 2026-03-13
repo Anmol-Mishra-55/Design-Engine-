@@ -1,0 +1,86 @@
+solid bhiv_spec_smoketest1234_6e624871357a8af9
+  facet normal 0.000000 0.000000 1.000000
+    outer loop
+      vertex 0.000000 0.000000 0.000000
+      vertex 9.144000 0.000000 0.000000
+      vertex 9.144000 12.192000 0.000000
+    endloop
+  endfacet
+  facet normal 0.000000 0.000000 1.000000
+    outer loop
+      vertex 0.000000 0.000000 0.000000
+      vertex 9.144000 12.192000 0.000000
+      vertex 0.000000 12.192000 0.000000
+    endloop
+  endfacet
+  facet normal 0.000000 0.000000 1.000000
+    outer loop
+      vertex 0.000000 0.000000 0.914000
+      vertex 9.144000 0.000000 0.914000
+      vertex 9.144000 12.192000 0.914000
+    endloop
+  endfacet
+  facet normal 0.000000 0.000000 1.000000
+    outer loop
+      vertex 0.000000 0.000000 0.914000
+      vertex 9.144000 12.192000 0.914000
+      vertex 0.000000 12.192000 0.914000
+    endloop
+  endfacet
+  facet normal 0.000000 -1.000000 0.000000
+    outer loop
+      vertex 0.000000 0.000000 0.000000
+      vertex 9.144000 0.000000 0.000000
+      vertex 9.144000 0.000000 0.914000
+    endloop
+  endfacet
+  facet normal 0.000000 -1.000000 0.000000
+    outer loop
+      vertex 0.000000 0.000000 0.000000
+      vertex 9.144000 0.000000 0.914000
+      vertex 0.000000 0.000000 0.914000
+    endloop
+  endfacet
+  facet normal 1.000000 0.000000 0.000000
+    outer loop
+      vertex 9.144000 0.000000 0.000000
+      vertex 9.144000 12.192000 0.000000
+      vertex 9.144000 12.192000 0.914000
+    endloop
+  endfacet
+  facet normal 1.000000 0.000000 0.000000
+    outer loop
+      vertex 9.144000 0.000000 0.000000
+      vertex 9.144000 12.192000 0.914000
+      vertex 9.144000 0.000000 0.914000
+    endloop
+  endfacet
+  facet normal 0.000000 1.000000 0.000000
+    outer loop
+      vertex 9.144000 12.192000 0.000000
+      vertex 0.000000 12.192000 0.000000
+      vertex 0.000000 12.192000 0.914000
+    endloop
+  endfacet
+  facet normal 0.000000 1.000000 -0.000000
+    outer loop
+      vertex 9.144000 12.192000 0.000000
+      vertex 0.000000 12.192000 0.914000
+      vertex 9.144000 12.192000 0.914000
+    endloop
+  endfacet
+  facet normal -1.000000 0.000000 0.000000
+    outer loop
+      vertex 0.000000 12.192000 0.000000
+      vertex 0.000000 0.000000 0.000000
+      vertex 0.000000 0.000000 0.914000
+    endloop
+  endfacet
+  facet normal -1.000000 0.000000 0.000000
+    outer loop
+      vertex 0.000000 12.192000 0.000000
+      vertex 0.000000 0.000000 0.914000
+      vertex 0.000000 12.192000 0.914000
+    endloop
+  endfacet
+endsolid bhiv_spec_smoketest1234_6e624871357a8af9

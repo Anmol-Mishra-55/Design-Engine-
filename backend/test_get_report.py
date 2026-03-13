@@ -84,8 +84,7 @@ def check_database_storage():
     print("=" * 80)
 
     try:
-        from app.database import engine
-        from sqlalchemy import text
+        from app.database_mongodb import engine
 
         with engine.connect() as conn:
             # Check Spec table

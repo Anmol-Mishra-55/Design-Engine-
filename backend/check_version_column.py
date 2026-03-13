@@ -1,5 +1,4 @@
-from app.database import engine
-from sqlalchemy import text
+from app.database_mongodb import engine
 
 with engine.connect() as conn:
     result = conn.execute(

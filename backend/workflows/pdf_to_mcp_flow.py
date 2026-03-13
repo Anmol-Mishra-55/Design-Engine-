@@ -23,7 +23,7 @@ from prefect.tasks import task_input_hash
     cache_expiration=timedelta(hours=1),
 )
 def download_pdf_from_storage(pdf_url: str, local_path: str) -> str:
-    """Download PDF from Supabase storage"""
+    """Download PDF from MongoDB GridFS or external URL"""
     logger = get_run_logger()
     logger.info(f"Downloading PDF from {pdf_url}")
 

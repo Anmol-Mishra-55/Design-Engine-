@@ -10,8 +10,7 @@ import json
 from datetime import datetime, timezone
 
 import requests
-from app.database import get_db
-from app.models import Spec
+from app.database_mongodb import get_database
 
 
 def test_user_history():

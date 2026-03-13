@@ -10,10 +10,9 @@ from datetime import datetime
 from typing import Optional
 
 import httpx
-from app.database import engine
+from app.database_mongodb import engine
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from sqlalchemy import text
 
 router = APIRouter()
 

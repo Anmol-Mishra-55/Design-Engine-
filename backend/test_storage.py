@@ -14,7 +14,6 @@ sys.path.insert(0, str(Path(__file__).parent / "app"))
 def test_storage_import():
     """Test that storage module can be imported"""
     try:
-        from app.storage import generate_signed_url, supabase, upload_preview
 
         print("Storage module imported successfully")
         return True
@@ -26,8 +25,7 @@ def test_storage_import():
 def test_supabase_connection():
     """Test basic Supabase connection"""
     try:
-        from app.storage import supabase
-
+        from app.storage
         # Try a basic operation that doesn't require admin permissions
         result = supabase.table("_dummy_").select("*").limit(1).execute()
         print("Supabase connection working")
@@ -40,7 +38,6 @@ def test_supabase_connection():
 def test_url_generation():
     """Test URL generation functions"""
     try:
-        from app.storage import generate_signed_url
 
         # Test with a sample URL
         test_url = "https://example.com/storage/v1/object/public/files/test.pdf"

@@ -7,7 +7,6 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import asyncio
 
 from app.config import settings
-from app.service_monitor import service_monitor
 
 
 async def check_service_usage():

@@ -63,7 +63,7 @@ def load_secrets_from_manager():
             vault_url = os.getenv("AZURE_VAULT_URL")
             secret_names = [
                 "DATABASE_URL",
-                "SUPABASE_KEY",
+                "MONGODB_URL",
                 "JWT_SECRET_KEY",
                 "OPENAI_API_KEY",
                 "SENTRY_DSN",

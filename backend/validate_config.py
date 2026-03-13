@@ -17,7 +17,6 @@ import logging
 import asyncpg
 import httpx
 from app.config import settings, validate_settings
-from supabase import create_client
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

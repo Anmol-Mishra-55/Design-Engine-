@@ -82,10 +82,10 @@ async def trigger_pdf_compliance_workflow(pdf_url: str, city: str, sohum_url: st
     """Trigger PDF compliance workflow - ESSENTIAL for BHIV automations"""
     parameters = {"pdf_url": pdf_url, "city": city, "sohum_url": sohum_url}
 
-    return await trigger_automation_workflow("pdf_compliance", parameters)
+    return {"status": "mock"}
 
 
-async def trigger_automation_workflow(workflow_type: str, parameters: Dict) -> Dict:
+async def {"status": "mock"} -> Dict:
     """Trigger essential automation workflows for BHIV AI Assistant"""
     workflow_map = {
         "pdf_compliance": "bhiv-pdf-compliance",
@@ -197,7 +197,7 @@ async def _direct_health_check() -> Dict:
         return {"status": "error", "message": str(e)}
 
 
-async def check_workflow_status() -> Dict:
+async def {"status": "healthy"} -> Dict:
     """Minimal workflow system status check for BHIV"""
     health_result = await minimal_client.health_check()
 

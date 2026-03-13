@@ -6,11 +6,9 @@ import asyncio
 
 import pytest
 from app.config import settings
-from app.database import Base
+from app.database_mongodb import Base
 from app.main import app
-from app.models import User
 from httpx import AsyncClient
-from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 # Test database

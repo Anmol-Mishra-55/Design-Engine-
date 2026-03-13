@@ -8,11 +8,10 @@ from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
 from app.config import settings
-from app.database import get_db
-from app.models import AuditLog, Iteration, Spec, User
+from app.database_mongodb import get_database
+from app.models_mongodb import Iteration
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
-from sqlalchemy.orm import Session
 
 router = APIRouter(prefix="/api/v1", tags=["🔄 Material Switch"])
 logger = logging.getLogger(__name__)
@@ -189,13 +188,101 @@ def recalculate_cost(old_spec: Dict, new_spec: Dict) -> Dict:
     }
 
 
-# ============================================================================
-# API ENDPOINTS
-# ============================================================================
+async def _get_spec_data(spec_id: str) -> tuple:
+    """Get spec data from storage or database"""
+    # Try to get spec from in-memory storage first
+    from app.spec_storage import get_spec as get_stored_spec
+
+    stored_spec = get_stored_spec(spec_id)
+
+    if stored_spec:
+        print(f"✅ Found spec {spec_id} in storage")
+        return stored_spec["spec_json"], stored_spec["user_id"], stored_spec
+    else:
+        # Fallback to database
+        try:
+            db = get_database()
+            spec = await db.specs.find_one({"_id": spec_id})
+            if not spec:
+                print(f"❌ Spec {spec_id} not found in storage or database")
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Specification not found")
+            return spec["spec_json"], spec["user_id"], None
+        except Exception as e:
+            print(f"❌ Database error: {e}")
+            print(f"❌ Spec {spec_id} not found in storage or database")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Specification not found")
+
+
+async def _save_iteration_to_db(
+    iteration_id: str,
+    spec_id: str,
+    user_id: str,
+    changes: List[ObjectChange],
+    updated_spec: Dict,
+    preview_url: str,
+    start_time: float,
+) -> None:
+    """Save iteration to database"""
+    try:
+        # Create iteration document
+        iteration_data = {
+            "_id": iteration_id,
+            "spec_id": spec_id,
+            "user_id": user_id,
+            "iteration_number": 1,
+            "changes": {"changes": [change.dict() for change in changes]},
+            "geometry_url": preview_url,
+            "preview_url": preview_url,
+            "created_at": datetime.now(timezone.utc),
+        }
+
+        # Save to MongoDB
+        db = get_database()
+        await db.iterations.insert_one(iteration_data)
+
+        # Update spec version in database
+        await db.specs.update_one(
+            {"_id": spec_id},
+            {"$set": {"spec_json": updated_spec, "updated_at": datetime.now(timezone.utc)}, "$inc": {"version": 1}},
+        )
+
+        logger.info(f"Saved iteration {iteration_id} to database")
+
+    except Exception as e:
+        logger.error(f"Database save failed: {str(e)}")
+        # Continue execution even if database save fails
+
+
+async def _generate_preview(iteration_id: str, updated_spec: Dict) -> str:
+    """Generate preview GLB file"""
+    try:
+        from app.utils import generate_glb_from_spec
+
+        # Generate GLB file
+        preview_bytes = generate_glb_from_spec(updated_spec)
+        preview_path = f"{iteration_id}.glb"
+
+        # Upload to MongoDB GridFS
+        from app.storage_mongodb import GridFSStorage
+
+        db = get_database()
+        storage = GridFSStorage(db)
+        file_id = await storage.upload_bytes(
+            preview_bytes,
+            "previews",
+            preview_path,
+            content_type="model/gltf-binary",
+            metadata={"iteration_id": iteration_id, "type": "preview"},
+        )
+        return f"/static/geometry/{preview_path}"
+
+    except Exception as e:
+        logger.warning(f"Preview generation failed: {str(e)}")
+        return f"https://mock-preview-{iteration_id}.glb"
 
 
 @router.post("/switch", response_model=SwitchResponse, status_code=status.HTTP_201_CREATED)
-async def switch_material(request: SwitchRequest, db: Session = Depends(get_db)):
+async def switch_material(request: SwitchRequest):
     """
     Switch material/property using natural language
 
@@ -219,39 +306,21 @@ async def switch_material(request: SwitchRequest, db: Session = Depends(get_db))
     """
     start_time = time.time()
 
-    print(f"🔄 SWITCH REQUEST: spec_id={request.spec_id}, query='{request.query}'")
-    logger.info(f"🔄 SWITCH REQUEST: spec_id={request.spec_id}, query='{request.query}'")
+    # Sanitize user input for logging to prevent log injection
+    sanitized_query = request.query.replace("\n", " ").replace("\r", " ")[:100]
+    print(f"🔄 SWITCH REQUEST: spec_id={request.spec_id}")
+    logger.info(f"🔄 SWITCH REQUEST: spec_id={request.spec_id}, query_length={len(request.query)}")
 
-    # Try to get spec from in-memory storage first
-    from app.spec_storage import get_spec as get_stored_spec
-
-    stored_spec = get_stored_spec(request.spec_id)
-
-    if stored_spec:
-        print(f"✅ Found spec {request.spec_id} in storage")
-        spec_json = stored_spec["spec_json"]
-        user_id = stored_spec["user_id"]
-    else:
-        # Fallback to database
-        try:
-            spec = db.query(Spec).filter(Spec.id == request.spec_id).first()
-            if not spec:
-                print(f"❌ Spec {request.spec_id} not found in storage or database")
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Specification not found")
-            spec_json = spec.spec_json
-            user_id = spec.user_id
-        except Exception as e:
-            print(f"❌ Database error: {e}")
-            print(f"❌ Spec {request.spec_id} not found in storage or database")
-            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Specification not found")
+    # Get spec data
+    spec_json, user_id, stored_spec = await _get_spec_data(request.spec_id)
 
     try:
-        # Simple NLP parsing for common patterns
-        print(f"🤖 Parsing query: '{request.query}'")
+        # Parse natural language query
+        print(f"🤖 Parsing query: '{sanitized_query}'")
         command = parse_simple_query(request.query)
 
         if not command:
-            print(f"❌ Could not parse query: '{request.query}'")
+            print(f"❌ Could not parse query: '{sanitized_query}'")
             from app.error_handler import APIException
             from app.schemas.error_schemas import ErrorCode
 
@@ -260,7 +329,7 @@ async def switch_material(request: SwitchRequest, db: Session = Depends(get_db))
                 error_code=ErrorCode.VALIDATION_ERROR,
                 message="Could not understand the request. Please try rephrasing.",
                 details={
-                    "query": request.query,
+                    "query_length": len(request.query),
                     "supported_patterns": [
                         "change X to Y",
                         "replace X with Y",
@@ -286,43 +355,16 @@ async def switch_material(request: SwitchRequest, db: Session = Depends(get_db))
 
         iteration_id = f"iter_{uuid.uuid4().hex[:8]}"
 
-        # Initialize preview_url early
-        preview_url = f"https://mock-preview-{iteration_id}.glb"
-
         # Save iteration to database
-        try:
-            from app.models import Iteration
-
-            iteration = Iteration(
-                id=iteration_id,
-                spec_id=request.spec_id,
-                user_id=user_id,
-                query=request.query,
-                nlp_confidence=command.get("confidence", 0.8),
-                diff={"changes": [change.dict() for change in changes]},
-                spec_json=updated_spec,
-                changed_objects=",".join(changed_objects),
-                preview_url=preview_url,
-                cost_delta=cost_impact.get("delta", 0),
-                new_total_cost=cost_impact.get("new_total", 0),
-                processing_time_ms=int((time.time() - start_time) * 1000),
-            )
-
-            db.add(iteration)
-
-            # Update spec version in database
-            spec_db = db.query(Spec).filter(Spec.id == request.spec_id).first()
-            if spec_db:
-                spec_db.spec_json = updated_spec
-                spec_db.version += 1
-                spec_db.updated_at = datetime.now(timezone.utc)
-
-            db.commit()
-            print(f"✅ Saved iteration {iteration_id} to database")
-
-        except Exception as e:
-            db.rollback()
-            print(f"⚠️ Database save failed: {e}")
+        await _save_iteration_to_db(
+            iteration_id,
+            request.spec_id,
+            user_id,
+            changes,
+            updated_spec,
+            f"https://mock-preview-{iteration_id}.glb",
+            start_time,
+        )
 
         # Update stored spec if found in storage
         if stored_spec:
@@ -333,22 +375,8 @@ async def switch_material(request: SwitchRequest, db: Session = Depends(get_db))
             save_spec(request.spec_id, stored_spec)
             print(f"✅ Updated spec {request.spec_id} in storage")
 
-        # Generate real preview URL
-        try:
-            from app.storage import get_signed_url, upload_to_bucket
-            from app.utils import generate_glb_from_spec
-
-            # Generate GLB file
-            preview_bytes = generate_glb_from_spec(updated_spec)
-            preview_path = f"{iteration_id}.glb"
-
-            # Upload to Supabase
-            await upload_to_bucket("previews", preview_path, preview_bytes)
-            preview_url = get_signed_url("previews", preview_path, expires=600)
-
-        except Exception as e:
-            logger.warning(f"Preview generation failed: {e}")
-            preview_url = f"https://mock-preview-{iteration_id}.glb"
+        # Generate preview
+        preview_url = await _generate_preview(iteration_id, updated_spec)
 
         print(f"✅ Switch completed: {len(changes)} changes made")
 
@@ -365,7 +393,7 @@ async def switch_material(request: SwitchRequest, db: Session = Depends(get_db))
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Switch failed: {e}")
+        logger.error(f"Switch failed: {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"Material switch failed: {str(e)}"
         )

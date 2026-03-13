@@ -9,8 +9,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 def create_tables():
     try:
-        from app.database import engine, init_db
-        from app.models import Base, Evaluation, Spec, User
+        from app.database_mongodb import engine, init_db
 
         print("Creating database tables...")
 
@@ -19,7 +18,7 @@ def create_tables():
         print("Tables created successfully")
 
         # Test connection
-        from app.database import get_db_context
+        from app.database_mongodb import get_database_context
 
         with get_db_context() as db:
             # Check if tables exist

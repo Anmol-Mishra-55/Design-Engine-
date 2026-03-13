@@ -9,8 +9,7 @@ sys.path.append(".")
 import uuid
 from datetime import datetime, timezone
 
-from app.database import get_db
-from app.models import Evaluation, Iteration, Spec
+from app.database_mongodb import get_database
 
 
 def test_history_complete():

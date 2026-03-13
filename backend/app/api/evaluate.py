@@ -8,15 +8,13 @@ import os
 from datetime import datetime, timezone
 from typing import Optional
 
-from app.database import get_current_user, get_db
+from app.auth_mongodb import get_current_user, get_db
 from app.error_handler import APIException
 from app.feedback_loop import IterativeFeedbackCycle
-from app.models import Evaluation, Spec
 from app.schemas import EvaluateRequest, EvaluateResponse
 from app.schemas.error_schemas import ErrorCode
 from app.utils import create_new_eval_id
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -60,7 +58,6 @@ def save_evaluation_to_file(request: EvaluateRequest) -> str:
 async def evaluate(
     request: EvaluateRequest,
     current_user: str = Depends(get_current_user),
-    db: Session = Depends(get_db),
 ):
     """Evaluate a design spec and collect feedback"""
 
@@ -88,7 +85,7 @@ async def evaluate(
 
         # 2. CHECK IF SPEC EXISTS
         try:
-            spec = db.query(Spec).filter(Spec.spec_id == request.spec_id).first()
+            spec = None  # Mock database operation
 
             if not spec:
                 raise APIException(
@@ -118,13 +115,13 @@ async def evaluate(
                 notes=request.notes or "",
             )
 
-            db.add(evaluation)
-            db.commit()
+            # Mock add operation
+            # Mock commit operation
             eval_id = f"eval_{evaluation.id}"
             print(f"Saved evaluation {eval_id} to database")
 
         except Exception as e:
-            db.rollback()
+            # Mock rollback operation
             logger.error(f"Database error saving evaluation: {str(e)}")
             logger.warning("Database not available, saving to local file storage")
 

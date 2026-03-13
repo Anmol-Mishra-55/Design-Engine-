@@ -4,8 +4,7 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from app.database import SessionLocal
-from app.models import User
+from app.database_mongodb import SessionLocal
 
 
 def get_real_users():

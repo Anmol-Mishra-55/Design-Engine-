@@ -12,13 +12,11 @@ from typing import Any, Dict, List, Optional
 import httpx
 from app.api.monitoring_system import log_error, log_info, track_performance
 from app.config import settings
-from app.database import get_db
+from app.database_mongodb import get_database
 from app.lm_adapter import run_local_lm
-from app.models import Evaluation, Spec
 from app.utils import create_new_spec_id
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
-from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/bhiv/v1", tags=["BHIV-AI-Assistant"])
@@ -313,12 +311,7 @@ async def notify_prefect_webhook(
 
 @router.post("/prompt", response_model=BHIVPromptResponse, status_code=status.HTTP_201_CREATED)
 @track_performance("bhiv_prompt")
-async def bhiv_prompt(
-    req: BHIVPromptRequest,
-    request: Request,
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db),
-):
+async def bhiv_prompt(req: BHIVPromptRequest, request: Request, background_tasks: BackgroundTasks):
     """
     🧠 CENTRAL BHIV AI ASSISTANT ENDPOINT 🧠
 
@@ -368,24 +361,23 @@ async def bhiv_prompt(
 
     # Step 2: Save Spec to Database
     try:
-        spec = Spec(
-            id=create_new_spec_id(),
-            user_id=req.user_id,
-            project_id=req.project_id,
-            prompt=req.prompt,
-            city=req.city,
-            spec_json=spec_json,
-            design_type=req.design_type or spec_json.get("design_type", "unknown"),
-            lm_provider=lm_provider,
-            compliance_status="pending",
-            estimated_cost=req.budget,
-        )
+        db = get_database()
+        spec_data = {
+            "_id": create_new_spec_id(),
+            "user_id": req.user_id,
+            "project_id": req.project_id,
+            "prompt": req.prompt,
+            "city": req.city,
+            "spec_json": spec_json,
+            "design_type": req.design_type or spec_json.get("design_type", "unknown"),
+            "lm_provider": lm_provider,
+            "compliance_status": "pending",
+            "estimated_cost": req.budget,
+            "created_at": datetime.utcnow(),
+        }
 
-        db.add(spec)
-        db.commit()
-        db.refresh(spec)
-
-        spec_id = spec.id
+        result = await db.specs.insert_one(spec_data)
+        spec_id = str(result.inserted_id)
         logger.info(f"[{request_id}] Spec saved to DB: {spec_id}")
 
     except Exception as e:
@@ -449,31 +441,30 @@ async def bhiv_prompt(
 
 
 @router.post("/feedback", response_model=BHIVFeedbackResponse, status_code=status.HTTP_201_CREATED)
-async def bhiv_feedback(
-    req: BHIVFeedbackRequest,
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db),
-):
+async def bhiv_feedback(req: BHIVFeedbackRequest, background_tasks: BackgroundTasks):
     """📊 BHIV FEEDBACK ENDPOINT 📊"""
     logger.info(f"Receiving feedback for spec {req.spec_id} from user {req.user_id}")
 
-    spec = db.query(Spec).filter(Spec.id == req.spec_id).first()
+    db = get_database()
+    spec = await db.specs.find_one({"_id": req.spec_id})
     if not spec:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Spec {req.spec_id} not found")
 
     try:
-        evaluation = Evaluation(
-            spec_id=req.spec_id, user_id=req.user_id, rating=req.rating, notes=req.notes, aspects=req.aspect_ratings
-        )
+        evaluation_data = {
+            "spec_id": req.spec_id,
+            "user_id": req.user_id,
+            "rating": req.rating,
+            "notes": req.notes,
+            "aspects": req.aspect_ratings,
+            "created_at": datetime.utcnow(),
+        }
 
-        db.add(evaluation)
-        db.commit()
-        db.refresh(evaluation)
-
-        feedback_id = str(evaluation.id)
+        result = await db.evaluations.insert_one(evaluation_data)
+        feedback_id = str(result.inserted_id)
         logger.info(f"Feedback recorded: {feedback_id}")
 
-        feedback_count = db.query(Evaluation).filter(Evaluation.user_id == req.user_id).count()
+        feedback_count = await db.evaluations.count_documents({"user_id": req.user_id})
         queue_for_training = feedback_count >= 10
 
         return BHIVFeedbackResponse(

@@ -34,8 +34,7 @@ def test_switch_simple():
 
     # Test database storage
     try:
-        from app.database import get_db
-        from app.models import Spec
+        from app.database_mongodb import get_database
 
         db = next(get_db())
         specs = db.query(Spec).all()

@@ -2,8 +2,8 @@ import logging
 import time
 from datetime import datetime, timedelta, timezone
 
-import jwt
 from app.config import settings
+from jose import jwt
 from passlib.context import CryptContext
 
 # Application start time for uptime calculation

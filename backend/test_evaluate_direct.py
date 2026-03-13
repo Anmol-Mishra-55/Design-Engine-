@@ -8,10 +8,8 @@ import sys
 sys.path.append(".")
 
 from app.api.evaluate import save_evaluation_to_file
-from app.database import get_db
-from app.models import Evaluation
+from app.database_mongodb import get_database
 from app.schemas import EvaluateRequest
-from sqlalchemy.orm import Session
 
 
 def test_evaluate_database():

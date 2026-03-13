@@ -9,8 +9,7 @@ from pathlib import Path
 # Add app to path
 sys.path.append(str(Path(__file__).parent))
 
-from app.database import engine
-from app.models import VRRender
+from app.database_mongodb import engine
 
 
 def create_vr_table():

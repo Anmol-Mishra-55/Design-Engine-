@@ -35,8 +35,7 @@ print("Testing GET /api/v1/reports/{spec_id} with VALID spec_id")
 print("=" * 80)
 
 # Get a valid spec_id from the database
-from app.database import SessionLocal
-from app.models import Spec
+from app.database_mongodb import SessionLocal
 
 db = SessionLocal()
 valid_spec = db.query(Spec).first()

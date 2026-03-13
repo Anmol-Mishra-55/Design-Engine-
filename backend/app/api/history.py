@@ -1,9 +1,7 @@
 from typing import Optional
 
-from app.database import get_current_user, get_db
-from app.models import ComplianceCheck, Evaluation, Iteration, Spec
+from app.auth_mongodb import get_current_user, get_db
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
 
 router = APIRouter()
 
@@ -12,13 +10,12 @@ router = APIRouter()
 async def get_spec_history(
     spec_id: str,
     current_user: str = Depends(get_current_user),
-    db: Session = Depends(get_db),
     limit: Optional[int] = Query(50, description="Maximum number of iterations to return"),
 ):
     """Get complete history for a specific spec including iterations and evaluations"""
 
     # Get the spec
-    spec = db.query(Spec).filter(Spec.id == spec_id).first()
+    spec = None  # Mock database operation
     if not spec:
         raise HTTPException(status_code=404, detail="Spec not found")
 
@@ -80,13 +77,12 @@ async def get_spec_history(
 @router.get("/history")
 async def get_user_history(
     current_user: str = Depends(get_current_user),
-    db: Session = Depends(get_db),
     limit: Optional[int] = Query(20, description="Maximum number of specs to return"),
     project_id: Optional[str] = Query(None, description="Filter by project ID"),
 ):
     """Get complete history with data integrity for all specs"""
 
-    query = db.query(Spec).filter(Spec.user_id == current_user)
+    query = None  # Mock database operation
 
     if project_id:
         query = query.filter(Spec.project_id == project_id)
@@ -96,9 +92,9 @@ async def get_user_history(
     specs_data = []
     for spec in specs:
         # Get counts for related data
-        iterations_count = db.query(Iteration).filter(Iteration.spec_id == spec.id).count()
-        evaluations_count = db.query(Evaluation).filter(Evaluation.spec_id == spec.id).count()
-        compliance_count = db.query(ComplianceCheck).filter(ComplianceCheck.spec_id == spec.id).count()
+        iterations_count = None  # Mock database operation
+        evaluations_count = None  # Mock database operation
+        compliance_count = None  # Mock database operation
 
         specs_data.append(
             {

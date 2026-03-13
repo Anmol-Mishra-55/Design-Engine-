@@ -6,8 +6,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import asyncio
 
-from app.storage import get_signed_url, upload_to_bucket
-
 
 async def debug_preview_upload():
     try:

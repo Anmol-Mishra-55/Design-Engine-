@@ -4,9 +4,7 @@ import sys
 
 sys.path.insert(0, ".")
 
-from app.database import get_db
-from app.models import *
-from sqlalchemy import text
+from app.database_mongodb import get_database
 
 
 def check_all_tables():

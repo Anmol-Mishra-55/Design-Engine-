@@ -4,24 +4,19 @@ Iterate endpoint (UPDATED with service and error handling)
 
 import logging
 
-from app.database import get_current_user, get_db
+from app.auth_mongodb import get_current_user, get_db
 from app.error_handler import APIException
 from app.schemas import IterateRequest, IterateResponse
 from app.schemas.error_schemas import ErrorCode
 from app.services.iterate_service import IterateService
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
 @router.post("/iterate", response_model=IterateResponse)
-async def iterate(
-    request: IterateRequest,
-    current_user: str = Depends(get_current_user),
-    db: Session = Depends(get_db),
-):
+async def iterate(request: IterateRequest, current_user: str = Depends(get_current_user), db=Depends(get_db)):
     """Iterate and improve a design spec"""
 
     print(f"🔄 ITERATE REQUEST: user_id={request.user_id}, spec_id={request.spec_id}, strategy={request.strategy}")

@@ -14,7 +14,7 @@ sys.path.insert(0, str(Path(__file__).parent / "app"))
 def test_database_import():
     """Test that database module can be imported"""
     try:
-        from app.database import SessionLocal, check_db_connection, engine, get_db, init_db
+        from app.database_mongodb import SessionLocal, check_db_connection, engine, get_db, init_db
 
         print("Database module imported successfully")
         return True
@@ -26,7 +26,7 @@ def test_database_import():
 def test_health_check():
     """Test database health check"""
     try:
-        from app.database import check_db_connection
+        from app.database_mongodb import check_db_connection
 
         health = check_db_connection()
 
@@ -47,7 +47,7 @@ def test_health_check():
 def test_session_creation():
     """Test database session creation"""
     try:
-        from app.database import SessionLocal, get_db_context
+        from app.database_mongodb import SessionLocal, get_db_context
 
         # Test direct session
         session = SessionLocal()
@@ -67,7 +67,7 @@ def test_session_creation():
 def test_database_stats():
     """Test database statistics"""
     try:
-        from app.database import get_db_stats
+        from app.database_mongodb import get_database_stats
 
         stats = get_db_stats()
 
@@ -87,7 +87,7 @@ def test_database_stats():
 def test_table_initialization():
     """Test database table initialization"""
     try:
-        from app.database import init_db
+        from app.database_mongodb import init_db
 
         success = init_db()
 

@@ -6,8 +6,7 @@ from logging.config import fileConfig
 
 from alembic import context
 from app.config import settings
-from app.database import Base
-from sqlalchemy import engine_from_config, pool
+from app.database_mongodb import Base
 
 # this is the Alembic Config object
 config = context.config
