@@ -3,8 +3,17 @@ import os
 
 import torch
 from app.opt_rl.env_spec import SpecEditEnv
-from stable_baselines3 import PPO
-from stable_baselines3.common.env_util import make_vec_env
+
+try:
+    from stable_baselines3 import PPO
+    from stable_baselines3.common.env_util import make_vec_env
+
+    SB3_AVAILABLE = True
+except ImportError:
+    SB3_AVAILABLE = False
+    PPO = None
+    make_vec_env = None
+    # Silently skip - this is optional for RL training
 
 
 def load_base_spec(path="seed_spec.json"):
@@ -17,6 +26,9 @@ def load_base_spec(path="seed_spec.json"):
 
 
 def train_opt_ppo(steps=200_000, n_envs=4, **kwargs):
+    if not SB3_AVAILABLE:
+        raise ImportError("stable-baselines3 not available. Install with: pip install stable-baselines3")
+
     base = load_base_spec()
 
     # Use CPU for PPO as recommended for MLP policies

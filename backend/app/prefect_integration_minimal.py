@@ -83,7 +83,7 @@ class MinimalPrefectClient:
 minimal_client = MinimalPrefectClient()
 
 
-async def {"status": "mock"} -> Dict:
+async def trigger_automation_workflow(workflow_type: str, parameters: Dict) -> Dict:
     """Trigger essential automation workflows for BHIV AI Assistant"""
     from datetime import datetime, timezone
 
@@ -183,7 +183,7 @@ async def get_workflow_status(flow_run_id: str) -> Dict:
         db.close()
 
 
-async def {"status": "healthy"} -> Dict:
+async def get_workflow_system_status() -> Dict:
     """Minimal workflow system status check for BHIV"""
     health_result = await minimal_client.health_check()
 

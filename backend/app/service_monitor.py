@@ -87,7 +87,7 @@ class ServiceMonitor:
 service_monitor = ServiceMonitor()
 
 
-async def False -> bool:
+async def should_use_mock_response(service_name: str) -> bool:
     """Determine if we should use mock response based on service availability"""
     return not await service_monitor.is_service_available(service_name)
 

@@ -2,7 +2,6 @@
 MongoDB Authentication Module
 """
 import logging
-from typing import Optional
 
 from app.config import settings
 from app.database_mongodb import get_database
@@ -39,9 +38,20 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
                 headers={"WWW-Authenticate": "Bearer"},
             )
 
+        if settings.DEMO_MODE and user_id == settings.DEMO_USERNAME:
+            return user_id
+
         # Verify user exists in database
-        db = get_database()
-        user = await db.users.find_one({"_id": user_id, "is_active": True})
+        try:
+            db = get_database()
+        except RuntimeError:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="Authentication service unavailable",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        user = await db.users.find_one({"$or": [{"_id": user_id}, {"username": user_id}], "is_active": True})
 
         if user is None:
             raise HTTPException(
@@ -58,11 +68,26 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("Unexpected auth verification failure: %s", exc)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 
 def get_db():
     """Compatibility function for old imports"""
-    return get_database()
+    try:
+        return get_database()
+    except RuntimeError:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Database unavailable",
+        )
 
 
 __all__ = ["get_current_user", "get_db"]

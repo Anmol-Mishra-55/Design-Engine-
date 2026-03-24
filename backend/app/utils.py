@@ -3,7 +3,7 @@ import time
 from datetime import datetime, timedelta, timezone
 
 from app.config import settings
-from jose import jwt
+from jose import JWTError, jwt
 from passlib.context import CryptContext
 
 # Application start time for uptime calculation
@@ -33,7 +33,7 @@ def verify_token(token: str) -> dict:
     try:
         payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
         return payload
-    except jwt.PyJWTError:
+    except JWTError:
         return None
 
 

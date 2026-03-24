@@ -3,7 +3,6 @@ MongoDB Configuration - Complete Application Configuration
 Manages all environment variables, validation, and settings
 """
 import os
-from pathlib import Path
 from typing import List, Optional
 
 from pydantic import Field, validator
@@ -36,7 +35,7 @@ class Settings(BaseSettings):
     # MONGODB CONFIGURATION (PRIMARY DATABASE & STORAGE)
     # ============================================================================
     MONGODB_URL: str = Field(
-        default="mongodb+srv://blackholeinfiverse55_db_user:6SKTXNiidEZNTtDc@cluster0.acfgtzl.mongodb.net/?appName=Cluster0&retryWrites=true&w=majority",
+        default="mongodb://localhost:27017",
         description="MongoDB connection string",
     )
     MONGODB_DATABASE: str = Field(default="bhiv_db", description="MongoDB database name")
@@ -77,10 +76,12 @@ class Settings(BaseSettings):
     # JWT AUTHENTICATION
     # ============================================================================
     JWT_SECRET_KEY: str = Field(
-        default="bhiv-jwt-secret-2024-super-secure-key-for-production", min_length=16, description="JWT secret key"
+        default="change-me-jwt-secret",
+        min_length=16,
+        description="JWT secret key",
     )
     JWT_SECRET: str = Field(
-        default="bhiv-jwt-secret-2024-super-secure-key-for-production",
+        default="change-me-jwt-secret",
         min_length=16,
         description="JWT secret key (alias)",
     )
@@ -94,6 +95,20 @@ class Settings(BaseSettings):
         """Ensure JWT secret is strong enough"""
         if len(v) < 16:
             raise ValueError("JWT_SECRET_KEY must be at least 16 characters long")
+        return v
+
+    @validator("JWT_SECRET")
+    def validate_jwt_secret_alias(cls, v):
+        """Ensure JWT secret alias is strong enough"""
+        if len(v) < 16:
+            raise ValueError("JWT_SECRET must be at least 16 characters long")
+        return v
+
+    @validator("CORS_ORIGINS", pre=True)
+    def parse_cors_origins(cls, v):
+        """Allow comma-separated CORS origins via env vars."""
+        if isinstance(v, str):
+            return [origin.strip() for origin in v.split(",") if origin.strip()]
         return v
 
     # ============================================================================
@@ -154,7 +169,7 @@ class Settings(BaseSettings):
     # MONITORING & LOGGING
     # ============================================================================
     SENTRY_DSN: Optional[str] = Field(
-        default="https://4465443c7756d19300022e0d12f400e2@o4510289261887488.ingest.us.sentry.io/4510322463670272",
+        default=None,
         description="Sentry DSN for error tracking",
     )
     SENTRY_ENVIRONMENT: str = Field(default="development", description="Sentry environment tag")
@@ -219,15 +234,14 @@ class Settings(BaseSettings):
     # ============================================================================
     # SECURITY CONFIGURATION
     # ============================================================================
-    ENCRYPTION_KEY: Optional[str] = Field(
-        default="bhiv-aes256-encryption-key-32chr", description="AES-256 key for data encryption"
-    )
+    ENCRYPTION_KEY: Optional[str] = Field(default=None, description="Encryption key material")
 
     # ============================================================================
     # DEMO CONFIGURATION
     # ============================================================================
+    DEMO_MODE: bool = Field(default=False, description="Enable demo-only fallback authentication")
     DEMO_USERNAME: str = Field(default="admin", description="Demo username")
-    DEMO_PASSWORD: str = Field(default="bhiv2024", description="Demo password")
+    DEMO_PASSWORD: Optional[str] = Field(default=None, description="Demo password")
 
     class Config:
         """Pydantic configuration"""
@@ -239,6 +253,10 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+# Keep legacy alias aligned with primary secret.
+if not settings.JWT_SECRET or settings.JWT_SECRET == "change-me-jwt-secret":
+    settings.JWT_SECRET = settings.JWT_SECRET_KEY
 
 
 def validate_settings():
@@ -255,20 +273,32 @@ def validate_settings():
     if not settings.JWT_SECRET_KEY or len(settings.JWT_SECRET_KEY) < 16:
         errors.append("JWT_SECRET_KEY must be at least 16 characters long")
 
-    if settings.ENCRYPTION_KEY and len(settings.ENCRYPTION_KEY) != 32:
-        warnings.append("ENCRYPTION_KEY should be exactly 32 characters for AES-256")
+    if settings.ENCRYPTION_KEY and len(settings.ENCRYPTION_KEY) < 16:
+        warnings.append("ENCRYPTION_KEY should be at least 16 characters")
 
-    if settings.LM_PROVIDER == "yotta" and not settings.YOTTA_API_KEY:
-        warnings.append("Yotta API key missing but provider is set to yotta")
+    if settings.DEMO_MODE and not settings.DEMO_PASSWORD:
+        errors.append("DEMO_PASSWORD must be set when DEMO_MODE=true")
 
-    if settings.LM_PROVIDER == "openai" and not settings.OPENAI_API_KEY:
-        warnings.append("OpenAI API key missing but provider is set to openai")
+    if settings.ENVIRONMENT == "production":
+        insecure_jwt_defaults = {"change-me-jwt-secret", "bhiv-jwt-secret-2024-super-secure-key-for-production"}
+        if settings.JWT_SECRET_KEY in insecure_jwt_defaults:
+            errors.append("JWT_SECRET_KEY must be overridden in production")
+        if settings.MONGODB_URL.startswith("mongodb://localhost"):
+            errors.append("MONGODB_URL must be overridden in production")
+        if settings.DEMO_MODE:
+            warnings.append("DEMO_MODE is enabled in production")
 
-    if not settings.SOHUM_MCP_URL:
-        warnings.append("Compliance service URL not configured")
+    # Only warn about missing API keys if explicitly set as provider
+    # Silently skip optional services in development
+    if settings.ENVIRONMENT == "production":
+        if settings.LM_PROVIDER == "yotta" and not settings.YOTTA_API_KEY:
+            warnings.append("Yotta API key missing but provider is set to yotta")
 
-    if not settings.SENTRY_DSN:
-        warnings.append("Sentry DSN not configured - error tracking disabled")
+        if settings.LM_PROVIDER == "openai" and not settings.OPENAI_API_KEY:
+            warnings.append("OpenAI API key missing but provider is set to openai")
+
+        if not settings.SENTRY_DSN:
+            warnings.append("Sentry DSN not configured - error tracking disabled")
 
     if warnings:
         import logging
@@ -329,6 +359,8 @@ if __name__ != "__main__" and not os.getenv("PYTEST_CURRENT_TEST"):
     try:
         validate_settings()
     except ValueError as e:
+        if settings.ENVIRONMENT == "production":
+            raise
         print(f"Configuration Error: {e}")
         print("Some features may not work correctly. Check your .env file.")
     except Exception as e:

@@ -1,15 +1,31 @@
 import json
 
-import gymnasium as gym
+try:
+    import gymnasium as gym
+
+    GYM_AVAILABLE = True
+except ImportError as e:
+    GYM_AVAILABLE = False
+    gym = None
+    print(f"Warning: gymnasium not available: {e}")
 import numpy as np
 import torch
 from app.rlhf.reward_model import SimpleRewardModel, hash_tokenize
 
 
-class SpecEditEnv(gym.Env):
+class SpecEditEnv:
+    """Mock environment when gymnasium is not available"""
+
     metadata = {"render_modes": []}
 
     def __init__(self, base_spec, rm_ckpt="models_ckpt/rm.pt", device="cpu"):
+        if not GYM_AVAILABLE:
+            print("Warning: gymnasium not available, using mock environment")
+            self.device = device
+            self.base = base_spec
+            self.spec = None
+            return
+
         super().__init__()
         self.device = device
         self.rm = SimpleRewardModel()

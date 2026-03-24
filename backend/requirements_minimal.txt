@@ -1,0 +1,46 @@
+# Minimal Requirements for Basic Functionality
+# Install this first, then add ML dependencies as needed
+
+# Core FastAPI Dependencies
+fastapi>=0.100.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+python-multipart>=0.0.6
+
+# Authentication & Security
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+bcrypt>=4.0.0
+
+# MongoDB Dependencies (PRIMARY DATABASE & STORAGE)
+pymongo>=4.6.0
+motor>=3.3.0
+dnspython>=2.4.0
+
+# HTTP Clients & Async File Operations
+requests>=2.31.0
+httpx>=0.25.0
+aiofiles>=23.2.0
+
+# Environment Management
+python-dotenv>=1.0.0
+
+# Basic utilities
+pathlib2>=2.3.0
+typing-extensions>=4.0.0
+
+# Optional: Monitoring (comment out if not needed)
+# sentry-sdk[fastapi]>=1.40.0
+# prometheus-fastapi-instrumentator>=6.1.0
+
+# Optional: AI/ML Dependencies (install separately if needed)
+# openai>=1.0.0
+# groq>=0.4.0
+# anthropic>=0.7.0
+
+# Optional: RL/ML Dependencies (install separately if needed)
+# stable-baselines3>=2.0.0
+# gymnasium>=0.29.0
+# torch>=2.0.0
+# numpy>=1.24.0

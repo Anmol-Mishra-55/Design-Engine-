@@ -25,7 +25,7 @@ except ImportError as e:
 PREFECT_CONFIGURED = bool(os.getenv("PREFECT_API_KEY") or os.getenv("PREFECT_API_URL"))
 
 
-async def {"status": "healthy"} -> Dict:
+async def get_workflow_system_status() -> Dict:
     """Comprehensive workflow system status check"""
     status = {
         "prefect_installed": PREFECT_AVAILABLE,

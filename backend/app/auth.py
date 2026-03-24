@@ -1,228 +1,105 @@
 """
-Authentication Module - JWT Token Management
-Includes access tokens and refresh tokens
+Authentication helpers (MongoDB-compatible).
 """
+
 import secrets
 from datetime import datetime, timedelta, timezone
-from typing import Any, Optional
+from typing import Optional
 
 from app.config import settings
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
-# Password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-# ============================================================================
-# PASSWORD MANAGEMENT
-# ============================================================================
 
 
 def hash_password(password: str) -> str:
-    """Hash password using bcrypt"""
     return pwd_context.hash(password)
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verify password against hash"""
     return pwd_context.verify(plain_password, hashed_password)
 
 
-# ============================================================================
-# JWT TOKEN GENERATION
-# ============================================================================
-
-
 def create_access_token(user_id: str, expires_delta: Optional[timedelta] = None) -> str:
-    """
-    Create JWT access token
-
-    Args:
-        user_id: User identifier
-        expires_delta: Token lifetime (default from settings)
-
-    Returns:
-        JWT token string
-    """
-    if expires_delta:
-        expire = datetime.now(timezone.utc) + expires_delta
-    else:
-        expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-
+    expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES))
     to_encode = {"sub": user_id, "exp": expire, "type": "access"}
-
-    encoded_jwt = jwt.encode(to_encode, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
-    return encoded_jwt
-
-
-def create_refresh_token(user_id: str, db: Session, ip_address: str = None, user_agent: str = None) -> str:
-    """
-    Create refresh token and store in database
-
-    Args:
-        user_id: User identifier
-        db: Database session
-        ip_address: Client IP
-        user_agent: Client user agent
-
-    Returns:
-        Refresh token string
-    """
-    # Generate secure random token
-    token = secrets.token_urlsafe(32)
-
-    # Calculate expiration
-    expires_at = datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
-
-    # Store in database
-    refresh_token = RefreshToken(
-        token=token, user_id=user_id, expires_at=expires_at, ip_address=ip_address, user_agent=user_agent
-    )
-
-    # Mock add operation
-    # Mock commit operation
-
-    return token
+    return jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
 
 def verify_token(token: str) -> Optional[str]:
-    """
-    Verify JWT token and extract user_id
-
-    Args:
-        token: JWT token string
-
-    Returns:
-        user_id if valid, None otherwise
-    """
     try:
-        payload = jwt.decode(token, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM])
-        user_id: str = payload.get("sub")
-        return user_id
+        payload = jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM])
+        return payload.get("sub")
     except JWTError:
         return None
 
 
-def verify_refresh_token(token: str, db: Session) -> Optional[str]:
-    """
-    Verify refresh token from database
+async def create_refresh_token(
+    user_id: str,
+    db,
+    ip_address: str | None = None,
+    user_agent: str | None = None,
+) -> str:
+    token = secrets.token_urlsafe(32)
+    expires_at = datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+    await db.refresh_tokens.insert_one(
+        {
+            "token": token,
+            "user_id": user_id,
+            "expires_at": expires_at,
+            "is_revoked": False,
+            "created_at": datetime.now(timezone.utc),
+            "ip_address": ip_address,
+            "user_agent": user_agent,
+        }
+    )
+    return token
 
-    Args:
-        token: Refresh token string
-        db: Database session
 
-    Returns:
-        user_id if valid, None otherwise
-    """
-    refresh = (
-        db.query(RefreshToken)
-        .filter(
-            RefreshToken.token == token,
-            RefreshToken.is_revoked == False,
-            RefreshToken.expires_at > datetime.now(timezone.utc),
-        )
-        .first()
+async def verify_refresh_token(token: str, db) -> Optional[str]:
+    refresh = await db.refresh_tokens.find_one(
+        {"token": token, "is_revoked": False, "expires_at": {"$gt": datetime.now(timezone.utc)}}
+    )
+    if not refresh:
+        return None
+    return refresh.get("user_id")
+
+
+async def revoke_refresh_token(token: str, db, reason: str = "user_logout"):
+    await db.refresh_tokens.update_one(
+        {"token": token},
+        {"$set": {"is_revoked": True, "revoked_at": datetime.now(timezone.utc), "revoked_reason": reason}},
     )
 
-    if refresh:
-        return refresh.user_id
-    return None
 
-
-def revoke_refresh_token(token: str, db: Session, reason: str = "user_logout"):
-    """Revoke refresh token"""
-    refresh = None  # Mock database operation
-    if refresh:
-        refresh.is_revoked = True
-        refresh.revoked_at = datetime.now(timezone.utc)
-        refresh.revoked_reason = reason
-        # Mock commit operation
-
-
-# ============================================================================
-# USER AUTHENTICATION
-# ============================================================================
-
-
-def authenticate_user(username: str, password: str, db: Session) -> Optional[User]:
-    """
-    Authenticate user with username/password
-
-    Args:
-        username: Username or email
-        password: Plain text password
-        db: Database session
-
-    Returns:
-        User object if authenticated, None otherwise
-    """
-    user = None  # Mock database operation
-
+async def authenticate_user(username: str, password: str, db) -> Optional[dict]:
+    user = await db.users.find_one({"$or": [{"username": username}, {"email": username}], "is_active": True})
     if not user:
         return None
 
-    if not verify_password(password, user.password_hash):
+    password_hash = user.get("password_hash") or user.get("hashed_password")
+    if not password_hash:
+        return None
+    if not verify_password(password, password_hash):
         return None
 
-    if not user.is_active:
-        return None
-
-    # Update last login
-    user.last_login = datetime.now(timezone.utc)
-    # Mock commit operation
-
+    await db.users.update_one({"_id": user["_id"]}, {"$set": {"last_login": datetime.now(timezone.utc)}})
     return user
 
 
-def get_current_user(token: str, db: Session) -> Optional[User]:
-    """
-    Get current user from JWT token
-
-    Args:
-        token: JWT access token
-        db: Database session
-
-    Returns:
-        User object if valid, None otherwise
-    """
+async def get_current_user(token: str, db) -> Optional[dict]:
     user_id = verify_token(token)
     if not user_id:
         return None
-
-    user = None  # Mock database operation
-    if not user or not user.is_active:
-        return None
-
-    return user
+    return await db.users.find_one({"$or": [{"_id": user_id}, {"username": user_id}], "is_active": True})
 
 
-# ============================================================================
-# TOKEN REFRESH
-# ============================================================================
-
-
-def refresh_access_token(refresh_token: str, db: Session) -> Optional[dict]:
-    """
-    Generate new access token using refresh token
-
-    Args:
-        refresh_token: Refresh token string
-        db: Database session
-
-    Returns:
-        New token pair if valid, None otherwise
-    """
-    user_id = verify_refresh_token(refresh_token, db)
+async def refresh_access_token(refresh_token: str, db) -> Optional[dict]:
+    user_id = await verify_refresh_token(refresh_token, db)
     if not user_id:
         return None
-
-    user = None  # Mock database operation
-    if not user or not user.is_active:
-        return None
-
-    # Generate new access token
     access_token = create_access_token(user_id)
-
     return {
         "access_token": access_token,
         "token_type": "bearer",
@@ -230,28 +107,14 @@ def refresh_access_token(refresh_token: str, db: Session) -> Optional[dict]:
     }
 
 
-# ============================================================================
-# CLEANUP FUNCTIONS
-# ============================================================================
+async def cleanup_expired_tokens(db) -> int:
+    result = await db.refresh_tokens.delete_many({"expires_at": {"$lte": datetime.now(timezone.utc)}})
+    return int(result.deleted_count)
 
 
-def cleanup_expired_tokens(db: Session):
-    """Remove expired refresh tokens from database"""
-    expired_tokens = None  # Mock database operation
-    count = expired_tokens.count()
-    expired_tokens.delete()
-    # Mock commit operation
-    return count
-
-
-def revoke_all_user_tokens(user_id: str, db: Session, reason: str = "security"):
-    """Revoke all refresh tokens for a user"""
-    tokens = None  # Mock database operation
-
-    for token in tokens:
-        token.is_revoked = True
-        token.revoked_at = datetime.now(timezone.utc)
-        token.revoked_reason = reason
-
-    # Mock commit operation
-    return len(tokens)
+async def revoke_all_user_tokens(user_id: str, db, reason: str = "security") -> int:
+    result = await db.refresh_tokens.update_many(
+        {"user_id": user_id, "is_revoked": False},
+        {"$set": {"is_revoked": True, "revoked_at": datetime.now(timezone.utc), "revoked_reason": reason}},
+    )
+    return int(result.modified_count)

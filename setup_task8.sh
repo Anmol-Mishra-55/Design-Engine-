@@ -66,6 +66,7 @@ pytest-cov==4.1.0
 sentry-sdk==1.38.0
 prometheus-client==0.19.0
 EOF
+EOF
 
 # Install dependencies
 python -m venv venv

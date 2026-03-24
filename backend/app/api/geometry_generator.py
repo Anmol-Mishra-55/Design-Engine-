@@ -10,7 +10,8 @@ import struct
 from datetime import datetime
 from typing import Any, Dict, List
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException
+from app.auth_mongodb import get_current_user
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
@@ -93,7 +94,9 @@ glb_generator = GLBGenerator()
 
 
 @router.post("/generate", response_model=GeometryResponse)
-async def generate_geometry(request: GeometryRequest, background_tasks: BackgroundTasks):
+async def generate_geometry(
+    request: GeometryRequest, background_tasks: BackgroundTasks, current_user: str = Depends(get_current_user)
+):
     """Generate 3D geometry file from design specification"""
 
     start_time = datetime.now()

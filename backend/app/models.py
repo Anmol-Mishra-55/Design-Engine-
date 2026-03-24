@@ -1,26 +1,14 @@
-"""
-Complete SQLAlchemy Database Models
-All tables with relationships, indexes, and constraints
-"""
-import uuid
-from datetime import datetime, timezone
+# MongoDB Models - No SQLAlchemy needed
+# This file is kept for compatibility but all models moved to models_mongodb.py
 
-    JSON,
-    Boolean,
-    CheckConstraint,
-    Column,
-    DateTime,
-    Float,
-    ForeignKey,
-    Index,
-    Integer,
-    String,
-    Text,
-    UniqueConstraint,
-)
-from sqlalchemy.dialects.postgresql import ARRAY, JSONB, UUID
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
+print("Warning: models.py contains SQLAlchemy models but project uses MongoDB")
+print("Use models_mongodb.py for MongoDB-compatible Pydantic models")
+
+# Import MongoDB models for compatibility
+try:
+    from app.models_mongodb import *
+except ImportError:
+    print("Could not import MongoDB models")
 
 Base = declarative_base()
 

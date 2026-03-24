@@ -2,7 +2,7 @@
 # Backup script for production data
 
 BACKUP_DIR="backups/$(date +%Y%m%d)"
-mkdir -p $BACKUP_DIR
+mkdir -p "$BACKUP_DIR"
 
 echo "Creating backup in $BACKUP_DIR..."
 
@@ -12,11 +12,11 @@ docker-compose -f deployment/docker-compose.yml exec db pg_dump -U user backend_
 
 # Application data backup
 echo "Backing up application data..."
-docker cp $(docker-compose -f deployment/docker-compose.yml ps -q backend):/app/data $BACKUP_DIR/app_data
+docker cp "$(docker-compose -f deployment/docker-compose.yml ps -q backend)":/app/data "$BACKUP_DIR/app_data"
 
 # Reports backup
 echo "Backing up reports..."
-docker cp $(docker-compose -f deployment/docker-compose.yml ps -q backend):/app/reports $BACKUP_DIR/reports
+docker cp "$(docker-compose -f deployment/docker-compose.yml ps -q backend)":/app/reports "$BACKUP_DIR/reports"
 
 # Configuration backup
 echo "Backing up configuration..."

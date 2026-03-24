@@ -1,48 +1,43 @@
 """
-Database Validator - Ensure all database models are properly initialized
-Validates database connections and creates missing tables
+Database Validator - MongoDB Version
+Validates MongoDB connections and collections
 """
 
 import logging
 from typing import Dict, List, Optional
 
-from sqlalchemy.exc import SQLAlchemyError
-
 logger = logging.getLogger(__name__)
 
 
-class DatabaseValidator:
-    """Validate and initialize database components"""
+class MongoDBValidator:
+    """Validate and initialize MongoDB components"""
 
-    def __init__(self, engine, session_factory):
-        self.engine = engine
-        self.session_factory = session_factory
+    def __init__(self, db):
+        self.db = db
 
-    def validate_connection(self) -> bool:
-        """Test database connection"""
+    async def validate_connection(self) -> bool:
+        """Test MongoDB connection"""
         try:
-            with self.engine.connect() as conn:
-                conn.execute(text("SELECT 1"))
-            logger.info("✅ Database connection successful")
+            await self.db.command("ping")
+            logger.info("✅ MongoDB connection successful")
             return True
         except Exception as e:
-            logger.error(f"❌ Database connection failed: {e}")
+            logger.error(f"❌ MongoDB connection failed: {e}")
             return False
 
-    def get_existing_tables(self) -> List[str]:
-        """Get list of existing tables"""
+    async def get_existing_collections(self) -> List[str]:
+        """Get list of existing collections"""
         try:
-            inspector = inspect(self.engine)
-            tables = inspector.get_table_names()
-            logger.info(f"Found {len(tables)} existing tables: {tables}")
-            return tables
+            collections = await self.db.list_collection_names()
+            logger.info(f"Found {len(collections)} existing collections: {collections}")
+            return collections
         except Exception as e:
-            logger.error(f"Failed to get table list: {e}")
+            logger.error(f"Failed to get collection list: {e}")
             return []
 
-    def validate_required_tables(self) -> Dict[str, bool]:
-        """Validate that all required tables exist"""
-        required_tables = [
+    async def validate_required_collections(self) -> Dict[str, bool]:
+        """Validate that all required collections exist"""
+        required_collections = [
             "specs",
             "evaluations",
             "users",
@@ -54,92 +49,77 @@ class DatabaseValidator:
             "refresh_tokens",
         ]
 
-        existing_tables = self.get_existing_tables()
+        existing_collections = await self.get_existing_collections()
         results = {}
 
-        for table in required_tables:
-            results[table] = table in existing_tables
+        for collection in required_collections:
+            results[collection] = collection in existing_collections
 
         return results
 
-    def create_missing_tables(self):
-        """Create missing tables using SQLAlchemy models"""
+    async def create_missing_collections(self):
+        """Create missing collections with indexes"""
         try:
-            # Create all tables defined in models
-            Base.metadata.create_all(bind=self.engine)
-            logger.info("✅ Database tables created/updated")
+            # Collections are created automatically in MongoDB when first document is inserted
+            # But we can create indexes
+            await self.create_indexes()
+            logger.info("✅ MongoDB collections and indexes ready")
             return True
 
         except Exception as e:
-            logger.error(f"❌ Failed to create tables: {e}")
+            logger.error(f"❌ Failed to create collections: {e}")
             return False
 
-    def validate_table_schemas(self) -> Dict[str, Dict]:
-        """Validate table schemas match model definitions"""
-        results = {}
-
+    async def create_indexes(self):
+        """Create necessary indexes"""
         try:
-            inspector = inspect(self.engine)
+            # User collection indexes
+            await self.db.users.create_index("username", unique=True)
+            await self.db.users.create_index("email", unique=True)
 
-            for table_name in self.get_existing_tables():
-                try:
-                    columns = inspector.get_columns(table_name)
-                    indexes = inspector.get_indexes(table_name)
+            # Spec collection indexes
+            await self.db.specs.create_index("user_id")
+            await self.db.specs.create_index("city")
 
-                    results[table_name] = {"columns": len(columns), "indexes": len(indexes), "valid": True}
+            # Other indexes as needed
+            await self.db.evaluations.create_index("spec_id")
+            await self.db.iterations.create_index("spec_id")
+            await self.db.rl_feedback.create_index("spec_id")
 
-                except Exception as e:
-                    results[table_name] = {"error": str(e), "valid": False}
+            logger.info("✅ MongoDB indexes created")
 
         except Exception as e:
-            logger.error(f"Schema validation failed: {e}")
+            logger.error(f"Failed to create indexes: {e}")
 
-        return results
-
-    def test_crud_operations(self) -> bool:
+    async def test_crud_operations(self) -> bool:
         """Test basic CRUD operations"""
         try:
             import uuid
             from datetime import datetime
 
-            with self.session_factory() as session:
-                # Create test user first
-                test_user_id = f"test_user_{uuid.uuid4().hex[:8]}"
-                test_user = User(
-                    id=test_user_id,
-                    username=f"testuser_{uuid.uuid4().hex[:6]}",
-                    email=f"test_{uuid.uuid4().hex[:6]}@example.com",
-                    password_hash="test_hash",
-                )
-                session.add(test_user)
-                session.commit()
+            # Test CREATE
+            test_doc = {
+                "_id": f"test_{uuid.uuid4().hex[:8]}",
+                "test_field": "test_value",
+                "created_at": datetime.utcnow(),
+            }
 
-                # Test CREATE Spec
-                test_spec = Spec(
-                    id=f"test_{uuid.uuid4().hex[:8]}",
-                    user_id=test_user_id,
-                    prompt="Test design prompt",
-                    city="Mumbai",
-                    spec_json={"test": True},
-                    design_type="test",
-                    lm_provider="test",
-                )
+            result = await self.db.test_collection.insert_one(test_doc)
 
-                session.add(test_spec)
-                session.commit()
+            # Test READ
+            retrieved = await self.db.test_collection.find_one({"_id": test_doc["_id"]})
+            assert retrieved is not None
 
-                # Test READ
-                retrieved = session.query(Spec).filter(Spec.id == test_spec.id).first()
-                assert retrieved is not None
+            # Test UPDATE
+            await self.db.test_collection.update_one(
+                {"_id": test_doc["_id"]}, {"$set": {"test_field": "updated_value"}}
+            )
 
-                # Test UPDATE
-                retrieved.prompt = "Updated test prompt"
-                session.commit()
+            # Test DELETE (cleanup)
+            await self.db.test_collection.delete_one({"_id": test_doc["_id"]})
 
-                # Test DELETE (cleanup)
-                session.delete(retrieved)
-                session.delete(test_user)
-                session.commit()
+            # Drop test collection
+            await self.db.test_collection.drop()
 
             logger.info("✅ CRUD operations test passed")
             return True
@@ -148,62 +128,50 @@ class DatabaseValidator:
             logger.error(f"❌ CRUD operations test failed: {e}")
             return False
 
-    def run_full_validation(self) -> Dict[str, bool]:
+    async def run_full_validation(self) -> Dict[str, bool]:
         """Run complete database validation"""
-        results = {"connection": False, "tables_exist": False, "schemas_valid": False, "crud_works": False}
+        results = {"connection": False, "collections_ready": False, "indexes_created": False, "crud_works": False}
 
         # Test connection
-        results["connection"] = self.validate_connection()
+        results["connection"] = await self.validate_connection()
         if not results["connection"]:
             return results
 
-        # Create missing tables
-        self.create_missing_tables()
-
-        # Validate tables exist
-        table_results = self.validate_required_tables()
-        results["tables_exist"] = all(table_results.values())
-
-        if not results["tables_exist"]:
-            missing_tables = [name for name, exists in table_results.items() if not exists]
-            logger.warning(f"Missing tables: {missing_tables}")
-
-        # Validate schemas
-        schema_results = self.validate_table_schemas()
-        results["schemas_valid"] = all(result.get("valid", False) for result in schema_results.values())
+        # Create missing collections and indexes
+        results["collections_ready"] = await self.create_missing_collections()
+        results["indexes_created"] = results["collections_ready"]
 
         # Test CRUD operations
-        if results["tables_exist"]:
-            results["crud_works"] = self.test_crud_operations()
+        if results["collections_ready"]:
+            results["crud_works"] = await self.test_crud_operations()
 
         return results
 
 
-def validate_database():
-    """Convenience function to validate database on startup"""
+async def validate_database():
+    """Convenience function to validate MongoDB on startup"""
     try:
-        from app.database_mongodb import engine, get_db
-        from sqlalchemy.orm import sessionmaker
+        from app.database_mongodb import get_database
 
-        SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-        validator = DatabaseValidator(engine, SessionLocal)
+        db = get_database()
+        validator = MongoDBValidator(db)
 
-        results = validator.run_full_validation()
+        results = await validator.run_full_validation()
 
         # Log results
-        logger.info("Database Validation Results:")
+        logger.info("MongoDB Validation Results:")
         for check, passed in results.items():
             status = "✅ PASS" if passed else "❌ FAIL"
             logger.info(f"  {check}: {status}")
 
         all_passed = all(results.values())
         if all_passed:
-            logger.info("🎉 Database validation completed successfully")
+            logger.info("🎉 MongoDB validation completed successfully")
         else:
-            logger.warning("⚠️ Some database validation checks failed")
+            logger.warning("⚠️ Some MongoDB validation checks failed")
 
         return all_passed
 
     except Exception as e:
-        logger.error(f"Database validation crashed: {e}")
+        logger.error(f"MongoDB validation crashed: {e}")
         return False

@@ -8,13 +8,14 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
+from app.auth_mongodb import get_current_user
 from app.core_bucket_pipeline import CoreBucketCanonicalOrchestrator
 from app.prompt_runner_adapter import PromptRunnerUnavailableError
 
 # Import schemas from app.schemas package
 from app.schemas import GenerateRequest, GenerateResponse
 from app.spec_validator import SpecValidationError, validate_spec_json, validate_with_warnings
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -72,7 +73,7 @@ def _extract_export_urls(spec_json: Dict[str, Any], spec_id: str) -> Dict[str, s
     return urls
 
 
-def _save_spec_to_database(
+async def _save_spec_to_database(
     spec_id: str,
     request: GenerateRequest,
     spec_json: Dict[str, Any],
@@ -82,8 +83,6 @@ def _save_spec_to_database(
     generation_time_ms: int,
 ) -> str:
     """Persist generated spec. Non-fatal on DB failure."""
-    import asyncio
-
     from app.database_mongodb import get_database
 
     effective_user_id = request.user_id
@@ -93,18 +92,18 @@ def _save_spec_to_database(
         db = get_database()
 
         # Create user if not exists
-        user = asyncio.run(db.users.find_one({"$or": [{"_id": request.user_id}, {"username": request.user_id}]}))
+        user = await db.users.find_one({"$or": [{"_id": request.user_id}, {"username": request.user_id}]})
         if not user:
             user_data = {
                 "_id": request.user_id,
                 "username": request.user_id,
                 "email": f"{request.user_id}@example.com",
-                "password_hash": "dummy_hash",
+                "password_hash": "auto_generated_service_account",
                 "full_name": f"User {request.user_id}",
                 "is_active": True,
                 "created_at": datetime.now(timezone.utc),
             }
-            asyncio.run(db.users.insert_one(user_data))
+            await db.users.insert_one(user_data)
             logger.info("Created user %s", request.user_id)
 
         effective_user_id = request.user_id
@@ -129,7 +128,7 @@ def _save_spec_to_database(
             "created_at": datetime.now(timezone.utc),
         }
 
-        asyncio.run(db.specs.insert_one(spec_data))
+        await db.specs.insert_one(spec_data)
         logger.info("Saved spec %s to database", spec_id)
 
     except Exception as db_error:
@@ -139,7 +138,7 @@ def _save_spec_to_database(
 
 
 @router.post("/generate", response_model=GenerateResponse, status_code=status.HTTP_201_CREATED)
-async def generate_design(request: GenerateRequest):
+async def generate_design(request: GenerateRequest, current_user: str = Depends(get_current_user)):
     """
     Generate a design using canonical routing:
     User -> Core -> Bucket -> Prompt Runner Adapter -> Geometry -> Bucket -> Core Response
@@ -210,7 +209,7 @@ async def generate_design(request: GenerateRequest):
     preview_url = export_urls["glb"]
     compliance_check_id = f"check_{spec_id}"
 
-    effective_user_id = _save_spec_to_database(
+    effective_user_id = await _save_spec_to_database(
         spec_id=spec_id,
         request=request,
         spec_json=spec_json,
@@ -240,11 +239,15 @@ async def generate_design(request: GenerateRequest):
 
 
 @router.get("/specs/{spec_id}", response_model=GenerateResponse)
-async def get_spec(spec_id: str):
+async def get_spec(spec_id: str, current_user: str = Depends(get_current_user)):
     """Retrieve existing specification by ID."""
     from app.database_mongodb import get_database
 
-    db = get_database()
+    try:
+        db = get_database()
+    except RuntimeError:
+        raise HTTPException(status_code=503, detail="Database unavailable")
+
     try:
         db_spec = await db.specs.find_one({"_id": spec_id})
         if not db_spec:
@@ -284,6 +287,8 @@ async def get_spec(spec_id: str):
             stl_url=export_urls.get("stl"),
             step_url=export_urls.get("step"),
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error retrieving spec {spec_id}: {e}")
         raise HTTPException(status_code=500, detail="Database error")

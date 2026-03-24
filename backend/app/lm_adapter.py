@@ -32,7 +32,7 @@ if ANTHROPIC_API_KEY and len(ANTHROPIC_API_KEY) < 20:
     ANTHROPIC_API_KEY = None
 
 if USE_AI_MODEL and not (GROQ_API_KEY or OPENAI_API_KEY or ANTHROPIC_API_KEY):
-    logger.warning("No valid AI API keys found, will use template fallback")
+    logger.debug("No AI API keys configured, will use template fallback (optional)")
 
 
 async def run_local_lm(prompt: str, params: dict) -> dict:

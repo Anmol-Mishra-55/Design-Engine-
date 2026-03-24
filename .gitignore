@@ -41,6 +41,7 @@ lm_usage.log
 *.sqlite3
 
 # Environment Variables
+.env
 .env.local
 .env.production
 

@@ -34,14 +34,14 @@ class DesignRequest(BaseModel):
     prompt: str = Field(description="Natural language design prompt")
     city: str = Field(description="City for compliance (Mumbai, Pune, etc.)")
     project_id: Optional[str] = None
-    context: Optional[Dict] = {}
+    context: Optional[Dict] = Field(default_factory=dict)
 
 
 class ComplianceResult(BaseModel):
     """Compliance check result"""
 
     compliant: bool
-    violations: List[str] = []
+    violations: List[str] = Field(default_factory=list)
     geometry_url: Optional[str] = None
     case_id: Optional[str] = None
 

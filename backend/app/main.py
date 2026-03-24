@@ -32,7 +32,7 @@ from app.api import (
     workflow_consolidation,
 )
 from app.config import settings
-from app.database_mongodb import close_mongo_connection, connect_to_mongo, get_database
+from app.database_mongodb import close_mongo_connection, connect_to_mongo
 from app.multi_city.city_data_loader import city_router
 from app.utils import setup_logging
 from fastapi import FastAPI, HTTPException, Request
@@ -60,7 +60,7 @@ if settings.SENTRY_DSN:
     )
     logger.info("Sentry initialized")
 else:
-    logger.warning("Sentry not configured")
+    logger.debug("Sentry not configured (optional)")
 
 try:
     from app.gpu_detector import gpu_detector
@@ -72,7 +72,7 @@ except ImportError:
 if settings.YOTTA_API_KEY and settings.YOTTA_URL:
     logger.info(f"Yotta configured: {settings.YOTTA_URL}")
 else:
-    logger.warning("Yotta not configured")
+    logger.debug("Yotta not configured (optional)")
 
 security = HTTPBearer()
 IS_DEMO_MODE = os.getenv("DEMO_MODE", "false").lower() == "true"
@@ -94,17 +94,21 @@ async def startup_event():
     print("Server URL: http://0.0.0.0:8000")
     print("API Docs: http://0.0.0.0:8000/docs")
     print("Health Check: http://0.0.0.0:8000/health")
-    print("Database: MongoDB ONLY")
-    print("Storage: MongoDB GridFS ONLY")
+    print("Database: MongoDB (attempting connection...)")
+    print("Storage: MongoDB GridFS")
     print("Request logging is ENABLED")
     print("=" * 70 + "\n")
 
-    # Connect to MongoDB (primary and only database)
-    await connect_to_mongo(settings.MONGODB_URL, settings.MONGODB_DATABASE)
-    logger.info("Design Engine API Server Started Successfully")
-    logger.info("MongoDB connected successfully - using MongoDB exclusively")
-    logger.info(f"Database: {settings.MONGODB_DATABASE}")
-    logger.info(f"GridFS Buckets: files, previews, geometry, compliance")
+    # Try to connect to MongoDB (non-blocking)
+    try:
+        await connect_to_mongo(settings.MONGODB_URL, settings.MONGODB_DATABASE)
+        logger.info("✅ MongoDB connected successfully")
+        logger.info(f"Database: {settings.MONGODB_DATABASE}")
+        logger.info(f"GridFS Buckets: files, previews, geometry, compliance")
+    except Exception as e:
+        logger.warning(f"⚠️ MongoDB connection failed: {e}")
+        logger.warning("🔧 Server will start without database (some features disabled)")
+        logger.warning("💡 Fix MongoDB connection and restart for full functionality")
 
 
 @app.on_event("shutdown")
@@ -146,18 +150,21 @@ if settings.ENABLE_METRICS:
 else:
     logger.info("Metrics disabled")
 
+cors_origins = list(settings.CORS_ORIGINS or [])
+if not cors_origins:
+    cors_origins = ["http://localhost:3000", "http://localhost:3001"]
+if "*" in cors_origins and settings.CORS_CREDENTIALS:
+    logger.warning("CORS wildcard '*' removed because credentials are enabled")
+    cors_origins = [origin for origin in cors_origins if origin != "*"]
+    if not cors_origins:
+        cors_origins = ["http://localhost:3000"]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:3001",
-        "https://staging.bhiv.com",
-        "https://app.bhiv.com",
-        "*",
-    ],
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "X-Force-Update"],
+    allow_origins=cors_origins,
+    allow_credentials=settings.CORS_CREDENTIALS,
+    allow_methods=settings.CORS_METHODS,
+    allow_headers=settings.CORS_HEADERS,
 )
 
 

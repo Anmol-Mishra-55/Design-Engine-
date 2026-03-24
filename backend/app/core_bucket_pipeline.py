@@ -17,6 +17,7 @@ from typing import Any, Dict, List, Tuple
 
 from app.config import settings
 from app.prompt_runner_adapter import PromptRunnerAdapterBridge, PromptRunnerUnavailableError
+from app.storage import upload_to_bucket
 
 logger = logging.getLogger(__name__)
 

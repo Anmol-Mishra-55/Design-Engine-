@@ -3,8 +3,25 @@ import os
 
 from app.auth_mongodb import get_current_user, get_db
 from app.compute_routing import route, run_yotta
-from app.opt_rl.env_spec import SpecEditEnv
-from app.opt_rl.train_ppo import train_opt_ppo
+
+try:
+    from app.opt_rl.env_spec import SpecEditEnv
+
+    ENV_AVAILABLE = True
+except ImportError as e:
+    ENV_AVAILABLE = False
+    SpecEditEnv = None
+    import logging
+
+    logging.getLogger(__name__).warning(f"RL environment not available: {e}")
+try:
+    from app.opt_rl.train_ppo import train_opt_ppo
+
+    RL_AVAILABLE = True
+except ImportError:
+    RL_AVAILABLE = False
+    train_opt_ppo = None
+    # Silently skip - this is optional
 from app.rlhf.build_dataset import build_preferences_from_db
 from app.rlhf.reward_model import SimpleRewardModel, score_spec
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -226,6 +243,9 @@ async def train_opt_ep(params: dict, user=Depends(get_current_user)):
     """
     Trains the PPO spec-edit policy. params: {"steps": 200000}
     """
+    if not RL_AVAILABLE:
+        raise HTTPException(501, "RL training not available - install stable-baselines3 and gymnasium")
+
     if not os.path.exists("models_ckpt/rm.pt"):
         raise HTTPException(400, "Reward model not found. Train RLHF first.")
 
