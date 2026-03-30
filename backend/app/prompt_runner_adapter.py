@@ -1,13 +1,14 @@
 """
-Prompt Runner adapter bridge.
+Prompt Runner Adapter - Day 1 Canonical Implementation
 
-Execution priority:
-  1. Real AI generation via lm_adapter (Groq llama-3.3-70b → OpenAI gpt-4o-mini → Anthropic claude)
-  2. Enhanced template fallback (lm_adapter_enhanced) if all AI keys are missing/exhausted
-  3. Basic template fallback as last resort
+Uses Siddhesh's platform_adapter.py as the EXECUTION AUTHORITY:
+  1. Call platform_adapter.run_from_platform() for domain/intent/entity extraction
+  2. Convert PromptInstruction → spec_json
+  3. Use AI (Groq/OpenAI/Anthropic) to enrich the spec_json
+  4. Return deterministic spec_json to Core
 
-Platform adapter (platform_adapter.py) is used for domain/intent/entity extraction
-to enrich the AI prompt context — it is NOT the spec generator.
+Design Engine NO LONGER generates designs independently.
+Prompt Runner (via platform_adapter) is the execution authority.
 """
 
 import hashlib
@@ -26,96 +27,17 @@ class PromptRunnerUnavailableError(RuntimeError):
 
 
 class PromptRunnerAdapterBridge:
-    """Bridge that routes generate requests through the real AI pipeline."""
+    """
+    Day 1 Canonical Adapter: Uses Siddhesh's platform_adapter.py
+    as the execution authority for all design generation.
+    """
 
     def __init__(self):
-        self.mode = getattr(settings, "PROMPT_RUNNER_MODE", "ai").lower()
+        self.platform_adapter = None
+        self._initialize_platform_adapter()
 
-    async def run_from_platform(self, payload: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Generate a spec_json from the request payload.
-
-        Priority:
-          1. Groq llama-3.3-70b  (if GROQ_API_KEY set)
-          2. OpenAI gpt-4o-mini  (if OPENAI_API_KEY set)
-          3. Anthropic claude    (if ANTHROPIC_API_KEY set)
-          4. Enhanced template fallback
-          5. Basic template fallback
-        """
-        prompt = str(payload.get("prompt", "")).strip()
-        city = payload.get("city") or "Mumbai"
-        style = payload.get("style") or "modern"
-        user_id = payload.get("user_id") or "unknown"
-        constraints = payload.get("constraints") if isinstance(payload.get("constraints"), dict) else {}
-        context = payload.get("context") if isinstance(payload.get("context"), dict) else {}
-
-        # Enrich params with platform adapter entities (domain/intent/dimensions)
-        enriched_params = self._enrich_with_platform_adapter(prompt, city, style, user_id, constraints, context)
-
-        # Call the real AI pipeline
-        from app.lm_adapter import run_local_lm
-
-        try:
-            lm_result = await run_local_lm(prompt, enriched_params)
-        except Exception as exc:
-            logger.error("lm_adapter.run_local_lm failed: %s", exc)
-            raise PromptRunnerUnavailableError(f"AI generation pipeline failed: {exc}") from exc
-
-        spec_json = lm_result.get("spec_json")
-        if not isinstance(spec_json, dict):
-            raise PromptRunnerUnavailableError("AI pipeline returned invalid spec_json")
-
-        provider = lm_result.get("provider", "unknown")
-        digest = self._deterministic_hash(payload)
-
-        # Ensure required structural fields
-        spec_json.setdefault("city", city)
-        spec_json.setdefault("style", style)
-        spec_json.setdefault("stories", 1)
-
-        dimensions = spec_json.setdefault("dimensions", {})
-        for key, default in (("width", 10.0), ("length", 10.0), ("height", 3.0)):
-            if not isinstance(dimensions.get(key), (int, float)) or dimensions[key] <= 0:
-                dimensions[key] = default
-
-        metadata = spec_json.setdefault("metadata", {})
-        metadata["execution_source"] = provider
-        metadata["deterministic_hash"] = digest
-
-        logger.info("✅ generate pipeline complete — provider=%s", provider)
-
-        return {
-            "spec_json": spec_json,
-            "provider": provider,
-            "execution_mode": "canonical",
-            "deterministic_hash": digest,
-        }
-
-    # ------------------------------------------------------------------
-    # Platform adapter enrichment (domain/intent/entity extraction only)
-    # ------------------------------------------------------------------
-
-    def _enrich_with_platform_adapter(
-        self,
-        prompt: str,
-        city: str,
-        style: str,
-        user_id: str,
-        constraints: Dict[str, Any],
-        context: Dict[str, Any],
-    ) -> Dict[str, Any]:
-        """
-        Use platform_adapter for NLP entity extraction to enrich the params
-        passed to the AI model. Never used as the spec generator.
-        """
-        params: Dict[str, Any] = {
-            "city": city,
-            "style": style,
-            "user_id": user_id,
-            "constraints": constraints,
-            "context": context,
-        }
-
+    def _initialize_platform_adapter(self):
+        """Initialize Siddhesh's platform_adapter.py"""
         try:
             import sys
             from pathlib import Path
@@ -124,34 +46,210 @@ class PromptRunnerAdapterBridge:
             if str(project_root) not in sys.path:
                 sys.path.insert(0, str(project_root))
 
-            from platform_adapter import run_prompt
+            from platform_adapter import PlatformAdapter
 
-            result = run_prompt(prompt)
-            if result.get("status") == "success":
-                instruction = result.get("instruction", {})
-                data = instruction.get("data", {})
-                extracted_params = data.get("parameters", {})
+            self.platform_adapter = PlatformAdapter()
+            logger.info("✅ Prompt Runner: Siddhesh's platform_adapter initialized")
 
-                # Pull out dimensions if the platform adapter found them
-                dims = {}
-                for key in ("width", "length", "height", "plot_area", "floors", "stories"):
-                    val = extracted_params.get(key)
-                    if isinstance(val, (int, float)) and val > 0:
-                        dims[key] = val
+        except ImportError as e:
+            logger.error(f"❌ Failed to import platform_adapter.py: {e}")
+            raise PromptRunnerUnavailableError(f"Cannot load platform_adapter.py: {e}")
 
-                if dims:
-                    params["extracted_dimensions"] = dims
-                    logger.info("Platform adapter extracted dimensions: %s", dims)
+    async def run_from_platform(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        DAY 1 CANONICAL FLOW:
+        1. Call Siddhesh's platform_adapter.run_from_platform() (execution authority)
+        2. Extract PromptInstruction (domain/intent/entities)
+        3. Convert to spec_json using AI enrichment
+        4. Return deterministic spec_json
+        """
+        prompt = str(payload.get("prompt", "")).strip()
+        city = payload.get("city") or "Mumbai"
+        style = payload.get("style") or "modern"
+        user_id = payload.get("user_id") or "unknown"
+        constraints = payload.get("constraints") if isinstance(payload.get("constraints"), dict) else {}
+        context = payload.get("context") if isinstance(payload.get("context"), dict) else {}
 
-                # Merge any budget/style hints
-                budget = extracted_params.get("budget")
-                if isinstance(budget, (int, float)) and budget > 0:
-                    params.setdefault("context", {})["budget"] = budget
+        logger.info(f"🎯 Day 1 Flow: Calling platform_adapter.run_from_platform()")
+
+        # STEP 1: Call Siddhesh's platform_adapter (EXECUTION AUTHORITY)
+        try:
+            platform_result = self.platform_adapter.process(prompt)
+
+            if platform_result.get("status") != "success":
+                raise PromptRunnerUnavailableError(f"Platform adapter failed: {platform_result.get('error')}")
+
+            instruction = platform_result.get("instruction", {})
+            logger.info(f"✅ Platform adapter: module={instruction.get('module')}, intent={instruction.get('intent')}")
 
         except Exception as exc:
-            logger.debug("Platform adapter enrichment skipped: %s", exc)
+            logger.error(f"❌ Platform adapter failed: {exc}")
+            raise PromptRunnerUnavailableError(f"Platform adapter execution failed: {exc}")
 
-        return params
+        # STEP 2: Convert PromptInstruction → spec_json
+        spec_json = await self._instruction_to_spec_json(
+            instruction=instruction, prompt=prompt, city=city, style=style, constraints=constraints, context=context
+        )
+
+        digest = self._deterministic_hash(payload)
+
+        metadata = spec_json.setdefault("metadata", {})
+        metadata["execution_authority"] = "platform_adapter"
+        metadata["prompt_runner_module"] = instruction.get("module")
+        metadata["prompt_runner_intent"] = instruction.get("intent")
+        metadata["deterministic_hash"] = digest
+
+        logger.info(f"✅ Day 1 complete: design_type={spec_json.get('design_type')}")
+
+        return {
+            "spec_json": spec_json,
+            "provider": "platform_adapter",
+            "execution_mode": "canonical",
+            "deterministic_hash": digest,
+        }
+
+    # ------------------------------------------------------------------
+    # Convert PromptInstruction → spec_json (with AI enrichment)
+    # ------------------------------------------------------------------
+
+    async def _instruction_to_spec_json(
+        self,
+        instruction: Dict[str, Any],
+        prompt: str,
+        city: str,
+        style: str,
+        constraints: Dict[str, Any],
+        context: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        """
+        Convert Siddhesh's PromptInstruction to Design Engine spec_json format.
+        Uses AI (Groq/OpenAI/Anthropic) to enrich the specification.
+        """
+        # Extract from PromptInstruction
+        data = instruction.get("data", {})
+        parameters = data.get("parameters", {})
+        module = instruction.get("module", "general_processor")
+        intent = instruction.get("intent", "design_creation")
+
+        # Determine design_type from module/intent
+        design_type = self._infer_design_type(module, intent, prompt, parameters)
+
+        # Extract dimensions from parameters or use AI
+        dimensions = await self._extract_dimensions(parameters, prompt, constraints, context)
+
+        # Build base spec_json
+        spec_json = {
+            "design_type": design_type,
+            "city": city,
+            "style": style,
+            "dimensions": dimensions,
+            "units": "meters",
+            "stories": self._extract_stories(parameters, prompt),
+        }
+
+        # Use AI to enrich with rooms/objects if architecture domain
+        if module == "architecture" or "architecture" in str(instruction.get("module", "")):
+            enriched = await self._ai_enrich_spec(spec_json, prompt, parameters)
+            spec_json.update(enriched)
+        else:
+            # Basic rooms/objects for non-architecture
+            spec_json["rooms"] = []
+            spec_json["objects"] = [
+                {"type": "wall", "id": "walls", "count": 4},
+                {"type": "floor", "id": "floor", "dimensions": dimensions},
+            ]
+
+        return spec_json
+
+    def _infer_design_type(self, module: str, intent: str, prompt: str, parameters: Dict) -> str:
+        """Infer design_type from PromptInstruction"""
+        prompt_lower = prompt.lower()
+
+        # Check parameters first
+        if "design_type" in parameters:
+            return str(parameters["design_type"])
+
+        # Pattern matching
+        if any(word in prompt_lower for word in ["apartment", "flat", "bhk"]):
+            return "apartment"
+        elif any(word in prompt_lower for word in ["house", "villa", "bungalow"]):
+            return "house"
+        elif "office" in prompt_lower:
+            return "office"
+        elif "kitchen" in prompt_lower:
+            return "kitchen"
+        else:
+            return "house"  # default
+
+    async def _extract_dimensions(
+        self, parameters: Dict[str, Any], prompt: str, constraints: Dict[str, Any], context: Dict[str, Any]
+    ) -> Dict[str, float]:
+        """Extract dimensions from parameters or prompt"""
+        dimensions = {}
+
+        # Try parameters first (from platform_adapter)
+        for key in ["width", "length", "height", "plot_area"]:
+            val = parameters.get(key)
+            if isinstance(val, (int, float)) and val > 0:
+                dimensions[key] = float(val)
+
+        # Try constraints
+        if not dimensions:
+            for key in ["width", "length", "height"]:
+                val = constraints.get(key)
+                if isinstance(val, (int, float)) and val > 0:
+                    dimensions[key] = float(val)
+
+        # Parse from prompt using regex
+        if not dimensions:
+            pattern = r"(\d+(?:\.\d+)?)\s*(?:x|by|×)\s*(\d+(?:\.\d+)?)"
+            match = re.search(pattern, prompt.lower())
+            if match:
+                dimensions["width"] = float(match.group(1))
+                dimensions["length"] = float(match.group(2))
+
+        # Defaults
+        dimensions.setdefault("width", 10.0)
+        dimensions.setdefault("length", 10.0)
+        dimensions.setdefault("height", 3.0)
+
+        return dimensions
+
+    def _extract_stories(self, parameters: Dict[str, Any], prompt: str) -> int:
+        """Extract number of stories"""
+        stories = parameters.get("stories") or parameters.get("floors")
+        if isinstance(stories, int) and stories > 0:
+            return stories
+
+        # Parse from prompt
+        match = re.search(r"(\d+)\s*(?:stor(?:ey|y|ies)|floor)", prompt.lower())
+        if match:
+            return int(match.group(1))
+
+        return 1
+
+    async def _ai_enrich_spec(self, base_spec: Dict[str, Any], prompt: str, parameters: Dict) -> Dict[str, Any]:
+        """Use AI (Groq/OpenAI/Anthropic) to enrich spec with rooms/objects"""
+        try:
+            from app.lm_adapter import run_local_lm
+
+            enrichment_prompt = f"""Based on this design request: {prompt}
+
+Generate rooms and objects for a {base_spec['design_type']} design."""
+
+            result = await run_local_lm(enrichment_prompt, parameters)
+            ai_spec = result.get("spec_json", {})
+
+            return {
+                "rooms": ai_spec.get("rooms", []),
+                "objects": ai_spec.get("objects", []),
+            }
+        except Exception as e:
+            logger.warning(f"AI enrichment failed: {e}, using basic structure")
+            return {
+                "rooms": [],
+                "objects": [{"type": "wall", "id": "walls", "count": 4}],
+            }
 
     def _deterministic_hash(self, payload: Dict[str, Any]) -> str:
         canonical = json.dumps(payload, sort_keys=True, default=str).encode("utf-8", errors="ignore")

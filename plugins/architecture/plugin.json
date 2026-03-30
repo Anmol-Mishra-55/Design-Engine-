@@ -1,0 +1,80 @@
+{
+  "domain": "architecture",
+  "version": "1.0.0",
+  "detection_keywords": [
+    "house", "building", "apartment", "villa", "design", "architecture",
+    "residential", "commercial", "office", "room", "floor", "construction"
+  ],
+  "detection_patterns": [
+    "\\d+\\s*bhk",
+    "\\d+\\s*(?:storey|story|floor)",
+    "plot\\s+(?:area|size)",
+    "residential\\s+building"
+  ],
+  "intents": {
+    "design_creation": {
+      "patterns": [
+        "design",
+        "create",
+        "build",
+        "construct",
+        "plan"
+      ],
+      "module": "architecture",
+      "tasks": [
+        "extract_requirements",
+        "generate_specification",
+        "create_geometry"
+      ],
+      "output_format": "design_specification"
+    },
+    "design_analysis": {
+      "patterns": [
+        "analyze",
+        "review",
+        "evaluate",
+        "assess"
+      ],
+      "module": "architecture",
+      "tasks": [
+        "load_design",
+        "analyze_structure",
+        "generate_report"
+      ],
+      "output_format": "analysis_report"
+    }
+  },
+  "extractors": {
+    "design_type": {
+      "type": "keyword",
+      "keywords": ["house", "apartment", "villa", "office", "building"]
+    },
+    "bhk_count": {
+      "type": "regex",
+      "pattern": "(\\d+)\\s*bhk",
+      "group": 1
+    },
+    "stories": {
+      "type": "regex",
+      "pattern": "(\\d+)\\s*(?:storey|story|floor)",
+      "group": 1
+    },
+    "plot_area": {
+      "type": "regex",
+      "pattern": "(\\d+(?:\\.\\d+)?)\\s*(?:sq\\s*ft|sqft|square\\s*feet)",
+      "group": 1
+    }
+  },
+  "constraint_rules": {
+    "budget": {
+      "type": "regex",
+      "pattern": "(?:budget|cost).*?(\\d+(?:,\\d+)*(?:\\.\\d+)?)\\s*(?:lakh|crore|rupees|inr|₹)?",
+      "group": 1
+    },
+    "timeline": {
+      "type": "regex",
+      "pattern": "(\\d+)\\s*(?:month|year|week)",
+      "group": 0
+    }
+  }
+}

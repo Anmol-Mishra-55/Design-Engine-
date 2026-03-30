@@ -18,9 +18,9 @@ Adding a new domain: drop a plugin.json in plugins/<domain>/ — no core code ch
 
 import json
 import re
+from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Dict, Any, Optional, Union, List, Tuple
-from dataclasses import dataclass, asdict
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 PLUGINS_DIR = Path(__file__).parent / "plugins"
 
@@ -29,9 +29,11 @@ PLUGINS_DIR = Path(__file__).parent / "plugins"
 # Data structures
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class PromptInstruction:
     """Structured instruction output from Prompt Runner."""
+
     module: str
     intent: str
     data: Dict[str, Any]
@@ -49,6 +51,7 @@ class PromptInstruction:
 # ---------------------------------------------------------------------------
 # Stage 0: Plugin Loader
 # ---------------------------------------------------------------------------
+
 
 class PluginLoader:
     """
@@ -89,6 +92,7 @@ class PluginLoader:
 # Stage 1: Domain Detector
 # ---------------------------------------------------------------------------
 
+
 class DomainDetector:
     """
     Classifies the domain of the input prompt using each plugin's
@@ -117,17 +121,11 @@ class DomainDetector:
             keywords = plugin.get("detection_keywords", [])
             patterns = plugin.get("detection_patterns", [])
 
-            matched_kw = [
-                kw for kw in keywords
-                if re.search(r"\b" + re.escape(kw.lower()) + r"\b", prompt_lower)
-            ]
-            matched_p = [
-                p for p in patterns
-                if re.search(p, prompt_lower, re.IGNORECASE)
-            ]
+            matched_kw = [kw for kw in keywords if re.search(r"\b" + re.escape(kw.lower()) + r"\b", prompt_lower)]
+            matched_p = [p for p in patterns if re.search(p, prompt_lower, re.IGNORECASE)]
 
             kw_cont = min(0.5, len(matched_kw) / max(len(keywords), 1) * 1.5)
-            p_cont  = min(0.7, len(matched_p)  / max(len(patterns), 1) * 2.0)
+            p_cont = min(0.7, len(matched_p) / max(len(patterns), 1) * 2.0)
             confidence = round(min(1.0, kw_cont + p_cont), 3)
 
             scores.append((domain, confidence))
@@ -138,10 +136,7 @@ class DomainDetector:
             return "general", 0.0, []
 
         top_domain, top_conf = scores[0]
-        fallback_candidates = [
-            {"domain": d, "confidence": c}
-            for d, c in scores[1:4] if c > 0
-        ]
+        fallback_candidates = [{"domain": d, "confidence": c} for d, c in scores[1:4] if c > 0]
 
         return top_domain, top_conf, fallback_candidates
 
@@ -149,6 +144,7 @@ class DomainDetector:
 # ---------------------------------------------------------------------------
 # Stage 2: Intent Detector
 # ---------------------------------------------------------------------------
+
 
 class IntentDetector:
     """
@@ -201,6 +197,7 @@ class IntentDetector:
 # ---------------------------------------------------------------------------
 # Stage 3: Entity Extractor
 # ---------------------------------------------------------------------------
+
 
 class EntityExtractor:
     """
@@ -261,6 +258,7 @@ class EntityExtractor:
 # Stage 4: Constraint Extractor
 # ---------------------------------------------------------------------------
 
+
 class ConstraintExtractor:
     """
     Extracts constraint metadata from the prompt using the domain plugin's
@@ -292,6 +290,7 @@ class ConstraintExtractor:
 # Stage 5: Instruction Builder
 # ---------------------------------------------------------------------------
 
+
 class InstructionBuilder:
     """
     Assembles the final deterministic PromptInstruction from all pipeline outputs.
@@ -314,7 +313,6 @@ class InstructionBuilder:
         constraints: Dict[str, Any],
         topic_override: Optional[str] = None,
     ) -> PromptInstruction:
-
         plugin = self.plugins.get_plugin(domain)
 
         if plugin and intent in plugin.get("intents", {}):
@@ -351,20 +349,25 @@ class InstructionBuilder:
 
     def _extract_topic(self, prompt: str) -> str:
         """Strip leading action verbs to extract the main topic from a prompt."""
-        stripped = re.sub(
-            r'^(?:design|create|analyze|analyse|review|calculate|estimate|assess|evaluate|'
-            r'generate|draft|plan|build|explain|describe|research|find|implement|develop|'
-            r'write|prepare|provide|check|make|run|perform|help|give)\s+(?:a\s+|an\s+|the\s+|me\s+|with\s+)?',
-            '',
-            prompt.strip(),
-            flags=re.IGNORECASE,
-        ).strip().rstrip('.')
-        return stripped if stripped else prompt.strip().rstrip('.')
+        stripped = (
+            re.sub(
+                r"^(?:design|create|analyze|analyse|review|calculate|estimate|assess|evaluate|"
+                r"generate|draft|plan|build|explain|describe|research|find|implement|develop|"
+                r"write|prepare|provide|check|make|run|perform|help|give)\s+(?:a\s+|an\s+|the\s+|me\s+|with\s+)?",
+                "",
+                prompt.strip(),
+                flags=re.IGNORECASE,
+            )
+            .strip()
+            .rstrip(".")
+        )
+        return stripped if stripped else prompt.strip().rstrip(".")
 
 
 # ---------------------------------------------------------------------------
 # Orchestrator: Prompt Runner
 # ---------------------------------------------------------------------------
+
 
 class PromptRunner:
     """
@@ -380,12 +383,12 @@ class PromptRunner:
     """
 
     def __init__(self, plugins_dir: Path = PLUGINS_DIR):
-        self.plugin_loader        = PluginLoader(plugins_dir)
-        self.domain_detector      = DomainDetector(self.plugin_loader)
-        self.intent_detector      = IntentDetector(self.plugin_loader)
-        self.entity_extractor     = EntityExtractor(self.plugin_loader)
+        self.plugin_loader = PluginLoader(plugins_dir)
+        self.domain_detector = DomainDetector(self.plugin_loader)
+        self.intent_detector = IntentDetector(self.plugin_loader)
+        self.entity_extractor = EntityExtractor(self.plugin_loader)
         self.constraint_extractor = ConstraintExtractor(self.plugin_loader)
-        self.instruction_builder  = InstructionBuilder(self.plugin_loader)
+        self.instruction_builder = InstructionBuilder(self.plugin_loader)
 
     def generate_instruction(
         self,
@@ -401,8 +404,8 @@ class PromptRunner:
     def _process_prompt(self, prompt: str) -> PromptInstruction:
         domain, _, _ = self.domain_detector.detect(prompt)
         intent, _, _ = self.intent_detector.detect(prompt, domain)
-        entities     = self.entity_extractor.extract(prompt, domain)
-        constraints  = self.constraint_extractor.extract(prompt, domain)
+        entities = self.entity_extractor.extract(prompt, domain)
+        constraints = self.constraint_extractor.extract(prompt, domain)
         return self.instruction_builder.build(
             prompt=prompt,
             domain=domain,
@@ -424,7 +427,7 @@ class PromptRunner:
             intent, _, _ = self.intent_detector.detect(prompt, domain)
 
         extracted = self.entity_extractor.extract(prompt, domain)
-        entities  = {**extracted, **req.get("data", {})}
+        entities = {**extracted, **req.get("data", {})}
 
         constraints = self.constraint_extractor.extract(prompt, domain)
         constraints.update(req.get("constraints", {}))
@@ -442,6 +445,7 @@ class PromptRunner:
 # ---------------------------------------------------------------------------
 # Entry Point: Platform Adapter
 # ---------------------------------------------------------------------------
+
 
 class PlatformAdapter:
     """
@@ -502,6 +506,10 @@ class PlatformAdapter:
 # Convenience function
 # ---------------------------------------------------------------------------
 
-def run_prompt(input_data: Union[str, Dict[str, Any]]) -> Dict[str, Any]:
-    """Convenience wrapper — creates a PlatformAdapter and processes input."""
+
+def run_from_platform(input_data: Union[str, Dict[str, Any]]) -> Dict[str, Any]:
+    """
+    Canonical entry point for Day 1 task.
+    This is the function that Core calls via Bucket routing.
+    """
     return PlatformAdapter().process(input_data)
