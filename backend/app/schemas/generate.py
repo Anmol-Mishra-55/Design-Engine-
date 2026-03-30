@@ -30,3 +30,5 @@ class GenerateResponse(BaseModel):
     glb_url: Optional[str] = None
     stl_url: Optional[str] = None
     step_url: Optional[str] = None
+    thumbnail_url: Optional[str] = None
+    meshy_video_url: Optional[str] = None

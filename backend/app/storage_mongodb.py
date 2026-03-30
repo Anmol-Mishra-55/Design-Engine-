@@ -4,7 +4,7 @@ Handles file uploads, downloads, and management using GridFS with Motor (async)
 """
 import io
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 from bson import ObjectId
@@ -41,19 +41,6 @@ class GridFSStorage:
         content_type: Optional[str] = None,
         metadata: Optional[dict] = None,
     ) -> str:
-        """
-        Upload file to GridFS
-
-        Args:
-            file_path: Local file path
-            bucket: Target bucket name
-            destination_path: Path in GridFS
-            content_type: MIME type
-            metadata: Additional metadata
-
-        Returns:
-            File ID
-        """
         try:
             fs_bucket = self._get_gridfs_bucket(bucket)
 
@@ -67,7 +54,7 @@ class GridFSStorage:
                 file_stream,
                 metadata={
                     "content_type": content_type or "application/octet-stream",
-                    "upload_date": datetime.utcnow(),
+                    "upload_date": datetime.now(timezone.utc),
                     **(metadata or {}),
                 },
             )
@@ -87,19 +74,6 @@ class GridFSStorage:
         content_type: Optional[str] = None,
         metadata: Optional[dict] = None,
     ) -> str:
-        """
-        Upload bytes to GridFS
-
-        Args:
-            data: File bytes
-            bucket: Target bucket name
-            destination_path: Path in GridFS
-            content_type: MIME type
-            metadata: Additional metadata
-
-        Returns:
-            File ID
-        """
         try:
             fs_bucket = self._get_gridfs_bucket(bucket)
 
@@ -110,7 +84,7 @@ class GridFSStorage:
                 file_stream,
                 metadata={
                     "content_type": content_type or "application/octet-stream",
-                    "upload_date": datetime.utcnow(),
+                    "upload_date": datetime.now(timezone.utc),
                     **(metadata or {}),
                 },
             )
@@ -123,16 +97,6 @@ class GridFSStorage:
             raise
 
     async def download_file(self, file_id: str, bucket: str) -> bytes:
-        """
-        Download file from GridFS
-
-        Args:
-            file_id: GridFS file ID
-            bucket: Bucket name
-
-        Returns:
-            File bytes
-        """
         try:
             fs_bucket = self._get_gridfs_bucket(bucket)
 
@@ -145,16 +109,6 @@ class GridFSStorage:
             raise
 
     async def delete_file(self, file_id: str, bucket: str) -> bool:
-        """
-        Delete file from GridFS
-
-        Args:
-            file_id: GridFS file ID
-            bucket: Bucket name
-
-        Returns:
-            True if deleted
-        """
         try:
             fs_bucket = self._get_gridfs_bucket(bucket)
 
@@ -171,7 +125,6 @@ class GridFSStorage:
         try:
             fs_bucket = self._get_gridfs_bucket(bucket)
 
-            # Try to get file info
             files_cursor = fs_bucket.find({"_id": ObjectId(file_id)})
             files_list = await files_cursor.to_list(length=1)
             return len(files_list) > 0
@@ -181,16 +134,6 @@ class GridFSStorage:
             return False
 
     async def list_files(self, bucket: str, metadata_filter: Optional[dict] = None) -> list:
-        """
-        List files in bucket
-
-        Args:
-            bucket: Bucket name
-            metadata_filter: Filter by metadata
-
-        Returns:
-            List of file info
-        """
         try:
             fs_bucket = self._get_gridfs_bucket(bucket)
 

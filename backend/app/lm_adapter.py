@@ -106,11 +106,12 @@ Your response MUST be valid JSON with this exact structure:
 Analyze the user's prompt carefully and generate ALL objects mentioned. Be creative and comprehensive."""
 
     budget = params.get("budget") or params.get("context", {}).get("budget", "Not specified")
+    budget_str = f"₹{budget:,}" if isinstance(budget, (int, float)) else str(budget)
     user_prompt = f"""Design request: {prompt}
 
 Context:
 - City: {params.get('city', 'Mumbai')}
-- Budget: ₹{budget:,} if isinstance(budget, (int, float)) else budget
+- Budget: {budget_str}
 - Style preference: {params.get('style', 'modern')}
 
 Generate a complete, detailed design specification in JSON format. Include ALL elements mentioned in the request."""

@@ -235,6 +235,8 @@ async def generate_design(request: GenerateRequest, current_user: str = Depends(
         glb_url=export_urls.get("glb"),
         stl_url=export_urls.get("stl"),
         step_url=export_urls.get("step"),
+        thumbnail_url=metadata.get("meshy_thumbnail_url"),
+        meshy_video_url=metadata.get("meshy_video_url"),
     )
 
 

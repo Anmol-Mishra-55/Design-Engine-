@@ -8,8 +8,10 @@ from app.config import settings
 logger = logging.getLogger(__name__)
 
 
-async def generate_3d_with_meshy(prompt: str, dimensions: dict) -> bytes:
-    """Generate realistic 3D construction model using Meshy AI"""
+async def generate_3d_with_meshy(prompt: str, dimensions: dict) -> dict:
+    """Generate realistic 3D construction model using Meshy AI.
+    Returns dict with keys: glb_bytes, thumbnail_bytes, video_url, task_id
+    """
     MESHY_API_KEY = os.getenv("MESHY_API_KEY") or getattr(settings, "MESHY_API_KEY", None)
 
     if not MESHY_API_KEY:
@@ -66,11 +68,27 @@ Detailed architectural visualization"""
 
                     if status == "SUCCEEDED":
                         glb_url = result.get("model_urls", {}).get("glb")
+                        thumbnail_url = result.get("thumbnail_url")
+                        video_url = result.get("video_url")
+
                         if glb_url:
                             print(f"Downloading GLB from: {glb_url}")
                             glb_resp = await client.get(glb_url)
                             logger.info(f"Meshy 3D generated: {len(glb_resp.content)} bytes")
-                            return glb_resp.content
+
+                            thumbnail_bytes = None
+                            if thumbnail_url:
+                                thumb_resp = await client.get(thumbnail_url)
+                                if thumb_resp.status_code == 200:
+                                    thumbnail_bytes = thumb_resp.content
+                                    logger.info(f"Meshy thumbnail downloaded: {len(thumbnail_bytes)} bytes")
+
+                            return {
+                                "glb_bytes": glb_resp.content,
+                                "thumbnail_bytes": thumbnail_bytes,
+                                "video_url": video_url,
+                                "task_id": task_id,
+                            }
                     elif status == "FAILED":
                         error = result.get("error", "Unknown error")
                         logger.error(f"Meshy failed: {error}")

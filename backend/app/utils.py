@@ -24,7 +24,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 # JWT utilities
 def create_access_token(data: dict) -> str:
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(hours=settings.JWT_EXPIRATION_HOURS)
+    expire = datetime.now(timezone.utc) + timedelta(hours=settings.JWT_EXPIRATION_HOURS)
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
@@ -62,8 +62,6 @@ def create_new_spec_id() -> str:
 
 def generate_glb_from_spec(spec_json: dict) -> bytes:
     """Generate GLB preview from spec JSON (placeholder)"""
-    # Placeholder: In production, use 3D rendering library
-    # to generate actual GLB from spec_json
     glb_content = f"GLB_PREVIEW_{spec_json.get('components', ['default'])[0]}"
     return glb_content.encode("utf-8")
 
@@ -93,7 +91,7 @@ def spec_json_to_prompt(spec_json: dict) -> str:
     features = spec_json.get("features", [])
     tech_stack = spec_json.get("tech_stack", [])
 
-    prompt = f"Improve this design specification:\n"
+    prompt = "Improve this design specification:\n"
     prompt += f"Components: {', '.join(components)}\n"
     prompt += f"Features: {', '.join(features)}\n"
     prompt += f"Tech Stack: {', '.join(tech_stack)}\n"
@@ -117,6 +115,3 @@ def log_audit_event(event: str, user_id: str, details: dict = None):
         "details": details or {},
     }
     logger.info(f"AUDIT: {audit_data}")
-
-    # Also store in database if needed
-    # This would require database session injection

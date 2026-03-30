@@ -243,13 +243,14 @@ def get_signed_url(bucket: str, file_path: str, expires: int = 3600) -> str:
 
 
 async def upload_to_bucket(bucket: str, file_path: str, data: bytes) -> str:
-    """Upload data to bucket (async wrapper)"""
+    """Upload data to bucket (async wrapper) - returns download URL"""
     try:
         storage = get_storage()
         file_id = await storage.upload_bytes(
             data=data, bucket=bucket, destination_path=file_path, content_type="application/octet-stream"
         )
-        return file_id
+        # Return download URL instead of raw file_id
+        return f"/api/v1/files/{bucket}/{file_id}"
     except Exception as e:
         logger.error(f"Upload to bucket failed: {e}")
         raise

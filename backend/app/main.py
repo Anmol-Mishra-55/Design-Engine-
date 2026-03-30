@@ -1,6 +1,13 @@
 import os
 import sys
 
+# Fix Windows console encoding for Unicode characters
+if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
+    import io
+
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace")
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8", errors="replace")
+
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import logging
@@ -14,7 +21,9 @@ from app.api import (
     compliance,
     data_audit,
     data_privacy,
+    downloads,
     evaluate,
+    files,
     generate,
     geometry_generator,
     health,
@@ -102,13 +111,13 @@ async def startup_event():
     # Try to connect to MongoDB (non-blocking)
     try:
         await connect_to_mongo(settings.MONGODB_URL, settings.MONGODB_DATABASE)
-        logger.info("✅ MongoDB connected successfully")
+        logger.info("MongoDB connected successfully")
         logger.info(f"Database: {settings.MONGODB_DATABASE}")
-        logger.info(f"GridFS Buckets: files, previews, geometry, compliance")
+        logger.info("GridFS Buckets: files, previews, geometry, compliance")
     except Exception as e:
-        logger.warning(f"⚠️ MongoDB connection failed: {e}")
-        logger.warning("🔧 Server will start without database (some features disabled)")
-        logger.warning("💡 Fix MongoDB connection and restart for full functionality")
+        logger.warning(f"MongoDB connection failed: {e}")
+        logger.warning("Server will start without database (some features disabled)")
+        logger.warning("Fix MongoDB connection and restart for full functionality")
 
 
 @app.on_event("shutdown")
@@ -145,7 +154,7 @@ if settings.ENABLE_METRICS:
         excluded_handlers=["/metrics", "/docs", "/openapi.json"],
         env_var_name="ENABLE_METRICS",
     )
-    instrumentator.instrument(app).expose(app, tags=["📊 Metrics"])
+    instrumentator.instrument(app).expose(app, tags=["Metrics"])
     logger.info("Essential metrics enabled")
 else:
     logger.info("Metrics disabled")
@@ -215,31 +224,33 @@ except Exception as e:
     logger.warning(f"Static files mount failed: {e}")
 
 
-@app.get("/health", tags=["📊 Public Health"])
+@app.get("/health", tags=["Public Health"])
 async def basic_health_check():
     """Basic health check - no authentication required"""
     return {"status": "ok", "service": "Design Engine API", "version": "0.1.0"}
 
 
-app.include_router(auth.router, prefix="/api/v1/auth", tags=["🔐 Authentication"])
-app.include_router(health.router, prefix="/api/v1", tags=["📊 System Health"], include_in_schema=False)
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
+app.include_router(files.router, prefix="/api/v1", tags=["File Download"])
+app.include_router(downloads.router, tags=["File Downloads"])
+app.include_router(health.router, prefix="/api/v1", tags=["System Health"], include_in_schema=False)
 app.include_router(monitoring_system.router, include_in_schema=False)
-app.include_router(data_privacy.router, prefix="/api/v1", tags=["🔐 Data Privacy"], include_in_schema=False)
-app.include_router(data_audit.router, tags=["🔍 Data Audit"], include_in_schema=False)
-app.include_router(generate.router, prefix="/api/v1", tags=["🎨 Design Generation"])
-app.include_router(evaluate.router, prefix="/api/v1", tags=["📊 Design Evaluation"], include_in_schema=False)
-app.include_router(iterate.router, prefix="/api/v1", tags=["🔄 Design Iteration"], include_in_schema=False)
+app.include_router(data_privacy.router, prefix="/api/v1", tags=["Data Privacy"], include_in_schema=False)
+app.include_router(data_audit.router, tags=["Data Audit"], include_in_schema=False)
+app.include_router(generate.router, prefix="/api/v1", tags=["Design Generation"])
+app.include_router(evaluate.router, prefix="/api/v1", tags=["Design Evaluation"], include_in_schema=False)
+app.include_router(iterate.router, prefix="/api/v1", tags=["Design Iteration"], include_in_schema=False)
 app.include_router(switch.router, include_in_schema=False)
-app.include_router(history.router, prefix="/api/v1", tags=["📚 Design History"], include_in_schema=False)
-app.include_router(compliance.router, prefix="/api/v1/compliance", tags=["✅ Compliance & Validation"])
+app.include_router(history.router, prefix="/api/v1", tags=["Design History"], include_in_schema=False)
+app.include_router(compliance.router, prefix="/api/v1/compliance", tags=["Compliance & Validation"])
 app.include_router(mcp_integration.router, include_in_schema=False)
-app.include_router(city_router, prefix="/api/v1", tags=["🏙️ Multi-City"], include_in_schema=False)
+app.include_router(city_router, prefix="/api/v1", tags=["Multi-City"], include_in_schema=False)
 app.include_router(bhiv_assistant.router, include_in_schema=False)
 app.include_router(bhiv_integrated.router, include_in_schema=False)
-app.include_router(reports.router, prefix="/api/v1", tags=["📁 File Management"], include_in_schema=False)
-app.include_router(rl.router, prefix="/api/v1", tags=["🤖 RL Training"], include_in_schema=False)
-app.include_router(mobile.router, prefix="/api/v1", tags=["📱 Mobile API"], include_in_schema=False)
-app.include_router(vr.router, prefix="/api/v1", tags=["🥽 VR API"], include_in_schema=False)
+app.include_router(reports.router, prefix="/api/v1", tags=["File Management"], include_in_schema=False)
+app.include_router(rl.router, prefix="/api/v1", tags=["RL Training"], include_in_schema=False)
+app.include_router(mobile.router, prefix="/api/v1", tags=["Mobile API"], include_in_schema=False)
+app.include_router(vr.router, prefix="/api/v1", tags=["VR API"], include_in_schema=False)
 app.include_router(integration_layer.router, include_in_schema=False)
 app.include_router(workflow_consolidation.router, include_in_schema=False)
 app.include_router(multi_city_testing.router, include_in_schema=False)
