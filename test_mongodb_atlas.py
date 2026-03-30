@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test MongoDB connection
+Test MongoDB Atlas connection
 """
 import sys
 import os
@@ -8,16 +8,19 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), "backend"))
 
 from pymongo import MongoClient
-from app.config import settings
 import time
 
+# Use the actual MongoDB Atlas URL
+MONGODB_URL = "mongodb+srv://blackholeinfiverse55_db_user:6SKTXNiidEZNTtDc@cluster0.acfgtzl.mongodb.net/bhiv_db?appName=Cluster0&retryWrites=true&w=majority"
+DATABASE_NAME = "bhiv_db"
+
 print("=" * 70)
-print("MONGODB CONNECTION TEST")
+print("MONGODB ATLAS CONNECTION TEST")
 print("=" * 70)
 print()
 
-print(f"MongoDB URL: {settings.MONGODB_URL[:50]}...")
-print(f"Database: {settings.MONGODB_DATABASE}")
+print(f"MongoDB URL: {MONGODB_URL[:60]}...")
+print(f"Database: {DATABASE_NAME}")
 print()
 
 print("Attempting to connect...")
@@ -26,23 +29,25 @@ start_time = time.time()
 try:
     # Try with shorter timeout
     client = MongoClient(
-        settings.MONGODB_URL,
-        serverSelectionTimeoutMS=10000,  # 10 seconds
-        connectTimeoutMS=10000,
-        socketTimeoutMS=10000
+        MONGODB_URL,
+        serverSelectionTimeoutMS=15000,  # 15 seconds
+        connectTimeoutMS=15000,
+        socketTimeoutMS=15000
     )
 
     # Test connection
+    print("Pinging MongoDB...")
     client.admin.command('ping')
 
     elapsed = time.time() - start_time
-    print(f"[SUCCESS] Connected to MongoDB in {elapsed:.2f} seconds")
+    print(f"[SUCCESS] Connected to MongoDB Atlas in {elapsed:.2f} seconds")
     print()
 
     # Get database
-    db = client[settings.MONGODB_DATABASE]
+    db = client[DATABASE_NAME]
 
     # Check collections
+    print("Fetching collections...")
     collections = db.list_collection_names()
     print(f"Collections found: {len(collections)}")
     for coll in collections:
@@ -59,10 +64,13 @@ try:
         print(f"  _id: {user.get('_id')}")
         print(f"  username: {user.get('username')}")
         print(f"  is_active: {user.get('is_active')}")
+        print(f"  has password_hash: {bool(user.get('password_hash'))}")
     else:
         print("[ERROR] Admin user not found")
 
     client.close()
+    print()
+    print("[SUCCESS] MongoDB Atlas connection is working!")
 
 except Exception as e:
     elapsed = time.time() - start_time

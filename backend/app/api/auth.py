@@ -22,7 +22,12 @@ def _issue_access_token(subject: str) -> str:
 
 
 async def _authenticate_against_mongodb(username: str, password: str) -> str | None:
-    db = get_database()
+    try:
+        db = get_database()
+    except Exception as e:
+        logger.error(f"[AUTH] Failed to get database: {e}")
+        raise
+
     user = await db.users.find_one({"$or": [{"username": username}, {"email": username}], "is_active": True})
     if not user:
         return None
@@ -34,7 +39,8 @@ async def _authenticate_against_mongodb(username: str, password: str) -> str | N
     try:
         if not verify_password(password, password_hash):
             return None
-    except Exception:
+    except Exception as e:
+        logger.error(f"[AUTH] Password verification error: {e}")
         return None
 
     return str(user.get("_id") or user.get("username"))
@@ -48,7 +54,6 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     if not username or not password:
         raise HTTPException(status_code=400, detail="Username and password are required")
 
-    # Optional demo fallback for local/manual demo environments only.
     if settings.DEMO_MODE and settings.DEMO_PASSWORD:
         if username == settings.DEMO_USERNAME and password == settings.DEMO_PASSWORD:
             token = _issue_access_token(settings.DEMO_USERNAME)
@@ -59,19 +64,14 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     except RuntimeError:
         raise HTTPException(status_code=503, detail="Authentication service unavailable")
     except Exception as exc:
-        logger.error("Authentication lookup failed: %s", exc)
+        logger.error(f"Login error: {exc}", exc_info=True)
         raise HTTPException(status_code=500, detail="Authentication failed")
 
     if not subject:
-        raise HTTPException(
-            status_code=401,
-            detail={
-                "error": {"code": "INVALID_CREDENTIALS", "message": "Invalid username or password", "status_code": 401}
-            },
-        )
+        raise HTTPException(status_code=401, detail="Invalid username or password")
 
-    token = _issue_access_token(subject)
-    return {"access_token": token, "token_type": "bearer"}
+    logger.info(f"Login successful: {username}")
+    return {"access_token": _issue_access_token(subject), "token_type": "bearer"}
 
 
 @router.post("/refresh", include_in_schema=False)

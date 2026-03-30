@@ -11,9 +11,16 @@ from typing import Dict, List, Tuple
 
 # Import platform adapter if available
 try:
-    from platform_adapter import run_prompt
+    from app.platform_adapter import run_prompt
 except ImportError:
-    run_prompt = None
+    try:
+        import os
+        import sys
+
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+        from platform_adapter import run_prompt
+    except ImportError:
+        run_prompt = None
 
 
 class DataIntegrityValidator:
