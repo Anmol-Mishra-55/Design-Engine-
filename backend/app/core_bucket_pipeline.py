@@ -1,10 +1,15 @@
 """
-Canonical Core -> Bucket -> Prompt Runner -> Geometry -> Bucket execution.
+Canonical Core Routing — handle_request pattern.
 
-GLB generation priority:
-  1. Meshy AI  (MESHY_API_KEY set)  — realistic AI-generated 3D model
-  2. Tripo AI  (TRIPO_API_KEY set)  — alternative AI 3D model
-  3. geometry_generator_real        — deterministic Python geometry fallback
+Every request MUST flow through Core:
+
+    data   = bucket.store(request)          # Step 1: store inbound request
+    result = prompt_runner.execute(data)    # Step 2: execute via Prompt Runner
+    output = bucket.store(result)           # Step 3: store all outputs
+    return output                           # Step 4: return bucket URLs only
+
+Direct backend calls are NOT allowed.
+All inputs and outputs are mediated by BucketRouter.
 """
 
 from __future__ import annotations
@@ -43,24 +48,69 @@ class CanonicalExecutionResult:
 
 
 class BucketRouter:
-    """Bucket gateway for artifact persistence with remote-first, local-fallback behavior."""
+    """
+    Bucket gateway — ALL inputs and outputs pass through here.
+    No direct backend calls are permitted outside this class.
+    """
 
     def __init__(self):
-        project_root = Path(__file__).resolve().parents[1]
-        data_root = project_root / "data"
-
-        self.spec_dir = data_root / "specs"
-        self.geometry_dir = data_root / "geometry_outputs"
-        self.export_dir = data_root / "export_outputs"
-        self.trace_dir = data_root / "bucket_traces"
-
-        for directory in (self.spec_dir, self.geometry_dir, self.export_dir, self.trace_dir):
-            directory.mkdir(parents=True, exist_ok=True)
-
+        self.trace_dir = Path(__file__).resolve().parents[1] / "data" / "bucket_traces"
+        self.trace_dir.mkdir(parents=True, exist_ok=True)
         self.geometry_bucket = getattr(settings, "STORAGE_BUCKET_GEOMETRY", "geometry")
         self.files_bucket = getattr(settings, "STORAGE_BUCKET_FILES", "files")
 
-    def append_trace(self, trace_id: str, stage: str, payload: Dict[str, Any]) -> None:
+    # ── Step 1: store inbound request ────────────────────────────────────────
+    async def store_request(self, trace_id: str, request_payload: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Persist the inbound request payload to the files bucket.
+        Returns the stored payload (unchanged) so Core can pass it to Prompt Runner.
+        """
+        payload_bytes = json.dumps(request_payload, indent=2, ensure_ascii=True).encode("utf-8")
+        bucket_path = f"requests/{trace_id}.json"
+        request_url = await upload_to_bucket(self.files_bucket, bucket_path, payload_bytes, "application/json")
+        self._append_trace(
+            trace_id,
+            "bucket_request_stored",
+            {
+                "bucket_path": bucket_path,
+                "url": request_url,
+                "payload_keys": sorted(request_payload.keys()),
+            },
+        )
+        logger.info("Request stored in bucket: %s", request_url)
+        return request_payload  # pass-through to Prompt Runner
+
+    # ── Step 3: store all outputs ─────────────────────────────────────────────
+    async def store_artifact(self, spec_id: str, kind: str, data: bytes) -> ArtifactLocation:
+        """Upload a binary artifact (glb / stl / step) to the geometry bucket."""
+        kind = kind.lower()
+        if kind not in {"glb", "stl", "step"}:
+            raise ValueError(f"Unsupported artifact kind: {kind}")
+        bucket_path = f"{spec_id}.glb" if kind == "glb" else f"exports/{spec_id}.{kind}"
+        remote_url = await upload_to_bucket(
+            self.geometry_bucket,
+            bucket_path,
+            data,
+            "model/gltf-binary" if kind == "glb" else "application/octet-stream",
+        )
+        logger.info("Artifact stored in bucket: %s -> %s", bucket_path, remote_url)
+        return ArtifactLocation(
+            kind=kind,
+            url=remote_url,
+            storage_mode="bucket_remote",
+            bucket_path=bucket_path,
+        )
+
+    async def store_spec_payload(self, spec_id: str, spec_json: Dict[str, Any]) -> Dict[str, str]:
+        """Upload the final spec JSON to the files bucket."""
+        payload_bytes = json.dumps(spec_json, indent=2, ensure_ascii=True).encode("utf-8")
+        bucket_path = f"specs/{spec_id}.json"
+        remote_url = await upload_to_bucket(self.files_bucket, bucket_path, payload_bytes, "application/json")
+        logger.info("Spec payload stored in bucket: %s -> %s", bucket_path, remote_url)
+        return {"mode": "bucket_remote", "url": remote_url, "bucket_path": bucket_path}
+
+    # ── Trace logging ─────────────────────────────────────────────────────────
+    def _append_trace(self, trace_id: str, stage: str, payload: Dict[str, Any]) -> None:
         entry = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "trace_id": trace_id,
@@ -68,62 +118,22 @@ class BucketRouter:
             "payload": payload,
         }
         trace_file = self.trace_dir / f"{trace_id}.jsonl"
-        with open(trace_file, "a", encoding="utf-8") as handle:
-            handle.write(json.dumps(entry, ensure_ascii=True) + "\n")
-
-    async def store_artifact(self, spec_id: str, kind: str, data: bytes) -> ArtifactLocation:
-        kind = kind.lower()
-        if kind not in {"glb", "stl", "step"}:
-            raise ValueError(f"Unsupported artifact kind: {kind}")
-
-        if kind == "glb":
-            bucket_path = f"{spec_id}.glb"
-            local_path = self.geometry_dir / f"{spec_id}.glb"
-            local_url = f"/static/geometry/{spec_id}.glb"
-        else:
-            bucket_path = f"exports/{spec_id}.{kind}"
-            local_path = self.export_dir / f"{spec_id}.{kind}"
-            local_url = f"/static/exports/{spec_id}.{kind}"
-
-        try:
-            remote_url = await upload_to_bucket(self.geometry_bucket, bucket_path, data)
-            return ArtifactLocation(
-                kind=kind,
-                url=remote_url,
-                storage_mode="bucket_remote",
-                bucket_path=bucket_path,
-            )
-        except Exception as exc:
-            logger.warning("Bucket upload failed for %s (%s), using local fallback", kind, exc)
-            local_path.write_bytes(data)
-            return ArtifactLocation(
-                kind=kind,
-                url=local_url,
-                storage_mode="bucket_local_fallback",
-                local_path=str(local_path),
-            )
-
-    async def store_spec_payload(self, spec_id: str, spec_json: Dict[str, Any]) -> Dict[str, str]:
-        payload_bytes = json.dumps(spec_json, indent=2, ensure_ascii=True).encode("utf-8")
-        bucket_path = f"specs/{spec_id}.json"
-
-        try:
-            remote_url = await upload_to_bucket(self.files_bucket, bucket_path, payload_bytes)
-            return {"mode": "bucket_remote", "url": remote_url, "bucket_path": bucket_path}
-        except Exception as exc:
-            logger.warning("Spec payload upload failed (%s), using local fallback", exc)
-            local_path = self.spec_dir / f"{spec_id}.json"
-            local_path.write_bytes(payload_bytes)
-            return {"mode": "bucket_local_fallback", "local_path": str(local_path)}
+        with open(trace_file, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(entry, ensure_ascii=True) + "\n")
 
 
 class CoreBucketCanonicalOrchestrator:
     """
-    Canonical orchestration path:
-    Core -> Bucket -> Prompt Runner Adapter -> Geometry -> Bucket -> Core
+    Core routing enforcer.
 
-    Spec/JSON generation : Groq llama-3.3-70b → OpenAI → Anthropic → template
-    GLB 3D generation    : Meshy AI → Tripo AI → geometry_generator_real
+    Canonical handle_request pattern:
+
+        data   = bucket.store_request(req)       # Step 1 — bucket stores inbound
+        result = prompt_runner.execute(data)     # Step 2 — Prompt Runner executes
+        output = bucket.store(result)            # Step 3 — bucket stores all outputs
+        return output                            # Step 4 — return bucket URLs only
+
+    Direct backend calls are NOT allowed.
     """
 
     def __init__(self):
@@ -133,7 +143,7 @@ class CoreBucketCanonicalOrchestrator:
     async def execute(self, spec_id: str, request_payload: Dict[str, Any]) -> CanonicalExecutionResult:
         trace_id = f"core_bucket_{spec_id}"
 
-        self.bucket.append_trace(
+        self.bucket._append_trace(
             trace_id,
             "core_ingress",
             {
@@ -145,14 +155,15 @@ class CoreBucketCanonicalOrchestrator:
             },
         )
 
-        self.bucket.append_trace(trace_id, "bucket_request_received", {"route": "prompt_runner_adapter"})
+        # ── Step 1: bucket.store(request) ────────────────────────────────────
+        data = await self.bucket.store_request(trace_id, request_payload)
 
-        # ── Step 1: Generate spec_json via Groq / OpenAI / Anthropic / template ──
-        runner_result = await self.prompt_runner.run_from_platform(request_payload)
+        # ── Step 2: prompt_runner.execute(data) ──────────────────────────────
+        runner_result = await self.prompt_runner.run_from_platform(data)
 
         spec_json = runner_result.get("spec_json")
         if not isinstance(spec_json, dict):
-            raise PromptRunnerUnavailableError("Prompt Runner adapter response is missing a valid spec_json")
+            raise PromptRunnerUnavailableError("Prompt Runner returned no valid spec_json")
 
         provider = str(runner_result.get("provider", "prompt_runner_adapter"))
         deterministic_hash = str(runner_result.get("deterministic_hash") or self._hash_payload(request_payload))
@@ -163,22 +174,23 @@ class CoreBucketCanonicalOrchestrator:
         metadata["storage_authority"] = "bucket"
         metadata["deterministic_hash"] = deterministic_hash
         metadata["bucket_trace_id"] = trace_id
-        metadata["canonical_flow"] = "core->bucket->prompt_runner_adapter->design_engine_geometry->bucket->core"
+        metadata["canonical_flow"] = "core->bucket->prompt_runner->geometry->bucket->core"
 
         spec_json.setdefault("city", request_payload.get("city") or "Mumbai")
         spec_json.setdefault("style", request_payload.get("style") or "modern")
 
-        self.bucket.append_trace(
+        self.bucket._append_trace(
             trace_id,
             "prompt_runner_response",
             {
                 "provider": provider,
                 "deterministic_hash": deterministic_hash,
                 "design_type": spec_json.get("design_type"),
+                "rooms_count": len(spec_json.get("rooms", [])),
             },
         )
 
-        # ── Step 2: Generate GLB via Meshy → Tripo → geometry fallback ──
+        # ── Step 2b: generate GLB from rooms ─────────────────────────────────
         prompt = request_payload.get("prompt", "")
         glb_bytes, glb_provider = await self._generate_glb(spec_json, prompt, spec_id, metadata)
         metadata["glb_provider"] = glb_provider
@@ -187,16 +199,16 @@ class CoreBucketCanonicalOrchestrator:
         stl_bytes = self._convert_glb_to_stl(glb_bytes, spec_json, spec_id)
         step_bytes = self._convert_glb_to_step(glb_bytes, spec_json, spec_id)
 
+        # ── Step 3: bucket.store(result) — all outputs go to bucket ──────────
         artifacts = {
             "glb": await self.bucket.store_artifact(spec_id, "glb", glb_bytes),
             "stl": await self.bucket.store_artifact(spec_id, "stl", stl_bytes),
             "step": await self.bucket.store_artifact(spec_id, "step", step_bytes),
         }
-
         metadata["export_urls"] = {kind: artifact.url for kind, artifact in artifacts.items()}
 
         spec_store = await self.bucket.store_spec_payload(spec_id, spec_json)
-        self.bucket.append_trace(
+        self.bucket._append_trace(
             trace_id,
             "bucket_persist_complete",
             {
@@ -204,9 +216,9 @@ class CoreBucketCanonicalOrchestrator:
                 "spec_payload": spec_store,
             },
         )
+        self.bucket._append_trace(trace_id, "core_response_ready", {"spec_id": spec_id})
 
-        self.bucket.append_trace(trace_id, "core_response_ready", {"spec_id": spec_id})
-
+        # ── Step 4: return bucket URLs only ───────────────────────────────────
         return CanonicalExecutionResult(
             spec_json=spec_json,
             provider=provider,

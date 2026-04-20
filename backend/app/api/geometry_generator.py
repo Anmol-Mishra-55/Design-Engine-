@@ -1,34 +1,29 @@
 """
 GLB Geometry Generation API
-Generates 3D geometry files from design specifications
+All outputs go to bucket via upload_to_bucket().
+Local file writes are NOT allowed.
 """
 
-import json
 import logging
-import os
-import struct
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from app.auth_mongodb import get_current_user
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from app.storage import upload_to_bucket
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 logger = logging.getLogger(__name__)
-router = APIRouter(prefix="/api/v1/geometry", tags=["📐 Geometry Generation"])
+router = APIRouter(prefix="/api/v1/geometry", tags=["Geometry Generation"])
 
 
 class GeometryRequest(BaseModel):
-    """Geometry generation request"""
-
     spec_json: Dict[str, Any] = Field(..., description="Design specification")
     request_id: str = Field(..., description="Request identifier")
-    format: str = Field(default="glb", description="Output format (glb, obj)")
+    format: str = Field(default="glb", description="Output format (glb only)")
 
 
 class GeometryResponse(BaseModel):
-    """Geometry generation response"""
-
     request_id: str
     geometry_url: str
     format: str
@@ -36,137 +31,62 @@ class GeometryResponse(BaseModel):
     generation_time_ms: int
 
 
-class GLBGenerator:
-    """Generate GLB files from design specifications"""
-
-    def __init__(self, output_dir: str = "data/geometry_outputs"):
-        self.output_dir = output_dir
-        os.makedirs(output_dir, exist_ok=True)
-
-    def generate_glb(self, spec_json: Dict[str, Any], request_id: str) -> str:
-        """Generate GLB file from design specification"""
-
-        try:
-            # Create simple GLB with basic room geometry
-            glb_content = self._create_simple_glb(spec_json)
-
-            # Save GLB file
-            glb_filename = f"{request_id}.glb"
-            glb_path = os.path.join(self.output_dir, glb_filename)
-
-            with open(glb_path, "wb") as f:
-                f.write(glb_content)
-
-            logger.info(f"Generated GLB file: {glb_path}")
-            return glb_path
-
-        except Exception as e:
-            logger.error(f"GLB generation failed for {request_id}: {e}")
-            raise
-
-    def _create_simple_glb(self, spec_json: Dict[str, Any]) -> bytes:
-        """Create real GLB with actual geometry from spec"""
-        try:
-            from app.geometry_generator_real import generate_real_glb
-
-            return generate_real_glb(spec_json)
-        except Exception as e:
-            logger.warning(f"Real geometry generation failed, using fallback: {e}")
-            # Fallback to simple room
-            rooms = spec_json.get("rooms", [])
-            if not rooms:
-                rooms = [{"type": "room", "length": 4.0, "width": 4.0, "height": 3.0}]
-
-            room = rooms[0]
-            length = room.get("length", 4.0)
-            width = room.get("width", 4.0)
-            height = room.get("height", 3.0)
-
-            # Simple fallback GLB
-            glb_header = b"glTF\x02\x00\x00\x00"
-            mock_data = b'{"asset":{"version":"2.0"},"scenes":[{"nodes":[0]}],"nodes":[{"mesh":0}],"meshes":[{"primitives":[{"attributes":{"POSITION":0}}]}]}'
-            padding = b"\x00" * (1024 - len(mock_data))
-            return glb_header + mock_data + padding
-
-
-# Global instance
-glb_generator = GLBGenerator()
-
-
 @router.post("/generate", response_model=GeometryResponse)
 async def generate_geometry(
-    request: GeometryRequest, background_tasks: BackgroundTasks, current_user: str = Depends(get_current_user)
+    request: GeometryRequest,
+    current_user: str = Depends(get_current_user),
 ):
-    """Generate 3D geometry file from design specification"""
+    """
+    Generate GLB from spec_json["rooms"] and upload to bucket.
+    Returns bucket URL — no local file is written.
+    """
+    if request.format.lower() != "glb":
+        raise HTTPException(status_code=400, detail=f"Unsupported format: {request.format}")
 
-    start_time = datetime.now()
+    start = datetime.now()
 
-    try:
-        if request.format.lower() == "glb":
-            geometry_path = glb_generator.generate_glb(request.spec_json, request.request_id)
-        else:
-            raise HTTPException(status_code=400, detail=f"Unsupported format: {request.format}")
+    # 1. Generate GLB bytes from room-based geometry
+    from app.geometry_generator_real import generate_real_glb
 
-        # Get file size
-        file_size = os.path.getsize(geometry_path)
+    glb_bytes = generate_real_glb(request.spec_json)
 
-        # Calculate generation time
-        generation_time = int((datetime.now() - start_time).total_seconds() * 1000)
+    # 2. Upload to bucket — returns canonical URL
+    bucket_path = f"{request.request_id}.glb"
+    bucket_url = await upload_to_bucket(
+        bucket="geometry",
+        path=bucket_path,
+        data=glb_bytes,
+        content_type="model/gltf-binary",
+    )
 
-        # Generate URL
-        geometry_url = f"/api/v1/geometry/download/{request.request_id}.{request.format}"
+    generation_time_ms = int((datetime.now() - start).total_seconds() * 1000)
+    logger.info("Geometry uploaded: %s  %d bytes  %dms", bucket_url, len(glb_bytes), generation_time_ms)
 
-        logger.info(f"Geometry generated: {geometry_path} ({file_size} bytes)")
-
-        return GeometryResponse(
-            request_id=request.request_id,
-            geometry_url=geometry_url,
-            format=request.format,
-            file_size_bytes=file_size,
-            generation_time_ms=generation_time,
-        )
-
-    except Exception as e:
-        logger.error(f"Geometry generation failed: {e}")
-        raise HTTPException(status_code=500, detail=f"Geometry generation failed: {str(e)}")
-
-
-@router.get("/download/{filename}", include_in_schema=False)
-async def download_geometry(filename: str):
-    """Download generated geometry file"""
-
-    file_path = os.path.join(glb_generator.output_dir, filename)
-
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="Geometry file not found")
-
-    from fastapi.responses import FileResponse
-
-    return FileResponse(
-        file_path,
-        media_type="model/gltf-binary" if filename.endswith(".glb") else "application/octet-stream",
-        filename=filename,
+    return GeometryResponse(
+        request_id=request.request_id,
+        geometry_url=bucket_url,
+        format="glb",
+        file_size_bytes=len(glb_bytes),
+        generation_time_ms=generation_time_ms,
     )
 
 
-@router.get("/list", include_in_schema=False)
-async def list_geometry_files():
-    """List all generated geometry files"""
+@router.get("/download/{file_id}", include_in_schema=False)
+async def download_geometry(
+    file_id: str,
+    current_user: str = Depends(get_current_user),
+):
+    """Stream a GLB file from the geometry bucket."""
+    from app.storage import download_from_bucket
+    from fastapi.responses import Response
 
-    files = []
-    if os.path.exists(glb_generator.output_dir):
-        for filename in os.listdir(glb_generator.output_dir):
-            if filename.endswith((".glb", ".obj")):
-                file_path = os.path.join(glb_generator.output_dir, filename)
-                file_stat = os.stat(file_path)
+    try:
+        data = await download_from_bucket("geometry", file_id)
+    except Exception:
+        raise HTTPException(status_code=404, detail="Geometry file not found in bucket")
 
-                files.append(
-                    {
-                        "filename": filename,
-                        "size_bytes": file_stat.st_size,
-                        "created_at": datetime.fromtimestamp(file_stat.st_ctime).isoformat(),
-                        "download_url": f"/api/v1/geometry/download/{filename}",
-                    }
-                )
-
-    return {"files": files, "total_count": len(files)}
+    return Response(
+        content=data,
+        media_type="model/gltf-binary",
+        headers={"Content-Disposition": f'attachment; filename="{file_id}.glb"'},
+    )

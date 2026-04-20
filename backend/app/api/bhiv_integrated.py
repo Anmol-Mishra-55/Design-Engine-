@@ -17,7 +17,7 @@ from app.external_services import (
     service_manager,
     sohum_client,
 )
-from app.lm_adapter import run_local_lm
+from app.platform_adapter import run_prompt
 from app.utils import create_new_spec_id
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
@@ -132,21 +132,17 @@ async def create_design(request: DesignRequest):
     request_id = f"bhiv_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
     try:
-        # STEP 1: Generate spec using internal LM adapter
-        logger.info(f"[{request_id}] Step 1: Generating spec internally...")
+        # STEP 1: Generate spec via platform_adapter → Prompt Runner
+        logger.info(f"[{request_id}] Step 1: Generating spec via platform_adapter...")
 
-        params = {
-            "user_id": request.user_id,
-            "strategy": request.context.get("style", "modern"),
-            "extracted_dimensions": request.context.get("dimensions", {}),
-        }
+        platform_result = run_prompt(request.prompt)
+        if platform_result.get("status") != "success":
+            raise HTTPException(status_code=503, detail=f"Prompt Runner failed: {platform_result.get('error')}")
 
-        lm_result = run_local_lm(request.prompt, params)
         spec_id = create_new_spec_id()
-
         spec_result = {
             "spec_id": spec_id,
-            "spec_json": lm_result["spec_json"],
+            "spec_json": platform_result.get("instruction", {}),
             "preview_url": f"https://bhiv-previews.s3.amazonaws.com/{spec_id}.glb",
         }
 
@@ -190,15 +186,13 @@ async def process_with_workflow(request: DesignRequest):
     request_id = f"workflow_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
     try:
-        # Step 1: Generate design (same as before)
-        params = {
-            "user_id": request.user_id,
-            "strategy": request.context.get("style", "modern"),
-            "extracted_dimensions": request.context.get("dimensions", {}),
-        }
+        # Step 1: Generate design via platform_adapter → Prompt Runner
+        platform_result = run_prompt(request.prompt)
+        if platform_result.get("status") != "success":
+            raise HTTPException(status_code=503, detail=f"Prompt Runner failed: {platform_result.get('error')}")
 
-        lm_result = run_local_lm(request.prompt, params)
         spec_id = create_new_spec_id()
+        lm_result = {"spec_json": platform_result.get("instruction", {})}
 
         # Step 2: Check if PDF processing is needed
         pdf_url = request.context.get("compliance_pdf_url")

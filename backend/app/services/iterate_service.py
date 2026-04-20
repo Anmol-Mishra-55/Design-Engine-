@@ -12,7 +12,6 @@ from typing import Dict, Tuple
 
 from app.database_mongodb import get_database
 from app.error_handler import APIException
-from app.lm_adapter import lm_run
 from app.schemas.error_schemas import ErrorCode
 from app.utils import create_iter_id, generate_glb_from_spec
 

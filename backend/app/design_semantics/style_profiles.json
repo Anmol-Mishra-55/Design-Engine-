@@ -1,0 +1,373 @@
+{
+  "version": "1.0",
+  "description": "Architectural style profiles with elevation, material, and design hints",
+
+  "modern": {
+    "label": "Modern",
+    "description": "Clean lines, open spaces, minimal ornamentation",
+    "elevation": {
+      "roof": "flat",
+      "roof_overhang_m": 0.6,
+      "facade": "flush_smooth",
+      "parapet": true,
+      "parapet_height_m": 0.9,
+      "balcony_type": "cantilevered",
+      "entrance": "recessed_with_canopy"
+    },
+    "windows": {
+      "type": "large_fixed_or_sliding",
+      "shape": "rectangular",
+      "size": "large",
+      "min_width_m": 1.5,
+      "min_height_m": 1.8,
+      "frame_material": "aluminium",
+      "glazing": "double_pane_clear",
+      "feature": "floor_to_ceiling_possible"
+    },
+    "materials": {
+      "exterior_wall": ["concrete_exposed", "glass_curtain_wall", "metal_cladding"],
+      "interior_wall": ["gypsum_board", "paint_matte"],
+      "floor": ["polished_concrete", "large_format_tile", "engineered_wood"],
+      "ceiling": ["gypsum_false_ceiling", "exposed_concrete"],
+      "roof": ["rcc_flat_slab", "waterproofing_membrane"],
+      "primary": "glass + concrete",
+      "accent": "steel + wood"
+    },
+    "colors": {
+      "exterior_primary": ["#FFFFFF", "#F5F5F5", "#E0E0E0"],
+      "exterior_accent": ["#1A1A1A", "#2C3E50", "#607D8B"],
+      "interior_walls": ["#FAFAFA", "#F0F0F0", "#ECEFF1"],
+      "floor": ["#D3D3D3", "#BCAAA4", "#8D6E63"],
+      "ceiling": "#FFFFFF",
+      "trim": "#1A1A1A"
+    },
+    "furniture_style": "minimalist_contemporary",
+    "lighting": "recessed_led_with_accent",
+    "landscaping": "geometric_minimal",
+    "cost_multiplier": 1.2,
+    "keywords": ["modern", "contemporary", "minimalist", "clean", "sleek"]
+  },
+
+  "traditional": {
+    "label": "Traditional Indian",
+    "description": "Classic Indian architecture with ornate details and warm materials",
+    "elevation": {
+      "roof": "sloped_mangalore_tile",
+      "roof_pitch_degrees": 30,
+      "roof_overhang_m": 1.0,
+      "facade": "textured_plaster",
+      "columns": "decorative_round",
+      "balcony_type": "projected_with_railing",
+      "entrance": "arched_with_pillars",
+      "jali_work": true
+    },
+    "windows": {
+      "type": "casement_or_double_hung",
+      "shape": "arched_top_or_rectangular",
+      "size": "medium",
+      "min_width_m": 1.0,
+      "min_height_m": 1.4,
+      "frame_material": "wood_teak",
+      "glazing": "single_pane",
+      "feature": "wooden_shutters"
+    },
+    "materials": {
+      "exterior_wall": ["brick_exposed", "lime_plaster", "stone_cladding"],
+      "interior_wall": ["lime_plaster", "paint_texture"],
+      "floor": ["vitrified_tile", "kota_stone", "marble"],
+      "ceiling": ["wooden_beam_ceiling", "plaster_of_paris"],
+      "roof": ["mangalore_tile", "rcc_with_tile"],
+      "primary": "brick + wood",
+      "accent": "stone + terracotta"
+    },
+    "colors": {
+      "exterior_primary": ["#D2B48C", "#C19A6B", "#A0522D"],
+      "exterior_accent": ["#8B4513", "#6B3A2A", "#4A2512"],
+      "interior_walls": ["#FFF8DC", "#FAEBD7", "#FFE4C4"],
+      "floor": ["#DEB887", "#CD853F", "#8B6914"],
+      "ceiling": "#FFF8DC",
+      "trim": "#8B4513"
+    },
+    "furniture_style": "carved_wood_traditional",
+    "lighting": "pendant_and_chandelier",
+    "landscaping": "courtyard_with_tulsi",
+    "cost_multiplier": 1.1,
+    "keywords": ["traditional", "classic", "indian", "heritage", "ethnic"]
+  },
+
+  "contemporary": {
+    "label": "Contemporary",
+    "description": "Current trends blending modern and traditional elements",
+    "elevation": {
+      "roof": "flat_with_green_roof_option",
+      "roof_overhang_m": 0.5,
+      "facade": "mixed_material",
+      "balcony_type": "glass_railing",
+      "entrance": "double_height_lobby",
+      "feature_wall": true
+    },
+    "windows": {
+      "type": "sliding_or_tilt_turn",
+      "shape": "rectangular",
+      "size": "large",
+      "min_width_m": 1.2,
+      "min_height_m": 1.5,
+      "frame_material": "upvc_or_aluminium",
+      "glazing": "double_pane_tinted",
+      "feature": "bay_window_possible"
+    },
+    "materials": {
+      "exterior_wall": ["texture_paint", "stone_veneer", "composite_panel"],
+      "interior_wall": ["paint_satin", "wallpaper_accent"],
+      "floor": ["vitrified_tile_large", "laminate_wood", "polished_marble"],
+      "ceiling": ["gypsum_with_cove_lighting", "wooden_slat"],
+      "roof": ["rcc_flat", "green_roof_optional"],
+      "primary": "stone veneer + glass",
+      "accent": "wood + metal"
+    },
+    "colors": {
+      "exterior_primary": ["#F5F0EB", "#EDE0D4", "#D7CCC8"],
+      "exterior_accent": ["#5D4037", "#4E342E", "#3E2723"],
+      "interior_walls": ["#EFEBE9", "#D7CCC8", "#BCAAA4"],
+      "floor": ["#A1887F", "#8D6E63", "#795548"],
+      "ceiling": "#FAFAFA",
+      "trim": "#5D4037"
+    },
+    "furniture_style": "transitional",
+    "lighting": "layered_ambient_task_accent",
+    "landscaping": "mixed_formal_informal",
+    "cost_multiplier": 1.15,
+    "keywords": ["contemporary", "current", "mixed", "transitional"]
+  },
+
+  "luxury": {
+    "label": "Luxury / High-End",
+    "description": "Premium finishes, bespoke design, high-end materials",
+    "elevation": {
+      "roof": "flat_with_infinity_pool_option",
+      "roof_overhang_m": 1.0,
+      "facade": "premium_stone_or_glass",
+      "double_height_entrance": true,
+      "balcony_type": "infinity_glass_railing",
+      "entrance": "grand_double_height",
+      "water_feature": true,
+      "smart_facade": true
+    },
+    "windows": {
+      "type": "floor_to_ceiling_fixed_or_sliding",
+      "shape": "rectangular_panoramic",
+      "size": "extra_large",
+      "min_width_m": 2.4,
+      "min_height_m": 2.7,
+      "frame_material": "slim_aluminium_or_steel",
+      "glazing": "triple_pane_low_e",
+      "feature": "automated_blinds"
+    },
+    "materials": {
+      "exterior_wall": ["italian_marble_cladding", "glass_curtain_wall", "premium_stone"],
+      "interior_wall": ["venetian_plaster", "silk_wallpaper", "marble_cladding"],
+      "floor": ["italian_marble", "engineered_hardwood", "onyx"],
+      "ceiling": ["coffered_gypsum", "wooden_veneer", "backlit_panels"],
+      "roof": ["rcc_with_waterproofing", "green_roof", "infinity_pool_deck"],
+      "primary": "marble + glass",
+      "accent": "gold + brass + premium wood"
+    },
+    "colors": {
+      "exterior_primary": ["#F8F8F8", "#ECECEC", "#E8E0D8"],
+      "exterior_accent": ["#B8860B", "#DAA520", "#C5A028"],
+      "interior_walls": ["#FFFAF0", "#FFF5E6", "#FAF0E6"],
+      "floor": ["#F5F5F5", "#E8E0D0", "#D4C5B0"],
+      "ceiling": "#FFFFFF",
+      "trim": "#B8860B"
+    },
+    "furniture_style": "bespoke_luxury",
+    "lighting": "smart_automated_with_chandeliers",
+    "landscaping": "manicured_formal_with_water_features",
+    "cost_multiplier": 2.5,
+    "keywords": ["luxury", "premium", "high-end", "opulent", "bespoke", "penthouse"]
+  },
+
+  "minimalist": {
+    "label": "Minimalist",
+    "description": "Less is more — functional, clutter-free, neutral palette",
+    "elevation": {
+      "roof": "flat",
+      "roof_overhang_m": 0.3,
+      "facade": "smooth_white_plaster",
+      "balcony_type": "flush_glass_railing",
+      "entrance": "simple_recessed",
+      "no_ornamentation": true
+    },
+    "windows": {
+      "type": "fixed_or_minimal_frame_sliding",
+      "shape": "rectangular",
+      "size": "large",
+      "min_width_m": 1.5,
+      "min_height_m": 2.0,
+      "frame_material": "slim_aluminium",
+      "glazing": "clear_double_pane",
+      "feature": "frameless_look"
+    },
+    "materials": {
+      "exterior_wall": ["smooth_white_plaster", "concrete_board"],
+      "interior_wall": ["white_paint_matte", "microcement"],
+      "floor": ["polished_concrete", "large_white_tile", "light_wood"],
+      "ceiling": ["flat_white_plaster"],
+      "roof": ["rcc_flat_waterproofed"],
+      "primary": "white + concrete",
+      "accent": "natural wood + black steel"
+    },
+    "colors": {
+      "exterior_primary": ["#FFFFFF", "#F9F9F9", "#F2F2F2"],
+      "exterior_accent": ["#000000", "#1C1C1C", "#333333"],
+      "interior_walls": ["#FFFFFF", "#FAFAFA", "#F5F5F5"],
+      "floor": ["#E8E8E8", "#D4D4D4", "#C8C8C8"],
+      "ceiling": "#FFFFFF",
+      "trim": "#000000"
+    },
+    "furniture_style": "minimal_functional",
+    "lighting": "recessed_led_only",
+    "landscaping": "zen_gravel_and_single_tree",
+    "cost_multiplier": 0.9,
+    "keywords": ["minimalist", "minimal", "simple", "clean", "compact", "studio"]
+  },
+
+  "rustic": {
+    "label": "Rustic / Farmhouse",
+    "description": "Natural materials, warm textures, countryside aesthetic",
+    "elevation": {
+      "roof": "pitched_clay_tile_or_thatch",
+      "roof_pitch_degrees": 35,
+      "roof_overhang_m": 1.2,
+      "facade": "exposed_stone_or_brick",
+      "balcony_type": "wooden_railing",
+      "entrance": "wooden_porch_with_columns",
+      "verandah": true
+    },
+    "windows": {
+      "type": "casement_wooden",
+      "shape": "rectangular_with_shutters",
+      "size": "medium",
+      "min_width_m": 0.9,
+      "min_height_m": 1.2,
+      "frame_material": "wood_teak_or_pine",
+      "glazing": "single_pane",
+      "feature": "wooden_shutters_and_grilles"
+    },
+    "materials": {
+      "exterior_wall": ["exposed_stone", "exposed_brick", "rough_plaster"],
+      "interior_wall": ["lime_wash", "exposed_brick_accent"],
+      "floor": ["terracotta_tile", "slate", "reclaimed_wood"],
+      "ceiling": ["exposed_wooden_beam", "bamboo_mat"],
+      "roof": ["clay_tile", "mangalore_tile", "thatch"],
+      "primary": "stone + wood",
+      "accent": "terracotta + iron"
+    },
+    "colors": {
+      "exterior_primary": ["#8B7355", "#A0785A", "#7B5E3A"],
+      "exterior_accent": ["#4A3728", "#3D2B1F", "#2C1F15"],
+      "interior_walls": ["#F5DEB3", "#DEB887", "#D2B48C"],
+      "floor": ["#CD853F", "#A0522D", "#8B4513"],
+      "ceiling": "#DEB887",
+      "trim": "#4A3728"
+    },
+    "furniture_style": "reclaimed_wood_farmhouse",
+    "lighting": "warm_filament_bulbs_and_lanterns",
+    "landscaping": "organic_cottage_garden",
+    "cost_multiplier": 1.0,
+    "keywords": ["rustic", "farmhouse", "countryside", "natural", "organic", "earthy"]
+  },
+
+  "colonial": {
+    "label": "Colonial / Indo-British",
+    "description": "Symmetrical facades, verandahs, high ceilings, colonial detailing",
+    "elevation": {
+      "roof": "hipped_or_gabled_with_dormer",
+      "roof_pitch_degrees": 25,
+      "roof_overhang_m": 1.5,
+      "facade": "symmetrical_with_columns",
+      "columns": "ionic_or_doric",
+      "balcony_type": "wrap_around_verandah",
+      "entrance": "portico_with_steps",
+      "shutters": true
+    },
+    "windows": {
+      "type": "double_hung_sash",
+      "shape": "tall_rectangular",
+      "size": "tall_and_narrow",
+      "min_width_m": 0.9,
+      "min_height_m": 1.8,
+      "frame_material": "wood_painted_white",
+      "glazing": "single_pane_with_muntins",
+      "feature": "louvred_shutters"
+    },
+    "materials": {
+      "exterior_wall": ["lime_plaster_painted_white", "brick_with_plaster"],
+      "interior_wall": ["lime_plaster", "wainscoting_wood"],
+      "floor": ["hardwood_strip", "encaustic_tile", "marble"],
+      "ceiling": ["high_plaster_with_cornice", "wooden_coffered"],
+      "roof": ["clay_tile_hipped", "slate"],
+      "primary": "white plaster + wood",
+      "accent": "wrought iron + brass"
+    },
+    "colors": {
+      "exterior_primary": ["#FFFAF0", "#FFF8DC", "#FAEBD7"],
+      "exterior_accent": ["#006400", "#228B22", "#2E8B57"],
+      "interior_walls": ["#FFFFF0", "#FFFACD", "#FAFAD2"],
+      "floor": ["#DEB887", "#D2B48C", "#BC8F5F"],
+      "ceiling": "#FFFFF0",
+      "trim": "#FFFFFF"
+    },
+    "furniture_style": "colonial_antique",
+    "lighting": "ceiling_fan_with_light_and_wall_sconces",
+    "landscaping": "formal_english_garden",
+    "cost_multiplier": 1.3,
+    "keywords": ["colonial", "british", "heritage", "bungalow", "classic_indian"]
+  },
+
+  "industrial": {
+    "label": "Industrial",
+    "description": "Raw materials, exposed structure, loft aesthetic",
+    "elevation": {
+      "roof": "flat_or_sawtooth",
+      "roof_overhang_m": 0.2,
+      "facade": "exposed_brick_or_concrete",
+      "metal_accents": true,
+      "balcony_type": "steel_grating",
+      "entrance": "large_steel_door",
+      "exposed_pipes": true
+    },
+    "windows": {
+      "type": "steel_frame_fixed_or_pivot",
+      "shape": "large_rectangular_or_grid",
+      "size": "large",
+      "min_width_m": 1.5,
+      "min_height_m": 2.0,
+      "frame_material": "black_steel",
+      "glazing": "clear_single_or_double",
+      "feature": "crittall_style_grid"
+    },
+    "materials": {
+      "exterior_wall": ["exposed_brick", "raw_concrete", "corrugated_metal"],
+      "interior_wall": ["exposed_brick", "raw_concrete", "dark_paint"],
+      "floor": ["polished_concrete", "reclaimed_wood", "epoxy"],
+      "ceiling": ["exposed_ductwork", "exposed_concrete_slab"],
+      "roof": ["metal_deck", "rcc_flat"],
+      "primary": "concrete + steel",
+      "accent": "exposed brick + reclaimed wood"
+    },
+    "colors": {
+      "exterior_primary": ["#696969", "#808080", "#A9A9A9"],
+      "exterior_accent": ["#1C1C1C", "#2F2F2F", "#8B4513"],
+      "interior_walls": ["#3C3C3C", "#4A4A4A", "#5A5A5A"],
+      "floor": ["#808080", "#696969", "#5C4033"],
+      "ceiling": "#2C2C2C",
+      "trim": "#1A1A1A"
+    },
+    "furniture_style": "industrial_metal_and_reclaimed_wood",
+    "lighting": "exposed_filament_and_track_lighting",
+    "landscaping": "urban_minimal_with_planters",
+    "cost_multiplier": 1.1,
+    "keywords": ["industrial", "loft", "raw", "urban", "warehouse"]
+  }
+}

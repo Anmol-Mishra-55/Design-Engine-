@@ -1,41 +1,80 @@
 services:
   - type: web
-    name: design-engine-api
+    name: design-engine
     env: python
     region: oregon
     plan: free
     branch: main
-    buildCommand: pip install -r backend/requirements.txt
-    startCommand: cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
+
     envVars:
+      # ── Python ────────────────────────────────────────────────────────────
       - key: PYTHON_VERSION
-        value: 3.11.0
-      - key: DATABASE_URL
-        sync: false
-      - key: SUPABASE_URL
-        sync: false
-      - key: SUPABASE_KEY
-        sync: false
-      - key: SUPABASE_SERVICE_KEY
-        sync: false
+        value: "3.11.0"
+
+      # ── App ───────────────────────────────────────────────────────────────
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: "false"
+      - key: LOG_LEVEL
+        value: INFO
+
+      # ── MongoDB Atlas ─────────────────────────────────────────────────────
+      - key: MONGODB_URL
+        sync: false          # set in Render dashboard: mongodb+srv://...
+      - key: MONGODB_DATABASE
+        value: bhiv_db
+
+      # ── JWT Auth ──────────────────────────────────────────────────────────
       - key: JWT_SECRET_KEY
-        sync: false
+        sync: false          # min 32-char random string
+      - key: JWT_SECRET
+        sync: false          # same value as JWT_SECRET_KEY
+
+      # ── Demo / Admin ──────────────────────────────────────────────────────
       - key: DEMO_USERNAME
         value: admin
       - key: DEMO_PASSWORD
         sync: false
+      - key: DEMO_MODE
+        value: "false"
+
+      # ── CORS ──────────────────────────────────────────────────────────────
+      - key: CORS_ORIGINS
+        value: "*"           # tighten to your frontend URL in production
+
+      # ── External Services ─────────────────────────────────────────────────
       - key: SOHAM_URL
         value: https://ai-rule-api-w7z5.onrender.com
+      - key: SOHUM_MCP_URL
+        value: https://ai-rule-api-w7z5.onrender.com
+      - key: SOHUM_MCP_ENABLED
+        value: "true"
       - key: RANJEET_RL_URL
         value: https://land-utilization-rl.onrender.com
       - key: LAND_UTILIZATION_ENABLED
-        value: true
-      - key: LAND_UTILIZATION_MOCK_MODE
-        value: false
+        value: "true"
       - key: RANJEET_SERVICE_AVAILABLE
-        value: true
-      - key: DEBUG
-        value: false
-      - key: ENVIRONMENT
+        value: "true"
+
+      # ── 3D Generation (optional — leave blank to use geometry fallback) ───
+      - key: MESHY_API_KEY
+        sync: false
+      - key: TRIPO_API_KEY
+        sync: false
+
+      # ── LM Provider ───────────────────────────────────────────────────────
+      - key: LM_PROVIDER
+        value: local         # platform_adapter handles all routing; no LLM needed
+
+      # ── Monitoring ────────────────────────────────────────────────────────
+      - key: SENTRY_DSN
+        sync: false
+      - key: SENTRY_ENVIRONMENT
         value: production
+      - key: METRICS_ENABLED
+        value: "true"

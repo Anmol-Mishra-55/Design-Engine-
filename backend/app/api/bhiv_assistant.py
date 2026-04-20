@@ -13,7 +13,7 @@ import httpx
 from app.api.monitoring_system import log_error, log_info, track_performance
 from app.config import settings
 from app.database_mongodb import get_database
-from app.lm_adapter import run_local_lm
+from app.platform_adapter import run_prompt
 from app.utils import create_new_spec_id
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
@@ -335,23 +335,21 @@ async def bhiv_prompt(req: BHIVPromptRequest, request: Request, background_tasks
     logger.info(f"[{request_id}] BHIV Assistant request started for user {req.user_id}")
     log_info("bhiv_request_started", request_id=request_id, user_id=req.user_id, city=req.city)
 
-    # Step 1: Generate Design Spec using LM
+    # Step 1: Generate Design Spec via platform_adapter → Prompt Runner
     try:
-        lm_params = {
-            "user_id": req.user_id,
-            "city": req.city,
-            "design_type": req.design_type,
-            "budget": req.budget,
-            "area_sqft": req.area_sqft,
-        }
+        logger.info(f"[{request_id}] Calling platform_adapter for design generation")
+        platform_result = run_prompt(req.prompt)
 
-        logger.info(f"[{request_id}] Calling LM for design generation")
-        lm_result = run_local_lm(req.prompt, lm_params)
+        if platform_result.get("status") != "success":
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=f"Prompt Runner failed: {platform_result.get('error')}",
+            )
 
-        spec_json = lm_result["spec_json"]
-        lm_provider = lm_result.get("provider", "local")
+        spec_json = platform_result.get("instruction", {})
+        lm_provider = "platform_adapter"
 
-        logger.info(f"[{request_id}] Design spec generated using {lm_provider}")
+        logger.info(f"[{request_id}] Design spec generated via platform_adapter")
 
     except Exception as e:
         logger.exception(f"[{request_id}] LM generation failed")

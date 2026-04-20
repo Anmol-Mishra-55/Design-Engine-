@@ -1,0 +1,312 @@
+{
+  "version": "1.0",
+  "description": "Spatial layout rules for Indian residential design",
+
+  "adjacency_rules": [
+    {
+      "rule_id": "ADJ_001",
+      "description": "Kitchen must be adjacent to dining or hall",
+      "from": "kitchen",
+      "to": ["dining", "hall"],
+      "relation": "must_be_adjacent",
+      "priority": "critical"
+    },
+    {
+      "rule_id": "ADJ_002",
+      "description": "Bathroom must be attached to or adjacent to bedroom",
+      "from": "bathroom",
+      "to": ["bedroom", "master_bedroom"],
+      "relation": "must_be_adjacent",
+      "priority": "critical"
+    },
+    {
+      "rule_id": "ADJ_003",
+      "description": "Hall is the central circulation node connecting all rooms",
+      "from": "hall",
+      "to": ["bedroom", "kitchen", "dining", "study", "pooja_room"],
+      "relation": "central_node",
+      "priority": "critical"
+    },
+    {
+      "rule_id": "ADJ_004",
+      "description": "Dining room must be adjacent to kitchen",
+      "from": "dining",
+      "to": ["kitchen"],
+      "relation": "must_be_adjacent",
+      "priority": "high"
+    },
+    {
+      "rule_id": "ADJ_005",
+      "description": "Master bedroom should have attached bathroom",
+      "from": "master_bedroom",
+      "to": ["master_bathroom"],
+      "relation": "must_be_attached",
+      "priority": "critical"
+    },
+    {
+      "rule_id": "ADJ_006",
+      "description": "Balcony should be accessible from hall or bedroom",
+      "from": "balcony",
+      "to": ["hall", "master_bedroom", "bedroom"],
+      "relation": "must_be_adjacent",
+      "priority": "high"
+    },
+    {
+      "rule_id": "ADJ_007",
+      "description": "Pooja room should be near entrance or hall",
+      "from": "pooja_room",
+      "to": ["hall", "entrance"],
+      "relation": "should_be_adjacent",
+      "priority": "medium"
+    },
+    {
+      "rule_id": "ADJ_008",
+      "description": "Study should be away from kitchen and bathroom",
+      "from": "study",
+      "to": ["kitchen", "bathroom"],
+      "relation": "must_not_be_adjacent",
+      "priority": "medium"
+    },
+    {
+      "rule_id": "ADJ_009",
+      "description": "Garage must be accessible from outside and hall",
+      "from": "garage",
+      "to": ["hall", "garden"],
+      "relation": "must_be_adjacent",
+      "priority": "high"
+    },
+    {
+      "rule_id": "ADJ_010",
+      "description": "Terrace accessible from top floor hall or master bedroom",
+      "from": "terrace",
+      "to": ["hall", "master_bedroom"],
+      "relation": "must_be_adjacent",
+      "priority": "high"
+    }
+  ],
+
+  "orientation_rules": [
+    {
+      "rule_id": "ORI_001",
+      "description": "Main entrance should face North or East",
+      "room": "entrance",
+      "preferred_facing": ["north", "east"],
+      "avoid_facing": ["west"],
+      "priority": "high",
+      "reason": "Vastu compliance and natural light"
+    },
+    {
+      "rule_id": "ORI_002",
+      "description": "Kitchen should be in South-East corner",
+      "room": "kitchen",
+      "preferred_corner": "south_east",
+      "preferred_facing": ["east"],
+      "priority": "high",
+      "reason": "Vastu compliance"
+    },
+    {
+      "rule_id": "ORI_003",
+      "description": "Master bedroom should be in South-West",
+      "room": "master_bedroom",
+      "preferred_corner": "south_west",
+      "preferred_facing": ["south", "west"],
+      "priority": "medium",
+      "reason": "Vastu compliance"
+    },
+    {
+      "rule_id": "ORI_004",
+      "description": "Living/Hall should face North or East for natural light",
+      "room": "hall",
+      "preferred_facing": ["north", "east"],
+      "priority": "high",
+      "reason": "Natural light and ventilation"
+    },
+    {
+      "rule_id": "ORI_005",
+      "description": "Bathrooms should not face North-East",
+      "room": "bathroom",
+      "avoid_corner": "north_east",
+      "priority": "medium",
+      "reason": "Vastu compliance"
+    },
+    {
+      "rule_id": "ORI_006",
+      "description": "Pooja room should be in North-East corner",
+      "room": "pooja_room",
+      "preferred_corner": "north_east",
+      "priority": "high",
+      "reason": "Vastu compliance"
+    }
+  ],
+
+  "zoning_rules": [
+    {
+      "rule_id": "ZONE_001",
+      "description": "Private zone: bedrooms and bathrooms grouped together",
+      "zone": "private",
+      "rooms": ["master_bedroom", "bedroom_2", "bedroom_3", "bedroom_4", "master_bathroom", "bathroom_2"],
+      "location": "rear_or_upper_floor",
+      "priority": "critical"
+    },
+    {
+      "rule_id": "ZONE_002",
+      "description": "Public zone: hall, dining, kitchen near entrance",
+      "zone": "public",
+      "rooms": ["hall", "dining", "kitchen"],
+      "location": "front_or_ground_floor",
+      "priority": "critical"
+    },
+    {
+      "rule_id": "ZONE_003",
+      "description": "Service zone: kitchen, utility, garage at periphery",
+      "zone": "service",
+      "rooms": ["kitchen", "utility", "garage"],
+      "location": "side_or_rear",
+      "priority": "high"
+    },
+    {
+      "rule_id": "ZONE_004",
+      "description": "Quiet zone: study and pooja room away from kitchen",
+      "zone": "quiet",
+      "rooms": ["study", "pooja_room"],
+      "location": "away_from_service_zone",
+      "priority": "medium"
+    }
+  ],
+
+  "circulation_rules": [
+    {
+      "rule_id": "CIRC_001",
+      "description": "Minimum corridor width for residential",
+      "element": "corridor",
+      "min_width_m": 1.0,
+      "recommended_width_m": 1.2,
+      "priority": "critical"
+    },
+    {
+      "rule_id": "CIRC_002",
+      "description": "Minimum door width for bedrooms",
+      "element": "bedroom_door",
+      "min_width_m": 0.9,
+      "recommended_width_m": 1.0,
+      "priority": "critical"
+    },
+    {
+      "rule_id": "CIRC_003",
+      "description": "Minimum door width for bathrooms",
+      "element": "bathroom_door",
+      "min_width_m": 0.75,
+      "recommended_width_m": 0.9,
+      "priority": "critical"
+    },
+    {
+      "rule_id": "CIRC_004",
+      "description": "Staircase minimum width for multi-storey",
+      "element": "staircase",
+      "min_width_m": 1.0,
+      "recommended_width_m": 1.2,
+      "min_tread_m": 0.25,
+      "max_riser_m": 0.19,
+      "priority": "critical"
+    },
+    {
+      "rule_id": "CIRC_005",
+      "description": "Hall must allow free movement between all connected rooms",
+      "element": "hall",
+      "min_clear_width_m": 3.0,
+      "priority": "high"
+    }
+  ],
+
+  "structural_rules": [
+    {
+      "rule_id": "STR_001",
+      "description": "Load-bearing walls must align vertically in multi-storey",
+      "element": "load_bearing_wall",
+      "constraint": "vertical_alignment",
+      "priority": "critical"
+    },
+    {
+      "rule_id": "STR_002",
+      "description": "Minimum wall thickness for exterior walls",
+      "element": "exterior_wall",
+      "min_thickness_m": 0.23,
+      "recommended_thickness_m": 0.30,
+      "priority": "critical"
+    },
+    {
+      "rule_id": "STR_003",
+      "description": "Minimum wall thickness for interior walls",
+      "element": "interior_wall",
+      "min_thickness_m": 0.115,
+      "recommended_thickness_m": 0.15,
+      "priority": "critical"
+    },
+    {
+      "rule_id": "STR_004",
+      "description": "Minimum slab thickness for floors",
+      "element": "floor_slab",
+      "min_thickness_m": 0.125,
+      "recommended_thickness_m": 0.15,
+      "priority": "critical"
+    },
+    {
+      "rule_id": "STR_005",
+      "description": "Foundation depth based on soil type",
+      "element": "foundation",
+      "min_depth_m": 1.0,
+      "recommended_depth_m": 1.5,
+      "priority": "critical"
+    }
+  ],
+
+  "ventilation_rules": [
+    {
+      "rule_id": "VENT_001",
+      "description": "Every habitable room must have at least one window",
+      "room_types": ["bedroom", "hall", "dining", "study", "kitchen"],
+      "min_window_count": 1,
+      "min_window_area_sqm": 0.5,
+      "priority": "critical"
+    },
+    {
+      "rule_id": "VENT_002",
+      "description": "Kitchen must have cross ventilation or exhaust",
+      "room": "kitchen",
+      "requirement": "cross_ventilation_or_exhaust",
+      "priority": "critical"
+    },
+    {
+      "rule_id": "VENT_003",
+      "description": "Bathroom must have ventilation window or exhaust fan",
+      "room": "bathroom",
+      "requirement": "ventilation_window_or_exhaust",
+      "priority": "critical"
+    },
+    {
+      "rule_id": "VENT_004",
+      "description": "Window-to-floor area ratio for bedrooms",
+      "room": "bedroom",
+      "min_window_to_floor_ratio": 0.10,
+      "priority": "high"
+    }
+  ],
+
+  "setback_rules": {
+    "description": "Minimum setbacks from plot boundary (Indian municipal standards)",
+    "front_setback_m": 3.0,
+    "rear_setback_m": 3.0,
+    "side_setback_m": 1.5,
+    "corner_plot_side_setback_m": 3.0,
+    "notes": "Varies by city and plot size. Mumbai DCR, Pune DP rules apply."
+  },
+
+  "fsi_rules": {
+    "description": "Floor Space Index by city (approximate)",
+    "Mumbai": { "residential": 1.33, "with_tdr": 3.0 },
+    "Pune": { "residential": 1.5, "with_tdr": 2.5 },
+    "Ahmedabad": { "residential": 1.8 },
+    "Nashik": { "residential": 1.5 },
+    "Bangalore": { "residential": 2.25 }
+  }
+}

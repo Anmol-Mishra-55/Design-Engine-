@@ -1,14 +1,12 @@
 """
-Prompt Runner Adapter - Day 1 Canonical Implementation
+Prompt Runner Adapter - Canonical Implementation
 
-Uses Siddhesh's platform_adapter.py as the EXECUTION AUTHORITY:
-  1. Call platform_adapter.run_from_platform() for domain/intent/entity extraction
-  2. Convert PromptInstruction → spec_json
-  3. Use AI (Groq/OpenAI/Anthropic) to enrich the spec_json
-  4. Return deterministic spec_json to Core
+Uses platform_adapter.py as the EXECUTION AUTHORITY:
+  1. Call platform_adapter.process() for domain/intent/entity extraction
+  2. Convert PromptInstruction → spec_json (deterministic, no direct LLM calls)
+  3. Return deterministic spec_json to Core
 
-Design Engine NO LONGER generates designs independently.
-Prompt Runner (via platform_adapter) is the execution authority.
+Only allowed path: platform_adapter → Prompt Runner
 """
 
 import hashlib
@@ -18,6 +16,7 @@ import re
 from typing import Any, Dict
 
 from app.config import settings
+from app.design_semantics import extract_semantics
 
 logger = logging.getLogger(__name__)
 
@@ -122,44 +121,214 @@ class PromptRunnerAdapterBridge:
         context: Dict[str, Any],
     ) -> Dict[str, Any]:
         """
-        Convert Siddhesh's PromptInstruction to Design Engine spec_json format.
-        Uses AI (Groq/OpenAI/Anthropic) to enrich the specification.
+        Convert PromptInstruction → spec_json with full semantic injection.
+
+        Pipeline:
+          1. extract_semantics(prompt)  → BHK definition + style profile + layout rules
+          2. Resolve dimensions         → from semantics > parameters > prompt > defaults
+          3. Build rooms list           → from BHK definition room_counts
+          4. Build objects              → structural objects sized to dimensions
+          5. Inject layout_rules        → adjacency + orientation + zoning rules
+          6. Inject style_hints         → roof, windows, materials, colors from style profile
+          7. Return fully enriched spec_json
         """
-        # Extract from PromptInstruction
         data = instruction.get("data", {})
         parameters = data.get("parameters", {})
         module = instruction.get("module", "general_processor")
         intent = instruction.get("intent", "design_creation")
 
-        # Determine design_type from module/intent
-        design_type = self._infer_design_type(module, intent, prompt, parameters)
+        # ── Step 1: Semantic extraction ──────────────────────────────────────
+        sem = extract_semantics(prompt)
+        logger.info(
+            "Semantics: bhk=%s(%.2f) style=%s(%.2f) city=%s budget=%s area_sqft=%s",
+            sem.bhk_key,
+            sem.bhk_confidence,
+            sem.style_key,
+            sem.style_confidence,
+            sem.city,
+            sem.budget_inr,
+            sem.area_sqft,
+        )
 
-        # Extract dimensions from parameters or use AI
+        # ── Step 2: Resolve final values (semantics > payload > defaults) ────
+        resolved_city = sem.city or city or "Mumbai"
+        resolved_style = sem.style_key or style or "modern"
+        resolved_stories = (
+            sem.stories
+            or self._extract_stories(parameters, prompt)
+            or (sem.bhk_definition.get("stories", 1) if sem.bhk_definition else 1)
+        )
+
+        # ── Step 3: Resolve dimensions ───────────────────────────────────────
         dimensions = await self._extract_dimensions(parameters, prompt, constraints, context)
 
-        # Build base spec_json
-        spec_json = {
+        # Override with BHK canonical dimensions when no explicit dims in prompt
+        if sem.bhk_definition and not self._has_explicit_dimensions(prompt):
+            bhk_dims = sem.bhk_definition.get("dimensions", {})
+            dimensions["width"] = bhk_dims.get("width_m", dimensions["width"])
+            dimensions["length"] = bhk_dims.get("length_m", dimensions["length"])
+            dimensions["height"] = bhk_dims.get("height_m", dimensions["height"])
+
+        # Override with detected area if available
+        if sem.area_sqm and not self._has_explicit_dimensions(prompt):
+            side = sem.area_sqm**0.5
+            dimensions["width"] = round(side, 2)
+            dimensions["length"] = round(side, 2)
+
+        # ── Step 4: Build rooms list from BHK definition ─────────────────────
+        rooms = self._build_rooms(sem)
+
+        # ── Step 5: Build structural objects ─────────────────────────────────
+        design_type = sem.bhk_key or self._infer_design_type(module, intent, prompt, parameters)
+        objects = self._build_objects(dimensions, resolved_style, sem)
+
+        # ── Step 6: Build layout_rules subset (adjacency + orientation) ──────
+        layout_rules = self._build_layout_rules(sem)
+
+        # ── Step 7: Build style_hints from style profile ──────────────────────
+        style_hints = self._build_style_hints(sem)
+
+        # ── Assemble final spec_json ──────────────────────────────────────────
+        spec_json: Dict[str, Any] = {
+            "type": design_type,
             "design_type": design_type,
-            "city": city,
-            "style": style,
+            "rooms": rooms,
+            "layout_rules": layout_rules,
+            "style": resolved_style,
+            "style_hints": style_hints,
+            "objects": objects,
+            "city": resolved_city,
             "dimensions": dimensions,
             "units": "meters",
-            "stories": self._extract_stories(parameters, prompt),
+            "stories": resolved_stories,
         }
 
-        # Use AI to enrich with rooms/objects if architecture domain
-        if module == "architecture" or "architecture" in str(instruction.get("module", "")):
-            enriched = await self._ai_enrich_spec(spec_json, prompt, parameters)
-            spec_json.update(enriched)
-        else:
-            # Basic rooms/objects for non-architecture
-            spec_json["rooms"] = []
-            spec_json["objects"] = [
-                {"type": "wall", "id": "walls", "count": 4},
-                {"type": "floor", "id": "floor", "dimensions": dimensions},
-            ]
+        # Carry semantic scalars into spec
+        if sem.budget_inr:
+            spec_json["budget_inr"] = sem.budget_inr
+        if sem.area_sqft:
+            spec_json["area_sqft"] = sem.area_sqft
+        if sem.bhk_definition:
+            spec_json["room_counts"] = sem.bhk_definition.get("room_counts", {})
+            spec_json["adjacency"] = sem.bhk_definition.get("adjacency", {})
+            spec_json["room_dimensions"] = sem.bhk_definition.get("room_dimensions", {})
+            spec_json["typical_budget_inr"] = sem.bhk_definition.get("typical_budget_inr", {})
 
         return spec_json
+
+    # ------------------------------------------------------------------
+    # Semantic injection helpers
+    # ------------------------------------------------------------------
+
+    def _has_explicit_dimensions(self, prompt: str) -> bool:
+        """True if prompt contains explicit WxL or area dimensions."""
+        return bool(
+            re.search(r"\d+\s*(?:x|by)\s*\d+", prompt, re.IGNORECASE)
+            or re.search(r"\d+\s*(?:sq\.?\s*ft|sqft|sq\.?\s*m|sqm)", prompt, re.IGNORECASE)
+        )
+
+    def _build_rooms(self, sem) -> list:
+        """Build ordered room list from BHK definition room_counts."""
+        if not sem.bhk_definition:
+            return []
+        room_counts: Dict[str, int] = sem.bhk_definition.get("room_counts", {})
+        rooms = []
+        for room_type, count in room_counts.items():
+            if count == 1:
+                rooms.append(room_type)
+            else:
+                rooms.extend(f"{room_type}_{i+1}" for i in range(count))
+        return rooms
+
+    def _build_objects(self, dimensions: Dict, style: str, sem) -> list:
+        """Build structural objects sized to resolved dimensions + style materials."""
+        w = dimensions.get("width", 10.0)
+        l = dimensions.get("length", 10.0)
+        h = dimensions.get("height", 3.0)
+
+        # Pick materials from style profile
+        ext_wall_mat = "brick"
+        floor_mat = "tile_ceramic"
+        roof_type = "flat"
+        if sem.style_profile:
+            mats = sem.style_profile.get("materials", {})
+            ext_walls = mats.get("exterior_wall", [])
+            floors = mats.get("floor", [])
+            ext_wall_mat = ext_walls[0] if ext_walls else "brick"
+            floor_mat = floors[0] if floors else "tile_ceramic"
+            roof_type = sem.style_profile.get("elevation", {}).get("roof", "flat")
+
+        return [
+            {
+                "id": "foundation",
+                "type": "foundation",
+                "material": "concrete",
+                "dimensions": {"width": w, "length": l, "height": 0.5},
+            },
+            {
+                "id": "exterior_walls",
+                "type": "wall",
+                "subtype": "exterior",
+                "material": ext_wall_mat,
+                "dimensions": {"width": w, "length": l, "height": h},
+            },
+            {
+                "id": "roof",
+                "type": "roof",
+                "subtype": roof_type,
+                "material": "rcc_flat_slab" if "flat" in roof_type else "mangalore_tile",
+                "dimensions": {"width": w + 0.6, "length": l + 0.6, "height": 0.2},
+            },
+            {
+                "id": "floor",
+                "type": "floor",
+                "material": floor_mat,
+                "dimensions": {"width": w, "length": l},
+            },
+        ]
+
+    def _build_layout_rules(self, sem) -> list:
+        """Extract adjacency + orientation rules relevant to detected BHK rooms."""
+        if not sem.layout_rules:
+            return []
+        rules = []
+        for rule in sem.layout_rules.get("adjacency_rules", []):
+            rules.append(
+                {
+                    "rule_id": rule["rule_id"],
+                    "description": rule["description"],
+                    "relation": rule["relation"],
+                    "priority": rule["priority"],
+                }
+            )
+        for rule in sem.layout_rules.get("orientation_rules", []):
+            rules.append(
+                {
+                    "rule_id": rule["rule_id"],
+                    "description": rule["description"],
+                    "priority": rule["priority"],
+                }
+            )
+        return rules
+
+    def _build_style_hints(self, sem) -> Dict[str, Any]:
+        """Extract elevation + material + color hints from style profile."""
+        if not sem.style_profile:
+            return {}
+        p = sem.style_profile
+        return {
+            "roof": p.get("elevation", {}).get("roof", "flat"),
+            "windows": p.get("windows", {}).get("type", "standard"),
+            "material": p.get("materials", {}).get("primary", ""),
+            "facade": p.get("elevation", {}).get("facade", ""),
+            "colors": p.get("colors", {}),
+            "lighting": p.get("lighting", ""),
+            "cost_multiplier": p.get("cost_multiplier", 1.0),
+        }
+
+    def _deterministic_hash(self, payload: Dict[str, Any]) -> str:
+        canonical = json.dumps(payload, sort_keys=True, default=str).encode("utf-8", errors="ignore")
+        return hashlib.sha256(canonical).hexdigest()[:16]
 
     def _infer_design_type(self, module: str, intent: str, prompt: str, parameters: Dict) -> str:
         """Infer design_type from PromptInstruction"""
@@ -227,30 +396,3 @@ class PromptRunnerAdapterBridge:
             return int(match.group(1))
 
         return 1
-
-    async def _ai_enrich_spec(self, base_spec: Dict[str, Any], prompt: str, parameters: Dict) -> Dict[str, Any]:
-        """Use AI (Groq/OpenAI/Anthropic) to enrich spec with rooms/objects"""
-        try:
-            from app.lm_adapter import run_local_lm
-
-            enrichment_prompt = f"""Based on this design request: {prompt}
-
-Generate rooms and objects for a {base_spec['design_type']} design."""
-
-            result = await run_local_lm(enrichment_prompt, parameters)
-            ai_spec = result.get("spec_json", {})
-
-            return {
-                "rooms": ai_spec.get("rooms", []),
-                "objects": ai_spec.get("objects", []),
-            }
-        except Exception as e:
-            logger.warning(f"AI enrichment failed: {e}, using basic structure")
-            return {
-                "rooms": [],
-                "objects": [{"type": "wall", "id": "walls", "count": 4}],
-            }
-
-    def _deterministic_hash(self, payload: Dict[str, Any]) -> str:
-        canonical = json.dumps(payload, sort_keys=True, default=str).encode("utf-8", errors="ignore")
-        return hashlib.sha256(canonical).hexdigest()[:16]

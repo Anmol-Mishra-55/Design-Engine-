@@ -45,12 +45,17 @@ async def download_file_endpoint(bucket: str, file_id: str):
         ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
         meta = grid_out.metadata or {}
         content_type = meta.get("content_type") or CONTENT_TYPES.get(ext, "application/octet-stream")
-        disposition = "attachment" if ext in {"glb", "stl", "step"} else "inline"
+        # Always force download for 3D files so browser saves them directly
+        disposition = "attachment"
 
         return Response(
             content=file_data,
             media_type=content_type,
-            headers={"Content-Disposition": f'{disposition}; filename="{filename}"'},
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"',
+                "Content-Length": str(len(file_data)),
+                "Access-Control-Expose-Headers": "Content-Disposition",
+            },
         )
 
     except HTTPException:

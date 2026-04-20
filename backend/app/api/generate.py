@@ -1,5 +1,11 @@
 """
-Generate API - canonical design execution and export pipeline.
+Generate API — thin HTTP boundary layer.
+
+All execution is delegated to CoreBucketCanonicalOrchestrator.
+This file MUST NOT call prompt_runner, geometry, or storage directly.
+
+Canonical flow enforced here:
+    Client → Core.execute() → Bucket → Prompt Runner → Bucket → Core → Client
 """
 
 import logging
@@ -15,7 +21,7 @@ from app.prompt_runner_adapter import PromptRunnerUnavailableError
 # Import schemas from app.schemas package
 from app.schemas import GenerateRequest, GenerateResponse
 from app.spec_validator import SpecValidationError, validate_spec_json, validate_with_warnings
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -62,18 +68,19 @@ def calculate_estimated_cost(spec_json: Dict[str, Any], city: str, budget: Optio
 
 
 def _extract_export_urls(spec_json: Dict[str, Any], spec_id: str) -> Dict[str, str]:
+    """Extract bucket URLs from spec metadata. Returns bucket API paths only."""
     metadata = spec_json.get("metadata", {}) if isinstance(spec_json.get("metadata"), dict) else {}
     export_urls = metadata.get("export_urls", {}) if isinstance(metadata.get("export_urls"), dict) else {}
 
-    urls = {
-        "glb": export_urls.get("glb") or f"/static/geometry/{spec_id}.glb",
-        "stl": export_urls.get("stl") or f"/static/exports/{spec_id}.stl",
-        "step": export_urls.get("step") or f"/static/exports/{spec_id}.step",
+    # All URLs must come from bucket
+    return {
+        "glb": export_urls.get("glb") or f"/api/v1/files/geometry/{spec_id}.glb",
+        "stl": export_urls.get("stl") or f"/api/v1/files/geometry/exports/{spec_id}.stl",
+        "step": export_urls.get("step") or f"/api/v1/files/geometry/exports/{spec_id}.step",
     }
-    return urls
 
 
-async def _save_spec_to_database(
+async def _persist_spec(
     spec_id: str,
     request: GenerateRequest,
     spec_json: Dict[str, Any],
@@ -82,81 +89,85 @@ async def _save_spec_to_database(
     lm_provider: str,
     generation_time_ms: int,
 ) -> str:
-    """Persist generated spec. Non-fatal on DB failure."""
+    """Persist spec to MongoDB. Non-fatal — DB failure does not block the response."""
     from app.database_mongodb import get_database
 
-    effective_user_id = request.user_id
-
     try:
-        # Get MongoDB database
         db = get_database()
-
-        # Create user if not exists
         user = await db.users.find_one({"$or": [{"_id": request.user_id}, {"username": request.user_id}]})
         if not user:
-            user_data = {
-                "_id": request.user_id,
-                "username": request.user_id,
-                "email": f"{request.user_id}@example.com",
-                "password_hash": "auto_generated_service_account",
-                "full_name": f"User {request.user_id}",
-                "is_active": True,
+            await db.users.insert_one(
+                {
+                    "_id": request.user_id,
+                    "username": request.user_id,
+                    "email": f"{request.user_id}@example.com",
+                    "password_hash": "auto_generated_service_account",
+                    "full_name": f"User {request.user_id}",
+                    "is_active": True,
+                    "created_at": datetime.now(timezone.utc),
+                }
+            )
+        await db.specs.insert_one(
+            {
+                "_id": spec_id,
+                "user_id": request.user_id,
+                "project_id": request.project_id,
+                "prompt": request.prompt,
+                "city": request.city or "Mumbai",
+                "spec_json": spec_json,
+                "design_type": spec_json.get("design_type"),
+                "preview_url": preview_url,
+                "geometry_url": preview_url,
+                "estimated_cost": estimated_cost,
+                "currency": "INR",
+                "compliance_status": "pending",
+                "status": "final",
+                "version": 1,
+                "generation_time_ms": generation_time_ms,
+                "lm_provider": lm_provider,
                 "created_at": datetime.now(timezone.utc),
             }
-            await db.users.insert_one(user_data)
-            logger.info("Created user %s", request.user_id)
+        )
+        logger.info("Spec %s persisted to database", spec_id)
+    except Exception as db_err:
+        logger.error("DB persist failed for %s (non-fatal): %s", spec_id, db_err)
+    return request.user_id
 
-        effective_user_id = request.user_id
 
-        spec_data = {
-            "_id": spec_id,
-            "user_id": effective_user_id,
-            "project_id": request.project_id,
-            "prompt": request.prompt,
-            "city": request.city or "Mumbai",
-            "spec_json": spec_json,
-            "design_type": spec_json.get("design_type"),
-            "preview_url": preview_url,
-            "geometry_url": preview_url,
-            "estimated_cost": estimated_cost,
-            "currency": "INR",
-            "compliance_status": "pending",
-            "status": "final",
-            "version": 1,
-            "generation_time_ms": generation_time_ms,
-            "lm_provider": lm_provider,
-            "created_at": datetime.now(timezone.utc),
-        }
-
-        await db.specs.insert_one(spec_data)
-        logger.info("Saved spec %s to database", spec_id)
-
-    except Exception as db_error:
-        logger.error("Database save failed for %s: %s", spec_id, db_error)
-
-    return effective_user_id
+def _absolute_url(base_url: str, path: str) -> str:
+    """Convert a relative bucket path to a full clickable URL."""
+    if not path:
+        return path
+    if path.startswith("http"):
+        return path
+    return f"{base_url.rstrip('/')}{path}"
 
 
 @router.post("/generate", response_model=GenerateResponse, status_code=status.HTTP_201_CREATED)
-async def generate_design(request: GenerateRequest, current_user: str = Depends(get_current_user)):
+async def generate_design(request: GenerateRequest, req: Request, current_user: str = Depends(get_current_user)):
     """
-    Generate a design using canonical routing:
-    User -> Core -> Bucket -> Prompt Runner Adapter -> Geometry -> Bucket -> Core Response
+    Canonical routing — ALL execution goes through Core:
+
+        data   = bucket.store(request)
+        result = prompt_runner.execute(data)
+        output = bucket.store(result)
+        return output
+
+    Direct backend calls are NOT allowed from this endpoint.
     """
     start_time = time.time()
 
     if not request.prompt or len(request.prompt.strip()) < 10:
         raise HTTPException(status_code=400, detail="Prompt must be at least 10 characters")
-
     if not request.user_id:
         raise HTTPException(status_code=400, detail="user_id is required")
 
     req_city = request.city or "Mumbai"
     req_style = request.style or "modern"
     budget = _extract_budget(request)
-
     spec_id = f"spec_{uuid.uuid4().hex[:12]}"
 
+    # ── Build Core payload ──────────────────────────────────────────────────
     core_payload = {
         "spec_id": spec_id,
         "user_id": request.user_id,
@@ -168,27 +179,32 @@ async def generate_design(request: GenerateRequest, current_user: str = Depends(
         "constraints": getattr(request, "constraints", None) or {},
     }
 
+    # ── Delegate entirely to Core ──────────────────────────────────────────
     orchestrator = CoreBucketCanonicalOrchestrator()
-
     try:
         canonical_result = await orchestrator.execute(spec_id=spec_id, request_payload=core_payload)
     except PromptRunnerUnavailableError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except Exception as exc:
-        logger.error("Canonical execution failed: %s", exc, exc_info=True)
-        raise HTTPException(status_code=500, detail="Canonical execution pipeline failed") from exc
+        logger.error("Core execution failed: %s", exc, exc_info=True)
+        raise HTTPException(status_code=500, detail="Core execution pipeline failed") from exc
 
     spec_json = canonical_result.spec_json
 
+    # ── Validate spec ──────────────────────────────────────────────────────
     try:
         validate_spec_json(spec_json)
         warnings = validate_with_warnings(spec_json)
         if warnings:
-            logger.info("Spec generated with %s non-critical warnings", len(warnings))
+            logger.info("Spec has %d non-critical warnings", len(warnings))
     except SpecValidationError as exc:
         logger.error("Spec validation failed: %s", exc)
-        raise HTTPException(status_code=400, detail=f"Invalid specification from Prompt Runner adapter: {exc}") from exc
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid specification from Prompt Runner: {exc}",
+        ) from exc
 
+    # ── Enrich metadata ──────────────────────────────────────────────────
     estimated_cost = calculate_estimated_cost(spec_json=spec_json, city=req_city, budget=budget)
     generation_time_ms = int((time.time() - start_time) * 1000)
 
@@ -205,11 +221,23 @@ async def generate_design(request: GenerateRequest, current_user: str = Depends(
 
     spec_json["estimated_cost"] = {"total": estimated_cost, "currency": "INR"}
 
+    # Extract bucket URLs and make them absolute + directly downloadable
+    base_url = str(req.base_url)
     export_urls = _extract_export_urls(spec_json, spec_id)
-    preview_url = export_urls["glb"]
+    export_urls_abs = {k: _absolute_url(base_url, v) for k, v in export_urls.items()}
+    preview_url = export_urls_abs["glb"]
     compliance_check_id = f"check_{spec_id}"
 
-    effective_user_id = await _save_spec_to_database(
+    thumbnail_abs = _absolute_url(base_url, metadata.get("meshy_thumbnail_url", ""))
+    meshy_video_url = metadata.get("meshy_video_url", "")
+
+    # Store absolute URLs in metadata so downloads gallery also gets them
+    metadata["export_urls"] = export_urls_abs
+    if thumbnail_abs:
+        metadata["meshy_thumbnail_url"] = thumbnail_abs
+
+    # ── Persist to DB via Core (non-fatal) ────────────────────────────────
+    effective_user_id = await _persist_spec(
         spec_id=spec_id,
         request=request,
         spec_json=spec_json,
@@ -231,12 +259,12 @@ async def generate_design(request: GenerateRequest, current_user: str = Depends(
         city=req_city,
         lm_provider=canonical_result.provider,
         generation_time_ms=generation_time_ms,
-        export_urls=export_urls,
-        glb_url=export_urls.get("glb"),
-        stl_url=export_urls.get("stl"),
-        step_url=export_urls.get("step"),
-        thumbnail_url=metadata.get("meshy_thumbnail_url"),
-        meshy_video_url=metadata.get("meshy_video_url"),
+        export_urls=export_urls_abs,
+        glb_url=export_urls_abs.get("glb"),
+        stl_url=export_urls_abs.get("stl"),
+        step_url=export_urls_abs.get("step"),
+        thumbnail_url=thumbnail_abs or None,
+        meshy_video_url=meshy_video_url or None,
     )
 
 

@@ -1,0 +1,383 @@
+{
+  "1BHK": {
+    "label": "1 Bedroom Hall Kitchen",
+    "rooms": ["bedroom", "hall", "kitchen", "bathroom"],
+    "room_counts": {
+      "bedroom": 1,
+      "hall": 1,
+      "kitchen": 1,
+      "bathroom": 1,
+      "balcony": 1
+    },
+    "min_area_sqft": 400,
+    "max_area_sqft": 650,
+    "typical_area_sqft": 500,
+    "min_area_sqm": 37,
+    "max_area_sqm": 60,
+    "typical_area_sqm": 46,
+    "dimensions": {
+      "width_m": 7.0,
+      "length_m": 6.5,
+      "height_m": 2.7
+    },
+    "room_dimensions": {
+      "bedroom": { "width_m": 3.0, "length_m": 3.5 },
+      "hall": { "width_m": 3.5, "length_m": 4.0 },
+      "kitchen": { "width_m": 2.5, "length_m": 3.0 },
+      "bathroom": { "width_m": 1.5, "length_m": 2.0 },
+      "balcony": { "width_m": 1.2, "length_m": 3.0 }
+    },
+    "adjacency": {
+      "bedroom": ["bathroom", "hall"],
+      "hall": ["kitchen", "bedroom", "balcony"],
+      "kitchen": ["hall"],
+      "bathroom": ["bedroom"],
+      "balcony": ["hall"]
+    },
+    "stories": 1,
+    "typical_budget_inr": { "min": 2500000, "max": 5000000 },
+    "target_occupants": 2
+  },
+
+  "2BHK": {
+    "label": "2 Bedroom Hall Kitchen",
+    "rooms": ["master_bedroom", "bedroom_2", "hall", "kitchen", "master_bathroom", "common_bathroom"],
+    "room_counts": {
+      "bedroom": 2,
+      "hall": 1,
+      "kitchen": 1,
+      "bathroom": 2,
+      "balcony": 1
+    },
+    "min_area_sqft": 700,
+    "max_area_sqft": 1000,
+    "typical_area_sqft": 850,
+    "min_area_sqm": 65,
+    "max_area_sqm": 93,
+    "typical_area_sqm": 79,
+    "dimensions": {
+      "width_m": 9.0,
+      "length_m": 8.5,
+      "height_m": 2.7
+    },
+    "room_dimensions": {
+      "master_bedroom": { "width_m": 3.5, "length_m": 4.0 },
+      "bedroom_2": { "width_m": 3.0, "length_m": 3.5 },
+      "hall": { "width_m": 4.0, "length_m": 5.0 },
+      "kitchen": { "width_m": 2.5, "length_m": 3.5 },
+      "master_bathroom": { "width_m": 1.8, "length_m": 2.2 },
+      "common_bathroom": { "width_m": 1.5, "length_m": 2.0 },
+      "balcony": { "width_m": 1.2, "length_m": 3.5 }
+    },
+    "adjacency": {
+      "master_bedroom": ["master_bathroom", "hall"],
+      "bedroom_2": ["common_bathroom", "hall"],
+      "hall": ["kitchen", "master_bedroom", "bedroom_2", "balcony"],
+      "kitchen": ["hall"],
+      "master_bathroom": ["master_bedroom"],
+      "common_bathroom": ["hall", "bedroom_2"],
+      "balcony": ["hall"]
+    },
+    "stories": 1,
+    "typical_budget_inr": { "min": 4500000, "max": 9000000 },
+    "target_occupants": 4
+  },
+
+  "3BHK": {
+    "label": "3 Bedroom Hall Kitchen",
+    "rooms": ["master_bedroom", "bedroom_2", "bedroom_3", "hall", "dining", "kitchen", "master_bathroom", "bathroom_2", "common_bathroom"],
+    "room_counts": {
+      "bedroom": 3,
+      "hall": 1,
+      "dining": 1,
+      "kitchen": 1,
+      "bathroom": 3,
+      "balcony": 2
+    },
+    "min_area_sqft": 1000,
+    "max_area_sqft": 1500,
+    "typical_area_sqft": 1250,
+    "min_area_sqm": 93,
+    "max_area_sqm": 139,
+    "typical_area_sqm": 116,
+    "dimensions": {
+      "width_m": 11.0,
+      "length_m": 10.5,
+      "height_m": 2.8
+    },
+    "room_dimensions": {
+      "master_bedroom": { "width_m": 4.0, "length_m": 4.5 },
+      "bedroom_2": { "width_m": 3.5, "length_m": 4.0 },
+      "bedroom_3": { "width_m": 3.0, "length_m": 3.5 },
+      "hall": { "width_m": 4.5, "length_m": 5.5 },
+      "dining": { "width_m": 3.0, "length_m": 4.0 },
+      "kitchen": { "width_m": 3.0, "length_m": 4.0 },
+      "master_bathroom": { "width_m": 2.0, "length_m": 2.5 },
+      "bathroom_2": { "width_m": 1.8, "length_m": 2.2 },
+      "common_bathroom": { "width_m": 1.5, "length_m": 2.0 },
+      "balcony_1": { "width_m": 1.5, "length_m": 4.0 },
+      "balcony_2": { "width_m": 1.2, "length_m": 3.0 }
+    },
+    "adjacency": {
+      "master_bedroom": ["master_bathroom", "hall", "balcony_1"],
+      "bedroom_2": ["bathroom_2", "hall"],
+      "bedroom_3": ["common_bathroom", "hall"],
+      "hall": ["dining", "master_bedroom", "bedroom_2", "bedroom_3", "balcony_2"],
+      "dining": ["kitchen", "hall"],
+      "kitchen": ["dining"],
+      "master_bathroom": ["master_bedroom"],
+      "bathroom_2": ["bedroom_2"],
+      "common_bathroom": ["hall"],
+      "balcony_1": ["master_bedroom"],
+      "balcony_2": ["hall"]
+    },
+    "stories": 1,
+    "typical_budget_inr": { "min": 7000000, "max": 15000000 },
+    "target_occupants": 5
+  },
+
+  "4BHK": {
+    "label": "4 Bedroom Hall Kitchen",
+    "rooms": ["master_bedroom", "bedroom_2", "bedroom_3", "bedroom_4", "hall", "dining", "kitchen", "master_bathroom", "bathroom_2", "bathroom_3", "common_bathroom", "study"],
+    "room_counts": {
+      "bedroom": 4,
+      "hall": 1,
+      "dining": 1,
+      "kitchen": 1,
+      "bathroom": 4,
+      "study": 1,
+      "balcony": 2
+    },
+    "min_area_sqft": 1500,
+    "max_area_sqft": 2200,
+    "typical_area_sqft": 1800,
+    "min_area_sqm": 139,
+    "max_area_sqm": 204,
+    "typical_area_sqm": 167,
+    "dimensions": {
+      "width_m": 14.0,
+      "length_m": 12.0,
+      "height_m": 3.0
+    },
+    "room_dimensions": {
+      "master_bedroom": { "width_m": 4.5, "length_m": 5.0 },
+      "bedroom_2": { "width_m": 4.0, "length_m": 4.5 },
+      "bedroom_3": { "width_m": 3.5, "length_m": 4.0 },
+      "bedroom_4": { "width_m": 3.5, "length_m": 4.0 },
+      "hall": { "width_m": 5.0, "length_m": 6.0 },
+      "dining": { "width_m": 4.0, "length_m": 4.5 },
+      "kitchen": { "width_m": 3.5, "length_m": 4.5 },
+      "study": { "width_m": 3.0, "length_m": 3.5 },
+      "master_bathroom": { "width_m": 2.5, "length_m": 3.0 },
+      "bathroom_2": { "width_m": 2.0, "length_m": 2.5 },
+      "bathroom_3": { "width_m": 1.8, "length_m": 2.2 },
+      "common_bathroom": { "width_m": 1.8, "length_m": 2.2 },
+      "balcony_1": { "width_m": 1.8, "length_m": 4.5 },
+      "balcony_2": { "width_m": 1.5, "length_m": 3.5 }
+    },
+    "adjacency": {
+      "master_bedroom": ["master_bathroom", "hall", "balcony_1"],
+      "bedroom_2": ["bathroom_2", "hall"],
+      "bedroom_3": ["bathroom_3", "hall"],
+      "bedroom_4": ["common_bathroom", "hall"],
+      "hall": ["dining", "master_bedroom", "bedroom_2", "bedroom_3", "bedroom_4", "study"],
+      "dining": ["kitchen", "hall", "balcony_2"],
+      "kitchen": ["dining"],
+      "study": ["hall"],
+      "master_bathroom": ["master_bedroom"],
+      "bathroom_2": ["bedroom_2"],
+      "bathroom_3": ["bedroom_3"],
+      "common_bathroom": ["hall"],
+      "balcony_1": ["master_bedroom"],
+      "balcony_2": ["dining"]
+    },
+    "stories": 1,
+    "typical_budget_inr": { "min": 12000000, "max": 25000000 },
+    "target_occupants": 6
+  },
+
+  "5BHK": {
+    "label": "5 Bedroom Hall Kitchen",
+    "rooms": ["master_bedroom", "bedroom_2", "bedroom_3", "bedroom_4", "bedroom_5", "hall", "dining", "kitchen", "master_bathroom", "bathroom_2", "bathroom_3", "bathroom_4", "common_bathroom", "study", "pooja_room"],
+    "room_counts": {
+      "bedroom": 5,
+      "hall": 1,
+      "dining": 1,
+      "kitchen": 1,
+      "bathroom": 5,
+      "study": 1,
+      "pooja_room": 1,
+      "balcony": 3
+    },
+    "min_area_sqft": 2200,
+    "max_area_sqft": 3500,
+    "typical_area_sqft": 2800,
+    "min_area_sqm": 204,
+    "max_area_sqm": 325,
+    "typical_area_sqm": 260,
+    "dimensions": {
+      "width_m": 17.0,
+      "length_m": 15.0,
+      "height_m": 3.0
+    },
+    "room_dimensions": {
+      "master_bedroom": { "width_m": 5.0, "length_m": 5.5 },
+      "bedroom_2": { "width_m": 4.5, "length_m": 5.0 },
+      "bedroom_3": { "width_m": 4.0, "length_m": 4.5 },
+      "bedroom_4": { "width_m": 4.0, "length_m": 4.5 },
+      "bedroom_5": { "width_m": 3.5, "length_m": 4.0 },
+      "hall": { "width_m": 6.0, "length_m": 7.0 },
+      "dining": { "width_m": 4.5, "length_m": 5.0 },
+      "kitchen": { "width_m": 4.0, "length_m": 5.0 },
+      "study": { "width_m": 3.5, "length_m": 4.0 },
+      "pooja_room": { "width_m": 2.0, "length_m": 2.5 },
+      "master_bathroom": { "width_m": 3.0, "length_m": 3.5 },
+      "bathroom_2": { "width_m": 2.5, "length_m": 3.0 },
+      "bathroom_3": { "width_m": 2.0, "length_m": 2.5 },
+      "bathroom_4": { "width_m": 2.0, "length_m": 2.5 },
+      "common_bathroom": { "width_m": 1.8, "length_m": 2.2 },
+      "balcony_1": { "width_m": 2.0, "length_m": 5.0 },
+      "balcony_2": { "width_m": 1.8, "length_m": 4.0 },
+      "balcony_3": { "width_m": 1.5, "length_m": 3.5 }
+    },
+    "adjacency": {
+      "master_bedroom": ["master_bathroom", "hall", "balcony_1"],
+      "bedroom_2": ["bathroom_2", "hall"],
+      "bedroom_3": ["bathroom_3", "hall"],
+      "bedroom_4": ["bathroom_4", "hall"],
+      "bedroom_5": ["common_bathroom", "hall"],
+      "hall": ["dining", "master_bedroom", "bedroom_2", "bedroom_3", "bedroom_4", "bedroom_5", "study", "pooja_room"],
+      "dining": ["kitchen", "hall", "balcony_2"],
+      "kitchen": ["dining"],
+      "study": ["hall", "balcony_3"],
+      "pooja_room": ["hall"],
+      "master_bathroom": ["master_bedroom"],
+      "bathroom_2": ["bedroom_2"],
+      "bathroom_3": ["bedroom_3"],
+      "bathroom_4": ["bedroom_4"],
+      "common_bathroom": ["hall"],
+      "balcony_1": ["master_bedroom"],
+      "balcony_2": ["dining"],
+      "balcony_3": ["study"]
+    },
+    "stories": 2,
+    "typical_budget_inr": { "min": 20000000, "max": 50000000 },
+    "target_occupants": 8
+  },
+
+  "VILLA": {
+    "label": "Independent Villa / Bungalow",
+    "rooms": ["master_bedroom", "bedroom_2", "bedroom_3", "bedroom_4", "hall", "dining", "kitchen", "master_bathroom", "bathroom_2", "bathroom_3", "common_bathroom", "study", "pooja_room", "garage", "garden", "terrace"],
+    "room_counts": {
+      "bedroom": 4,
+      "hall": 1,
+      "dining": 1,
+      "kitchen": 1,
+      "bathroom": 4,
+      "study": 1,
+      "pooja_room": 1,
+      "garage": 1,
+      "garden": 1,
+      "terrace": 1,
+      "balcony": 2
+    },
+    "min_area_sqft": 2500,
+    "max_area_sqft": 6000,
+    "typical_area_sqft": 3500,
+    "min_area_sqm": 232,
+    "max_area_sqm": 557,
+    "typical_area_sqm": 325,
+    "dimensions": {
+      "width_m": 18.0,
+      "length_m": 18.0,
+      "height_m": 7.0
+    },
+    "room_dimensions": {
+      "master_bedroom": { "width_m": 5.5, "length_m": 6.0 },
+      "bedroom_2": { "width_m": 4.5, "length_m": 5.0 },
+      "bedroom_3": { "width_m": 4.0, "length_m": 4.5 },
+      "bedroom_4": { "width_m": 4.0, "length_m": 4.5 },
+      "hall": { "width_m": 6.0, "length_m": 8.0 },
+      "dining": { "width_m": 5.0, "length_m": 5.5 },
+      "kitchen": { "width_m": 4.5, "length_m": 5.5 },
+      "study": { "width_m": 4.0, "length_m": 4.5 },
+      "pooja_room": { "width_m": 2.5, "length_m": 3.0 },
+      "garage": { "width_m": 6.0, "length_m": 6.0 },
+      "garden": { "width_m": 8.0, "length_m": 10.0 },
+      "terrace": { "width_m": 10.0, "length_m": 12.0 }
+    },
+    "adjacency": {
+      "master_bedroom": ["master_bathroom", "hall", "terrace"],
+      "bedroom_2": ["bathroom_2", "hall"],
+      "bedroom_3": ["bathroom_3", "hall"],
+      "bedroom_4": ["common_bathroom", "hall"],
+      "hall": ["dining", "study", "pooja_room", "garage", "garden"],
+      "dining": ["kitchen", "hall"],
+      "kitchen": ["dining", "garden"],
+      "garage": ["hall", "garden"],
+      "garden": ["hall", "kitchen", "garage"],
+      "terrace": ["master_bedroom"]
+    },
+    "stories": 2,
+    "typical_budget_inr": { "min": 30000000, "max": 100000000 },
+    "target_occupants": 8
+  },
+
+  "PENTHOUSE": {
+    "label": "Luxury Penthouse",
+    "rooms": ["master_bedroom", "bedroom_2", "bedroom_3", "hall", "dining", "kitchen", "master_bathroom", "bathroom_2", "common_bathroom", "study", "home_theatre", "terrace", "jacuzzi_deck"],
+    "room_counts": {
+      "bedroom": 3,
+      "hall": 1,
+      "dining": 1,
+      "kitchen": 1,
+      "bathroom": 3,
+      "study": 1,
+      "home_theatre": 1,
+      "terrace": 1,
+      "jacuzzi_deck": 1,
+      "balcony": 2
+    },
+    "min_area_sqft": 3000,
+    "max_area_sqft": 8000,
+    "typical_area_sqft": 5000,
+    "min_area_sqm": 279,
+    "max_area_sqm": 743,
+    "typical_area_sqm": 465,
+    "dimensions": {
+      "width_m": 22.0,
+      "length_m": 21.0,
+      "height_m": 3.5
+    },
+    "room_dimensions": {
+      "master_bedroom": { "width_m": 6.0, "length_m": 7.0 },
+      "bedroom_2": { "width_m": 5.0, "length_m": 5.5 },
+      "bedroom_3": { "width_m": 4.5, "length_m": 5.0 },
+      "hall": { "width_m": 8.0, "length_m": 10.0 },
+      "dining": { "width_m": 5.5, "length_m": 6.0 },
+      "kitchen": { "width_m": 5.0, "length_m": 6.0 },
+      "study": { "width_m": 4.0, "length_m": 4.5 },
+      "home_theatre": { "width_m": 5.0, "length_m": 6.0 },
+      "master_bathroom": { "width_m": 3.5, "length_m": 4.0 },
+      "bathroom_2": { "width_m": 2.5, "length_m": 3.0 },
+      "common_bathroom": { "width_m": 2.0, "length_m": 2.5 },
+      "terrace": { "width_m": 12.0, "length_m": 15.0 },
+      "jacuzzi_deck": { "width_m": 5.0, "length_m": 6.0 }
+    },
+    "adjacency": {
+      "master_bedroom": ["master_bathroom", "hall", "terrace", "jacuzzi_deck"],
+      "bedroom_2": ["bathroom_2", "hall"],
+      "bedroom_3": ["common_bathroom", "hall"],
+      "hall": ["dining", "home_theatre", "study", "terrace"],
+      "dining": ["kitchen", "hall"],
+      "kitchen": ["dining"],
+      "home_theatre": ["hall"],
+      "study": ["hall"],
+      "terrace": ["hall", "master_bedroom", "jacuzzi_deck"],
+      "jacuzzi_deck": ["terrace", "master_bedroom"]
+    },
+    "stories": 1,
+    "typical_budget_inr": { "min": 50000000, "max": 300000000 },
+    "target_occupants": 6
+  }
+}
