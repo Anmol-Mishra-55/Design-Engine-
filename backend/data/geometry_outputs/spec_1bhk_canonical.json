@@ -1,0 +1,39 @@
+{
+  "spec_id": "spec_1bhk_canonical",
+  "bhk_type": "1BHK",
+  "style": "modern",
+  "city": "Mumbai",
+  "stories": 1,
+  "dimensions": {
+    "width_m": 7.0,
+    "length_m": 6.5,
+    "height_m": 2.7
+  },
+  "rooms": ["bedroom", "hall", "kitchen", "bathroom"],
+  "room_count": 4,
+  "room_dimensions": {
+    "bedroom":  {"width_m": 3.0, "length_m": 3.5, "height_m": 2.7},
+    "hall":     {"width_m": 3.5, "length_m": 4.0, "height_m": 2.7},
+    "kitchen":  {"width_m": 2.5, "length_m": 3.0, "height_m": 2.7},
+    "bathroom": {"width_m": 1.5, "length_m": 2.0, "height_m": 2.4}
+  },
+  "adjacency": {
+    "bedroom":  ["bathroom", "hall"],
+    "hall":     ["kitchen", "bedroom", "balcony"],
+    "kitchen":  ["hall"],
+    "bathroom": ["bedroom"]
+  },
+  "layout_rules_applied": 16,
+  "metadata": {
+    "glb_file": "spec_1bhk_canonical.glb",
+    "glb_bytes": 3396,
+    "hash": "e8966c4bd72004dc",
+    "vertices": 96,
+    "faces": 48,
+    "execution_path": "core->bucket->prompt_runner->geometry->bucket",
+    "execution_authority": "platform_adapter",
+    "bhk_confidence": 1.0,
+    "style_confidence": 0.8,
+    "deterministic": true
+  }
+}

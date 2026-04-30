@@ -1,0 +1,43 @@
+{
+  "spec_id": "spec_2bhk_canonical",
+  "bhk_type": "2BHK",
+  "style": "modern",
+  "city": "Pune",
+  "stories": 1,
+  "dimensions": {
+    "width_m": 9.0,
+    "length_m": 8.5,
+    "height_m": 2.7
+  },
+  "rooms": ["master_bedroom", "bedroom_2", "hall", "kitchen", "master_bathroom", "common_bathroom"],
+  "room_count": 6,
+  "room_dimensions": {
+    "master_bedroom":  {"width_m": 3.5, "length_m": 4.0, "height_m": 2.7},
+    "bedroom_2":       {"width_m": 3.0, "length_m": 3.5, "height_m": 2.7},
+    "hall":            {"width_m": 4.0, "length_m": 5.0, "height_m": 2.7},
+    "kitchen":         {"width_m": 2.5, "length_m": 3.5, "height_m": 2.7},
+    "master_bathroom": {"width_m": 1.8, "length_m": 2.2, "height_m": 2.4},
+    "common_bathroom": {"width_m": 1.5, "length_m": 2.0, "height_m": 2.4}
+  },
+  "adjacency": {
+    "master_bedroom":  ["master_bathroom", "hall"],
+    "bedroom_2":       ["common_bathroom", "hall"],
+    "hall":            ["kitchen", "master_bedroom", "bedroom_2", "balcony"],
+    "kitchen":         ["hall"],
+    "master_bathroom": ["master_bedroom"],
+    "common_bathroom": ["hall", "bedroom_2"]
+  },
+  "layout_rules_applied": 16,
+  "metadata": {
+    "glb_file": "spec_2bhk_canonical.glb",
+    "glb_bytes": 4680,
+    "hash": "8fe5a09ab7f6a106",
+    "vertices": 144,
+    "faces": 72,
+    "execution_path": "core->bucket->prompt_runner->geometry->bucket",
+    "execution_authority": "platform_adapter",
+    "bhk_confidence": 1.0,
+    "style_confidence": 0.8,
+    "deterministic": true
+  }
+}

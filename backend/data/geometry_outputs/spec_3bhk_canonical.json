@@ -1,0 +1,49 @@
+{
+  "spec_id": "spec_3bhk_canonical",
+  "bhk_type": "3BHK",
+  "style": "modern",
+  "city": "Ahmedabad",
+  "stories": 1,
+  "dimensions": {
+    "width_m": 11.0,
+    "length_m": 10.5,
+    "height_m": 2.8
+  },
+  "rooms": ["master_bedroom", "bedroom_2", "bedroom_3", "hall", "dining", "kitchen", "master_bathroom", "bathroom_2", "common_bathroom"],
+  "room_count": 9,
+  "room_dimensions": {
+    "master_bedroom":  {"width_m": 4.0, "length_m": 4.5, "height_m": 2.8},
+    "bedroom_2":       {"width_m": 3.5, "length_m": 4.0, "height_m": 2.7},
+    "bedroom_3":       {"width_m": 3.0, "length_m": 3.5, "height_m": 2.7},
+    "hall":            {"width_m": 4.5, "length_m": 5.5, "height_m": 2.8},
+    "dining":          {"width_m": 3.0, "length_m": 4.0, "height_m": 2.7},
+    "kitchen":         {"width_m": 3.0, "length_m": 4.0, "height_m": 2.7},
+    "master_bathroom": {"width_m": 2.0, "length_m": 2.5, "height_m": 2.4},
+    "bathroom_2":      {"width_m": 1.8, "length_m": 2.2, "height_m": 2.4},
+    "common_bathroom": {"width_m": 1.5, "length_m": 2.0, "height_m": 2.4}
+  },
+  "adjacency": {
+    "master_bedroom":  ["master_bathroom", "hall", "balcony_1"],
+    "bedroom_2":       ["bathroom_2", "hall"],
+    "bedroom_3":       ["common_bathroom", "hall"],
+    "hall":            ["dining", "master_bedroom", "bedroom_2", "bedroom_3", "balcony_2"],
+    "dining":          ["kitchen", "hall"],
+    "kitchen":         ["dining"],
+    "master_bathroom": ["master_bedroom"],
+    "bathroom_2":      ["bedroom_2"],
+    "common_bathroom": ["hall"]
+  },
+  "layout_rules_applied": 16,
+  "metadata": {
+    "glb_file": "spec_3bhk_canonical.glb",
+    "glb_bytes": 6624,
+    "hash": "8e0f065b6c769a47",
+    "vertices": 216,
+    "faces": 108,
+    "execution_path": "core->bucket->prompt_runner->geometry->bucket",
+    "execution_authority": "platform_adapter",
+    "bhk_confidence": 1.0,
+    "style_confidence": 0.8,
+    "deterministic": true
+  }
+}
