@@ -57,42 +57,7 @@ class IterateService:
                 raise
             except Exception as e:
                 logger.error(f"Database error loading spec: {str(e)}")
-                logger.warning("Database tables not available, using mock response for testing")
-
-                # Check if this is a "not found" test case
-                if "nonexistent" in spec_id or "invalid" in spec_id:
-                    raise APIException(
-                        status_code=404, error_code=ErrorCode.NOT_FOUND, message=f"Spec {spec_id} not found"
-                    )
-
-                # Check for invalid strategy test case
-                if "invalid_strategy" in strategy:
-                    raise APIException(
-                        status_code=400,
-                        error_code=ErrorCode.INVALID_INPUT,
-                        message=f"Unknown strategy: {strategy}",
-                        details={
-                            "valid_strategies": [
-                                "auto_optimize",
-                                "improve_materials",
-                                "improve_layout",
-                                "improve_colors",
-                            ]
-                        },
-                    )
-
-                print(f"⚠️ Spec {spec_id} not found in storage or database - using mock response")
-                # Return mock response for missing specs
-                return {
-                    "before": {"design_type": "mock", "objects": []},
-                    "after": {"design_type": "mock_improved", "objects": []},
-                    "feedback": f"Mock {strategy} improvement",
-                    "iteration_id": "iter_mock_123",
-                    "preview_url": "https://mock-preview.glb",
-                    "spec_version": 2,
-                    "training_triggered": False,
-                    "strategy": strategy,
-                }
+                raise APIException(status_code=404, error_code=ErrorCode.NOT_FOUND, message=f"Spec {spec_id} not found")
 
         # Continue with genuine processing using stored spec
         before_spec = copy.deepcopy(spec_json)
@@ -179,27 +144,22 @@ class IterateService:
 
             except Exception as e:
                 logger.error(f"Error saving iteration: {str(e)}")
-                print(f"⚠️ Database save failed: {e}")
-                iter_id = "iter_mock_123"
-                spec_version = 2
+                raise RuntimeError(f"Iteration DB save failed: {str(e)}")
 
-        # 4. Generate preview
-        preview_url = None
+        # 4. Generate preview and upload to bucket
         try:
-            preview_bytes = generate_glb_from_spec(improved_spec)
-            preview_path = f"{spec_id}_v{spec_version}.glb"
-            # Try to import bucket functions, fallback to mock if not available
-            try:
-                from app.storage_mongodb import get_signed_url, upload_to_bucket
+            from app.geometry_generator_real import generate_real_glb
+            from app.storage import upload_to_bucket
 
-                await upload_to_bucket("previews", preview_path, preview_bytes)
-                preview_url = get_signed_url("previews", preview_path, expires=600)
-            except ImportError:
-                logger.warning("Storage functions not available, using mock preview URL")
-                preview_url = "https://mock-preview.glb"
+            preview_bytes = generate_real_glb(improved_spec)
+            if not preview_bytes or len(preview_bytes) < 100:
+                raise RuntimeError("Geometry generation failed: empty output")
+
+            preview_path = f"{spec_id}_v{spec_version}.glb"
+            preview_url = await upload_to_bucket("previews", preview_path, preview_bytes, "model/gltf-binary")
         except Exception as e:
-            logger.warning(f"Preview generation failed: {str(e)}")
-            preview_url = "https://mock-preview.glb"
+            logger.error(f"Preview generation/upload failed: {str(e)}")
+            raise RuntimeError(f"Geometry generation failed: {str(e)}")
 
         # 5. Check if should trigger training
         training_triggered = False
@@ -215,7 +175,7 @@ class IterateService:
             "after": improved_spec,
             "feedback": f"Successfully applied {strategy} improvement",
             "iteration_id": iter_id,
-            "preview_url": preview_url or "https://mock-preview.glb",
+            "preview_url": preview_url,
             "spec_version": spec_version,
             "training_triggered": training_triggered,
             "strategy": strategy,

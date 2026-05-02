@@ -155,6 +155,15 @@ async def generate_design(request: GenerateRequest, req: Request, current_user: 
 
     Direct backend calls are NOT allowed from this endpoint.
     """
+    # Core bypass guard — every request must carry a valid authenticated user
+    # (enforced by get_current_user). Any call that bypasses auth is rejected
+    # before reaching this point. Additional guard: spec_id must not be
+    # pre-supplied by the caller (Core generates it internally).
+    if getattr(request, "spec_id", None):
+        raise HTTPException(
+            status_code=403,
+            detail="Forbidden: spec_id must not be supplied by caller. All requests must originate from Core.",
+        )
     start_time = time.time()
 
     if not request.prompt or len(request.prompt.strip()) < 10:

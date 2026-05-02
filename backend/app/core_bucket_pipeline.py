@@ -235,8 +235,8 @@ class CoreBucketCanonicalOrchestrator:
         self, spec_json: Dict[str, Any], prompt: str, spec_id: str, metadata: Dict[str, Any]
     ) -> Tuple[bytes, str]:
         """
-        Try Meshy AI first, then Tripo AI, then fall back to deterministic geometry.
-        Returns (glb_bytes, provider_name).
+        GLB generation: Meshy AI -> Tripo AI -> geometry_generator_real.
+        If geometry_generator_real fails -> raise. No dummy meshes, no silent fallbacks.
         """
         dimensions = spec_json.get("dimensions", {})
 
@@ -251,8 +251,7 @@ class CoreBucketCanonicalOrchestrator:
                 if meshy_result and isinstance(meshy_result, dict):
                     glb_bytes = meshy_result.get("glb_bytes")
                     if glb_bytes and len(glb_bytes) > 100:
-                        logger.info("✅ Meshy AI GLB generated: %d bytes", len(glb_bytes))
-                        # Store thumbnail if available
+                        logger.info("Meshy AI GLB generated: %d bytes", len(glb_bytes))
                         thumbnail_bytes = meshy_result.get("thumbnail_bytes")
                         if thumbnail_bytes:
                             try:
@@ -260,15 +259,13 @@ class CoreBucketCanonicalOrchestrator:
                                     "previews", f"{spec_id}_meshy_preview.png", thumbnail_bytes
                                 )
                                 metadata["meshy_thumbnail_url"] = thumb_url
-                                logger.info("✅ Meshy thumbnail stored: %s", thumb_url)
                             except Exception as te:
                                 logger.warning("Thumbnail upload failed: %s", te)
                         if meshy_result.get("video_url"):
                             metadata["meshy_video_url"] = meshy_result["video_url"]
                         return glb_bytes, "meshy_ai"
-                logger.warning("Meshy returned empty/invalid GLB, trying Tripo...")
             except Exception as exc:
-                logger.warning("Meshy AI failed (%s), trying Tripo...", exc)
+                logger.warning("Meshy AI failed: %s", exc)
 
         # 2. Try Tripo AI
         tripo_key = getattr(settings, "TRIPO_API_KEY", None) or ""
@@ -279,120 +276,18 @@ class CoreBucketCanonicalOrchestrator:
                 logger.info("Attempting Tripo AI 3D generation...")
                 glb_bytes = await generate_3d_with_tripo(prompt, dimensions, tripo_key)
                 if glb_bytes and len(glb_bytes) > 100:
-                    logger.info("✅ Tripo AI GLB generated: %d bytes", len(glb_bytes))
+                    logger.info("Tripo AI GLB generated: %d bytes", len(glb_bytes))
                     return glb_bytes, "tripo_ai"
-                logger.warning("Tripo returned empty/invalid GLB, using geometry fallback...")
             except Exception as exc:
-                logger.warning("Tripo AI failed (%s), using geometry fallback...", exc)
+                logger.warning("Tripo AI failed: %s", exc)
 
-        # 3. Deterministic geometry fallback
-        return self._generate_glb_from_geometry(spec_json), "geometry_generator_real"
+        # 3. Deterministic room-based geometry — raise on failure, no dummy mesh
+        from app.geometry_generator_real import generate_real_glb
 
-    def _generate_glb_from_geometry(self, spec_json: Dict[str, Any]) -> bytes:
-        """Generate GLB using deterministic Python geometry (always works, no API needed)."""
-        try:
-            from app.geometry_generator_real import generate_real_glb
-
-            return generate_real_glb(spec_json)
-        except Exception as exc:
-            logger.warning("geometry_generator_real failed (%s), using minimal fallback GLB", exc)
-            return self._minimal_fallback_glb()
-
-    def _minimal_fallback_glb(self) -> bytes:
-        """Absolute last-resort valid GLB binary."""
-        import json as _json
-        import struct
-
-        gltf = _json.dumps(
-            {
-                "asset": {"version": "2.0"},
-                "scenes": [{"nodes": [0]}],
-                "nodes": [{"mesh": 0}],
-                "meshes": [{"primitives": [{"attributes": {"POSITION": 0}, "indices": 1}]}],
-                "accessors": [
-                    {"bufferView": 0, "componentType": 5126, "count": 8, "type": "VEC3"},
-                    {"bufferView": 1, "componentType": 5123, "count": 36, "type": "SCALAR"},
-                ],
-                "bufferViews": [
-                    {"buffer": 0, "byteOffset": 0, "byteLength": 96},
-                    {"buffer": 0, "byteOffset": 96, "byteLength": 72},
-                ],
-                "buffers": [{"byteLength": 168}],
-            }
-        ).encode("utf-8")
-
-        # 8 vertices of a 10x10x3 box
-        verts = [
-            (0, 0, 0),
-            (10, 0, 0),
-            (10, 10, 0),
-            (0, 10, 0),
-            (0, 0, 3),
-            (10, 0, 3),
-            (10, 10, 3),
-            (0, 10, 3),
-        ]
-        vert_data = b"".join(struct.pack("<fff", *v) for v in verts)
-
-        # 12 triangles (6 faces × 2)
-        idx = [
-            0,
-            1,
-            2,
-            0,
-            2,
-            3,
-            4,
-            6,
-            5,
-            4,
-            7,
-            6,
-            0,
-            4,
-            5,
-            0,
-            5,
-            1,
-            1,
-            5,
-            6,
-            1,
-            6,
-            2,
-            2,
-            6,
-            7,
-            2,
-            7,
-            3,
-            3,
-            7,
-            4,
-            3,
-            4,
-            0,
-        ]
-        idx_data = b"".join(struct.pack("<H", i) for i in idx)
-
-        bin_data = vert_data + idx_data
-        pad = (4 - len(bin_data) % 4) % 4
-        bin_data += b"\x00" * pad
-
-        json_pad = (4 - len(gltf) % 4) % 4
-        gltf += b" " * json_pad
-
-        total = 12 + 8 + len(gltf) + 8 + len(bin_data)
-        return (
-            b"glTF"
-            + struct.pack("<II", 2, total)
-            + struct.pack("<I", len(gltf))
-            + b"JSON"
-            + gltf
-            + struct.pack("<I", len(bin_data))
-            + b"BIN\x00"
-            + bin_data
-        )
+        glb_bytes = generate_real_glb(spec_json)
+        if not glb_bytes or len(glb_bytes) < 100:
+            raise RuntimeError("Geometry generation failed: generate_real_glb returned empty output")
+        return glb_bytes, "geometry_generator_real"
 
     # ──────────────────────────────────────────────────────────────────────────
     # STL / STEP conversion helpers

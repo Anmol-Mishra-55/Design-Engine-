@@ -385,11 +385,9 @@ def generate_real_glb(spec_json: Dict[str, Any]) -> bytes:
         stories,
     )
 
-    # ── Fallback: no rooms → single bounding box ─────────────────────────────
+    # ── No rooms → hard fail, no silent fallback ─────────────────────────────
     if not rooms:
-        logger.warning("No rooms in spec — generating single bounding-box room")
-        rooms = ["main_space"]
-        room_dimensions = {"main_space": {"width_m": total_w, "length_m": total_l, "height_m": floor_h}}
+        raise ValueError("Geometry generation failed: spec has no rooms defined")
 
     # ── Layout rooms ─────────────────────────────────────────────────────────
     layout = _layout_rooms(rooms, room_dimensions, total_w, floor_h)
