@@ -143,6 +143,9 @@ class CoreBucketCanonicalOrchestrator:
     async def execute(self, spec_id: str, request_payload: Dict[str, Any]) -> CanonicalExecutionResult:
         trace_id = f"core_bucket_{spec_id}"
 
+        # Stamp Core token so the generate endpoint can verify this came from Core
+        request_payload = {**request_payload, "_core_token": settings.CORE_INTERNAL_TOKEN}
+
         self.bucket._append_trace(
             trace_id,
             "core_ingress",

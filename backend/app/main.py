@@ -19,6 +19,7 @@ from app.api import (
     bhiv_assistant,
     bhiv_integrated,
     compliance,
+    core_entry,
     data_audit,
     data_privacy,
     downloads,
@@ -178,6 +179,30 @@ app.add_middleware(
 
 
 @app.middleware("http")
+async def core_entry_guard(request: Request, call_next):
+    """
+    Phase 3 — Core Entry Enforcement.
+    POST /api/v1/generate is only reachable with the correct X-Core-Token header.
+    All other callers get 403 immediately, before the route handler runs.
+    The token is injected automatically by /api/v1/core/generate (the public Core entry).
+    """
+    if request.method == "POST" and request.url.path == "/api/v1/generate":
+        token = request.headers.get("X-Core-Token", "")
+        if token != settings.CORE_INTERNAL_TOKEN:
+            return JSONResponse(
+                status_code=403,
+                content={
+                    "error": {
+                        "code": "CORE_BYPASS_BLOCKED",
+                        "message": "Forbidden: direct access not allowed. All requests must go through /api/v1/core/generate.",
+                        "status_code": 403,
+                    }
+                },
+            )
+    return await call_next(request)
+
+
+@app.middleware("http")
 async def log_requests(request: Request, call_next):
     start_time = time.time()
     request_log = f"{request.method} {request.url.path} from {request.client.host if request.client else 'unknown'}"
@@ -238,6 +263,7 @@ app.include_router(monitoring_system.router, include_in_schema=False)
 app.include_router(data_privacy.router, prefix="/api/v1", tags=["Data Privacy"], include_in_schema=False)
 app.include_router(data_audit.router, tags=["Data Audit"], include_in_schema=False)
 app.include_router(generate.router, prefix="/api/v1", tags=["Design Generation"])
+app.include_router(core_entry.router, prefix="/api/v1", tags=["Core Entry"])
 app.include_router(evaluate.router, prefix="/api/v1", tags=["Design Evaluation"], include_in_schema=False)
 app.include_router(iterate.router, prefix="/api/v1", tags=["Design Iteration"], include_in_schema=False)
 app.include_router(switch.router, include_in_schema=False)

@@ -232,6 +232,14 @@ class Settings(BaseSettings):
     RL_LEARNING_RATE: float = Field(default=0.001, description="RL learning rate")
 
     # ============================================================================
+    # CORE INTERNAL TOKEN — blocks direct /generate calls
+    # ============================================================================
+    CORE_INTERNAL_TOKEN: str = Field(
+        default="bhiv-core-internal-token-change-in-prod",
+        description="Secret token that Core injects; /generate rejects requests without it",
+    )
+
+    # ============================================================================
     # SECURITY CONFIGURATION
     # ============================================================================
     ENCRYPTION_KEY: Optional[str] = Field(default=None, description="Encryption key material")

@@ -146,19 +146,19 @@ def _absolute_url(base_url: str, path: str) -> str:
 @router.post("/generate", response_model=GenerateResponse, status_code=status.HTTP_201_CREATED)
 async def generate_design(request: GenerateRequest, req: Request, current_user: str = Depends(get_current_user)):
     """
-    Canonical routing — ALL execution goes through Core:
-
-        data   = bucket.store(request)
-        result = prompt_runner.execute(data)
-        output = bucket.store(result)
-        return output
-
-    Direct backend calls are NOT allowed from this endpoint.
+    Canonical routing — ALL execution goes through Core.
+    Direct calls without X-Core-Token header are rejected with 403.
     """
-    # Core bypass guard — every request must carry a valid authenticated user
-    # (enforced by get_current_user). Any call that bypasses auth is rejected
-    # before reaching this point. Additional guard: spec_id must not be
-    # pre-supplied by the caller (Core generates it internally).
+    # ── Phase 3: Core entry guard ────────────────────────────────────────────────────
+    from app.config import settings as _settings
+
+    incoming_token = req.headers.get("X-Core-Token", "")
+    if incoming_token != _settings.CORE_INTERNAL_TOKEN:
+        raise HTTPException(
+            status_code=403,
+            detail="Forbidden: direct access not allowed. All requests must go through Core.",
+        )
+    # ──────────────────────────────────────────────────────────────────────────────────
     if getattr(request, "spec_id", None):
         raise HTTPException(
             status_code=403,
