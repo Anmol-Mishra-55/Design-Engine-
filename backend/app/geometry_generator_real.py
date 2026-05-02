@@ -1,113 +1,398 @@
 """
 Room-Based Geometry Generator
 ==============================
-Generates GLB from spec["rooms"] list.
+Each room = separate GLB mesh node (named).
+Walls have real thickness (WALL_T = 0.2 m).
+Adjacent rooms share a wall with a door gap cut out.
+Rooms are separated by wall thickness so partitions are visible.
 
 Pipeline:
-  spec["rooms"]  →  for room in rooms: create_room_mesh(room)
-                 →  pack all meshes into a single GLB
-
-Each room mesh = 4 walls + floor + ceiling (6 quads = 12 triangles).
-Rooms are laid out in a grid derived from spec["room_dimensions"]
-and spec["dimensions"] (total footprint).
-
-No slabs. No dummy meshes. No automotive/electronics geometry.
+  spec["rooms"]  →  layout_rooms()
+                 →  for each room: build_room_node()
+                 →  pack_glb_multi_mesh()
 """
 
 import json
 import logging
 import math
 import struct
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Type aliases
+# Constants
 # ---------------------------------------------------------------------------
+WALL_T = 0.2  # wall thickness in metres
+DOOR_W = 0.9  # door opening width in metres
+DOOR_H = 2.1  # door opening height in metres
+GAP = WALL_T  # gap between room origins = wall thickness
+
 Vertex = Tuple[float, float, float]
-Face = List[int]
+Triangle = Tuple[int, int, int]
 
 
 # ---------------------------------------------------------------------------
-# GLB packing helpers
+# Per-mesh geometry container
 # ---------------------------------------------------------------------------
+class Mesh:
+    def __init__(self, name: str):
+        self.name = name
+        self.verts: List[Vertex] = []
+        self.tris: List[Triangle] = []
+
+    def add_quad(self, a: Vertex, b: Vertex, c: Vertex, d: Vertex) -> None:
+        """Add a quad as two CCW triangles (a,b,c) + (a,c,d)."""
+        base = len(self.verts)
+        self.verts += [a, b, c, d]
+        self.tris += [(base, base + 1, base + 2), (base, base + 2, base + 3)]
+
+    def add_thick_wall(
+        self,
+        x0: float,
+        y0: float,
+        x1: float,
+        y1: float,
+        z_bot: float,
+        z_top: float,
+        normal_out: Tuple[float, float],
+        door: bool = False,
+    ) -> None:
+        """
+        Build a wall panel from (x0,y0)→(x1,y1) with thickness WALL_T.
+        normal_out points away from the room interior.
+        If door=True, cut a door-sized gap in the centre of the wall.
+        """
+        nx, ny = normal_out
+        tx, ty = WALL_T * nx, WALL_T * ny  # thickness vector
+
+        # inner face (facing room)
+        ix0, iy0 = x0, y0
+        ix1, iy1 = x1, y1
+        # outer face (offset by thickness)
+        ox0, oy0 = x0 + tx, y0 + ty
+        ox1, oy1 = x1 + tx, y1 + ty
+
+        if not door:
+            # inner face
+            self.add_quad(
+                (ix0, iy0, z_bot),
+                (ix1, iy1, z_bot),
+                (ix1, iy1, z_top),
+                (ix0, iy0, z_top),
+            )
+            # outer face (reversed winding)
+            self.add_quad(
+                (ox1, oy1, z_bot),
+                (ox0, oy0, z_bot),
+                (ox0, oy0, z_top),
+                (ox1, oy1, z_top),
+            )
+            # top cap
+            self.add_quad(
+                (ix0, iy0, z_top),
+                (ix1, iy1, z_top),
+                (ox1, oy1, z_top),
+                (ox0, oy0, z_top),
+            )
+            # left cap
+            self.add_quad(
+                (ox0, oy0, z_bot),
+                (ix0, iy0, z_bot),
+                (ix0, iy0, z_top),
+                (ox0, oy0, z_top),
+            )
+            # right cap
+            self.add_quad(
+                (ix1, iy1, z_bot),
+                (ox1, oy1, z_bot),
+                (ox1, oy1, z_top),
+                (ix1, iy1, z_top),
+            )
+        else:
+            # Wall length along its axis
+            length = math.sqrt((x1 - x0) ** 2 + (y1 - y0) ** 2)
+            if length < 1e-6:
+                return
+            # unit vector along wall
+            ux = (x1 - x0) / length
+            uy = (y1 - y0) / length
+
+            door_start = max(0.0, (length - DOOR_W) / 2)
+            door_end = door_start + DOOR_W
+
+            # Segment A: left of door
+            if door_start > 0.01:
+                ax0, ay0 = x0, y0
+                ax1, ay1 = x0 + ux * door_start, y0 + uy * door_start
+                oax0, oay0 = ax0 + tx, ay0 + ty
+                oax1, oay1 = ax1 + tx, ay1 + ty
+                self._wall_segment(ax0, ay0, ax1, ay1, oax0, oay0, oax1, oay1, z_bot, z_top)
+
+            # Segment B: above door (full height minus door height)
+            if DOOR_H < z_top - z_bot:
+                bx0 = x0 + ux * door_start
+                by0 = y0 + uy * door_start
+                bx1 = x0 + ux * door_end
+                by1 = y0 + uy * door_end
+                obx0, oby0 = bx0 + tx, by0 + ty
+                obx1, oby1 = bx1 + tx, by1 + ty
+                self._wall_segment(
+                    bx0,
+                    by0,
+                    bx1,
+                    by1,
+                    obx0,
+                    oby0,
+                    obx1,
+                    oby1,
+                    z_bot + DOOR_H,
+                    z_top,
+                )
+
+            # Segment C: right of door
+            if door_end < length - 0.01:
+                cx0 = x0 + ux * door_end
+                cy0 = y0 + uy * door_end
+                cx1, cy1 = x1, y1
+                ocx0, ocy0 = cx0 + tx, cy0 + ty
+                ocx1, ocy1 = cx1 + tx, cy1 + ty
+                self._wall_segment(cx0, cy0, cx1, cy1, ocx0, ocy0, ocx1, ocy1, z_bot, z_top)
+
+    def _wall_segment(
+        self,
+        ix0: float,
+        iy0: float,
+        ix1: float,
+        iy1: float,
+        ox0: float,
+        oy0: float,
+        ox1: float,
+        oy1: float,
+        z_bot: float,
+        z_top: float,
+    ) -> None:
+        """Render one rectangular wall segment (inner + outer + caps)."""
+        self.add_quad(
+            (ix0, iy0, z_bot),
+            (ix1, iy1, z_bot),
+            (ix1, iy1, z_top),
+            (ix0, iy0, z_top),
+        )
+        self.add_quad(
+            (ox1, oy1, z_bot),
+            (ox0, oy0, z_bot),
+            (ox0, oy0, z_top),
+            (ox1, oy1, z_top),
+        )
+        self.add_quad(
+            (ix0, iy0, z_top),
+            (ix1, iy1, z_top),
+            (ox1, oy1, z_top),
+            (ox0, oy0, z_top),
+        )
+        self.add_quad(
+            (ox0, oy0, z_bot),
+            (ix0, iy0, z_bot),
+            (ix0, iy0, z_top),
+            (ox0, oy0, z_top),
+        )
+        self.add_quad(
+            (ix1, iy1, z_bot),
+            (ox1, oy1, z_bot),
+            (ox1, oy1, z_top),
+            (ix1, iy1, z_top),
+        )
 
 
-def _pack_glb(vertices: List[Vertex], faces: List[Face]) -> bytes:
-    """Pack vertices + triangle faces into a valid GLB 2.0 binary."""
-    if not vertices or not faces:
-        raise ValueError("Cannot pack empty geometry")
+# ---------------------------------------------------------------------------
+# Build one room's full geometry
+# ---------------------------------------------------------------------------
+def build_room_mesh(
+    name: str,
+    x: float,
+    y: float,  # inner bottom-left corner
+    w: float,
+    l: float,  # inner width (X) and length (Y)
+    h: float,  # floor-to-ceiling height
+    z: float = 0.0,  # Z offset for multi-storey
+    door_south: bool = False,
+    door_north: bool = False,
+    door_west: bool = False,
+    door_east: bool = False,
+) -> Mesh:
+    """
+    Build a room with:
+    - Floor slab
+    - Ceiling slab
+    - 4 thick walls (each with optional door gap)
+    """
+    m = Mesh(name)
+    z0 = z
+    z1 = z + h
 
-    # ── normals ──────────────────────────────────────────────────────────────
-    normals = _calculate_normals(vertices, faces)
+    # ── Floor ────────────────────────────────────────────────────────────────
+    m.add_quad(
+        (x, y, z0),
+        (x + w, y, z0),
+        (x + w, y + l, z0),
+        (x, y + l, z0),
+    )
 
-    # ── flatten index list ───────────────────────────────────────────────────
-    flat_indices: List[int] = []
-    for face in faces:
-        flat_indices.extend(face)
+    # ── Ceiling ──────────────────────────────────────────────────────────────
+    m.add_quad(
+        (x, y + l, z1),
+        (x + w, y + l, z1),
+        (x + w, y, z1),
+        (x, y, z1),
+    )
 
-    n_verts = len(vertices)
-    n_indices = len(flat_indices)
+    # ── South wall (y = y, normal = -Y) ──────────────────────────────────────
+    m.add_thick_wall(x, y, x + w, y, z0, z1, (0.0, -1.0), door=door_south)
 
-    # ── binary buffers ───────────────────────────────────────────────────────
-    vert_buf = b"".join(struct.pack("<fff", *v) for v in vertices)
-    normal_buf = b"".join(struct.pack("<fff", *n) for n in normals)
-    idx_buf = b"".join(struct.pack("<H", i) for i in flat_indices)
+    # ── North wall (y = y+l, normal = +Y) ────────────────────────────────────
+    m.add_thick_wall(x + w, y + l, x, y + l, z0, z1, (0.0, 1.0), door=door_north)
 
-    # Pad index buffer to 4-byte boundary
-    idx_pad = (4 - len(idx_buf) % 4) % 4
-    idx_buf += b"\x00" * idx_pad
+    # ── West wall (x = x, normal = -X) ───────────────────────────────────────
+    m.add_thick_wall(x, y + l, x, y, z0, z1, (-1.0, 0.0), door=door_west)
 
-    bin_data = vert_buf + normal_buf + idx_buf
+    # ── East wall (x = x+w, normal = +X) ─────────────────────────────────────
+    m.add_thick_wall(x + w, y, x + w, y + l, z0, z1, (1.0, 0.0), door=door_east)
 
-    # ── byte offsets ─────────────────────────────────────────────────────────
-    off_verts = 0
-    off_normals = len(vert_buf)
-    off_idx = len(vert_buf) + len(normal_buf)
+    return m
 
-    gltf = {
-        "asset": {"version": "2.0", "generator": "BHIV-RoomGeometry"},
-        "scene": 0,
-        "scenes": [{"nodes": [0]}],
-        "nodes": [{"mesh": 0}],
-        "meshes": [
+
+# ---------------------------------------------------------------------------
+# GLB packer — multi-mesh, one node per room
+# ---------------------------------------------------------------------------
+def _normals_for_mesh(m: Mesh) -> List[Vertex]:
+    normals = [[0.0, 0.0, 0.0] for _ in m.verts]
+    for tri in m.tris:
+        v0, v1, v2 = m.verts[tri[0]], m.verts[tri[1]], m.verts[tri[2]]
+        e1 = (v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2])
+        e2 = (v2[0] - v0[0], v2[1] - v0[1], v2[2] - v0[2])
+        nx = e1[1] * e2[2] - e1[2] * e2[1]
+        ny = e1[2] * e2[0] - e1[0] * e2[2]
+        nz = e1[0] * e2[1] - e1[1] * e2[0]
+        for idx in tri:
+            normals[idx][0] += nx
+            normals[idx][1] += ny
+            normals[idx][2] += nz
+    result: List[Vertex] = []
+    for n in normals:
+        mag = math.sqrt(n[0] ** 2 + n[1] ** 2 + n[2] ** 2)
+        result.append((n[0] / mag, n[1] / mag, n[2] / mag) if mag > 0 else (0.0, 0.0, 1.0))
+    return result
+
+
+def pack_glb_multi_mesh(meshes: List[Mesh]) -> bytes:
+    """
+    Pack a list of named Mesh objects into a single GLB 2.0 file.
+    Each mesh becomes its own node so viewers show separate rooms.
+    Uses uint32 indices to handle large vertex counts.
+    """
+    if not meshes:
+        raise ValueError("No meshes to pack")
+
+    # ── Build binary buffer ──────────────────────────────────────────────────
+    bin_chunks: List[bytes] = []
+    buffer_views = []
+    accessors = []
+    gltf_meshes = []
+    nodes = []
+    offset = 0
+
+    for m in meshes:
+        if not m.verts or not m.tris:
+            continue
+
+        norms = _normals_for_mesh(m)
+
+        pos_buf = b"".join(struct.pack("<fff", *v) for v in m.verts)
+        nor_buf = b"".join(struct.pack("<fff", *n) for n in norms)
+        idx_buf = b"".join(struct.pack("<I", i) for tri in m.tris for i in tri)
+
+        # pad each buffer to 4-byte boundary
+        def _pad4(b: bytes) -> bytes:
+            r = len(b) % 4
+            return b + b"\x00" * ((4 - r) % 4)
+
+        pos_buf = _pad4(pos_buf)
+        nor_buf = _pad4(nor_buf)
+        idx_buf = _pad4(idx_buf)
+
+        bv_pos = len(buffer_views)
+        buffer_views.append({"buffer": 0, "byteOffset": offset, "byteLength": len(pos_buf)})
+        offset += len(pos_buf)
+        bin_chunks.append(pos_buf)
+
+        bv_nor = len(buffer_views)
+        buffer_views.append({"buffer": 0, "byteOffset": offset, "byteLength": len(nor_buf)})
+        offset += len(nor_buf)
+        bin_chunks.append(nor_buf)
+
+        bv_idx = len(buffer_views)
+        buffer_views.append({"buffer": 0, "byteOffset": offset, "byteLength": len(idx_buf)})
+        offset += len(idx_buf)
+        bin_chunks.append(idx_buf)
+
+        acc_pos = len(accessors)
+        accessors.append(
             {
-                "name": "rooms",
+                "bufferView": bv_pos,
+                "componentType": 5126,
+                "count": len(m.verts),
+                "type": "VEC3",
+            }
+        )
+        acc_nor = len(accessors)
+        accessors.append(
+            {
+                "bufferView": bv_nor,
+                "componentType": 5126,
+                "count": len(m.verts),
+                "type": "VEC3",
+            }
+        )
+        acc_idx = len(accessors)
+        accessors.append(
+            {
+                "bufferView": bv_idx,
+                "componentType": 5125,  # UNSIGNED_INT
+                "count": len(m.tris) * 3,
+                "type": "SCALAR",
+            }
+        )
+
+        mesh_idx = len(gltf_meshes)
+        gltf_meshes.append(
+            {
+                "name": m.name,
                 "primitives": [
                     {
-                        "attributes": {"POSITION": 0, "NORMAL": 1},
-                        "indices": 2,
-                        "mode": 4,  # TRIANGLES
+                        "attributes": {"POSITION": acc_pos, "NORMAL": acc_nor},
+                        "indices": acc_idx,
+                        "mode": 4,
                     }
                 ],
             }
-        ],
-        "accessors": [
-            {  # 0 — positions
-                "bufferView": 0,
-                "componentType": 5126,
-                "count": n_verts,
-                "type": "VEC3",
-            },
-            {  # 1 — normals
-                "bufferView": 1,
-                "componentType": 5126,
-                "count": n_verts,
-                "type": "VEC3",
-            },
-            {  # 2 — indices
-                "bufferView": 2,
-                "componentType": 5123,
-                "count": n_indices,
-                "type": "SCALAR",
-            },
-        ],
-        "bufferViews": [
-            {"buffer": 0, "byteOffset": off_verts, "byteLength": len(vert_buf)},
-            {"buffer": 0, "byteOffset": off_normals, "byteLength": len(normal_buf)},
-            {"buffer": 0, "byteOffset": off_idx, "byteLength": len(idx_buf)},
-        ],
+        )
+        node_idx = len(nodes)
+        nodes.append({"mesh": mesh_idx, "name": m.name})
+
+    if not gltf_meshes:
+        raise ValueError("All meshes were empty")
+
+    bin_data = b"".join(bin_chunks)
+
+    gltf = {
+        "asset": {"version": "2.0", "generator": "BHIV-RoomGeometry-v2"},
+        "scene": 0,
+        "scenes": [{"nodes": list(range(len(nodes)))}],
+        "nodes": nodes,
+        "meshes": gltf_meshes,
+        "accessors": accessors,
+        "bufferViews": buffer_views,
         "buffers": [{"byteLength": len(bin_data)}],
     }
 
@@ -119,7 +404,6 @@ def _pack_glb(vertices: List[Vertex], faces: List[Face]) -> bytes:
     bin_data += b"\x00" * bin_pad
 
     total = 12 + 8 + len(json_bytes) + 8 + len(bin_data)
-
     return (
         b"glTF"
         + struct.pack("<II", 2, total)
@@ -132,152 +416,32 @@ def _pack_glb(vertices: List[Vertex], faces: List[Face]) -> bytes:
     )
 
 
-def _calculate_normals(vertices: List[Vertex], faces: List[Face]) -> List[Vertex]:
-    """Per-vertex normals accumulated from face normals."""
-    normals = [[0.0, 0.0, 0.0] for _ in vertices]
-
-    for face in faces:
-        if len(face) < 3:
-            continue
-        v0, v1, v2 = vertices[face[0]], vertices[face[1]], vertices[face[2]]
-        e1 = (v1[0] - v0[0], v1[1] - v0[1], v1[2] - v0[2])
-        e2 = (v2[0] - v0[0], v2[1] - v0[1], v2[2] - v0[2])
-        nx = e1[1] * e2[2] - e1[2] * e2[1]
-        ny = e1[2] * e2[0] - e1[0] * e2[2]
-        nz = e1[0] * e2[1] - e1[1] * e2[0]
-        for idx in face:
-            normals[idx][0] += nx
-            normals[idx][1] += ny
-            normals[idx][2] += nz
-
-    result: List[Vertex] = []
-    for n in normals:
-        mag = math.sqrt(n[0] ** 2 + n[1] ** 2 + n[2] ** 2)
-        result.append((n[0] / mag, n[1] / mag, n[2] / mag) if mag > 0 else (0.0, 0.0, 1.0))
-    return result
-
-
-# ---------------------------------------------------------------------------
-# Room mesh builder
-# ---------------------------------------------------------------------------
-
-
-def create_room_mesh(
-    room_name: str,
-    x: float,
-    y: float,  # bottom-left corner in world space
-    w: float,
-    l: float,
-    h: float,  # width (X), length (Y), height (Z)
-    wall_thickness: float = 0.15,
-) -> Tuple[List[Vertex], List[Face]]:
-    """
-    Build a single room mesh: floor + ceiling + 4 walls.
-
-    Coordinate system:
-      X → width  (east)
-      Y → length (north)
-      Z → height (up)
-
-    Returns (vertices, faces) with faces as triangles.
-    All indices are LOCAL (0-based) — caller must offset.
-    """
-    verts: List[Vertex] = []
-    faces: List[Face] = []
-
-    def _quad(a: Vertex, b: Vertex, c: Vertex, d: Vertex) -> None:
-        """Add a quad (a,b,c,d) as two triangles."""
-        base = len(verts)
-        verts.extend([a, b, c, d])
-        faces.append([base, base + 1, base + 2])
-        faces.append([base, base + 2, base + 3])
-
-    # ── Floor ────────────────────────────────────────────────────────────────
-    _quad(
-        (x, y, 0),
-        (x + w, y, 0),
-        (x + w, y + l, 0),
-        (x, y + l, 0),
-    )
-
-    # ── Ceiling ──────────────────────────────────────────────────────────────
-    _quad(
-        (x, y + l, h),
-        (x + w, y + l, h),
-        (x + w, y, h),
-        (x, y, h),
-    )
-
-    t = wall_thickness
-
-    # ── South wall (y-face, facing inward = +Y normal) ───────────────────────
-    _quad(
-        (x, y, 0),
-        (x, y, h),
-        (x + w, y, h),
-        (x + w, y, 0),
-    )
-
-    # ── North wall ───────────────────────────────────────────────────────────
-    _quad(
-        (x + w, y + l, 0),
-        (x + w, y + l, h),
-        (x, y + l, h),
-        (x, y + l, 0),
-    )
-
-    # ── West wall ────────────────────────────────────────────────────────────
-    _quad(
-        (x, y + l, 0),
-        (x, y + l, h),
-        (x, y, h),
-        (x, y, 0),
-    )
-
-    # ── East wall ────────────────────────────────────────────────────────────
-    _quad(
-        (x + w, y, 0),
-        (x + w, y, h),
-        (x + w, y + l, h),
-        (x + w, y + l, 0),
-    )
-
-    logger.debug(
-        "Room '%s' mesh: origin=(%.2f,%.2f) size=%.2fx%.2fx%.2f " "verts=%d faces=%d",
-        room_name,
-        x,
-        y,
-        w,
-        l,
-        h,
-        len(verts),
-        len(faces),
-    )
-    return verts, faces
-
-
 # ---------------------------------------------------------------------------
 # Room dimension resolver
 # ---------------------------------------------------------------------------
-
-# Default room dimensions (meters) when not in spec
 _ROOM_DEFAULTS: Dict[str, Tuple[float, float, float]] = {
     "master_bedroom": (4.0, 4.5, 2.8),
     "bedroom": (3.5, 4.0, 2.7),
     "hall": (4.5, 5.5, 2.8),
+    "living": (4.5, 5.5, 2.8),
+    "living_room": (4.5, 5.5, 2.8),
     "kitchen": (3.0, 4.0, 2.7),
     "dining": (3.5, 4.0, 2.7),
+    "dining_room": (3.5, 4.0, 2.7),
     "bathroom": (2.0, 2.5, 2.4),
     "master_bathroom": (2.5, 3.0, 2.4),
     "common_bathroom": (1.8, 2.2, 2.4),
+    "toilet": (1.5, 2.0, 2.4),
     "balcony": (1.5, 3.5, 2.4),
     "study": (3.0, 3.5, 2.7),
     "pooja_room": (2.0, 2.5, 2.7),
     "garage": (6.0, 6.0, 2.5),
     "terrace": (8.0, 10.0, 0.3),
     "home_theatre": (5.0, 6.0, 2.8),
-    "jacuzzi_deck": (4.0, 5.0, 0.5),
-    "garden": (6.0, 8.0, 0.1),
+    "passage": (1.2, 3.0, 2.7),
+    "corridor": (1.2, 4.0, 2.7),
+    "store": (2.0, 2.0, 2.4),
+    "utility": (2.0, 2.5, 2.4),
 }
 
 
@@ -286,17 +450,10 @@ def _resolve_room_dims(
     spec_room_dimensions: Dict[str, Any],
     floor_height: float,
 ) -> Tuple[float, float, float]:
-    """
-    Resolve (width, length, height) for a room.
-    Priority: spec room_dimensions > canonical defaults > generic fallback.
-    """
-    # Strip numeric suffix: "bedroom_2" → "bedroom"
     base = room_name.rstrip("_0123456789")
-    # Also try without trailing digit: "bedroom_2" → "bedroom"
     parts = room_name.rsplit("_", 1)
     base_alt = parts[0] if len(parts) == 2 and parts[1].isdigit() else room_name
 
-    # 1. From spec room_dimensions (keyed by exact name or base)
     for key in (room_name, base_alt, base):
         rd = spec_room_dimensions.get(key)
         if rd and isinstance(rd, dict):
@@ -306,31 +463,27 @@ def _resolve_room_dims(
             if w > 0 and l > 0:
                 return w, l, h
 
-    # 2. Canonical defaults
     for key in (room_name, base_alt, base):
         if key in _ROOM_DEFAULTS:
-            w, l, h = _ROOM_DEFAULTS[key]
-            return w, l, floor_height if floor_height != 2.7 else h
+            dw, dl, dh = _ROOM_DEFAULTS[key]
+            return dw, dl, floor_height if floor_height != 2.7 else dh
 
-    # 3. Generic fallback
     return 3.5, 4.0, floor_height
 
 
 # ---------------------------------------------------------------------------
-# Layout engine — grid packing
+# Layout engine — row-based packing with adjacency tracking
 # ---------------------------------------------------------------------------
-
-
 def _layout_rooms(
     rooms: List[str],
     spec_room_dimensions: Dict[str, Any],
     total_width: float,
     floor_height: float,
-    gap: float = 0.15,  # wall thickness between rooms
 ) -> List[Tuple[str, float, float, float, float, float]]:
     """
-    Pack rooms into a grid layout within total_width.
-    Returns list of (room_name, x, y, w, l, h).
+    Pack rooms left-to-right, wrapping to next row.
+    Rooms are separated by GAP (= WALL_T) so shared walls are visible.
+    Returns list of (name, x, y, w, l, h) — all inner dimensions.
     """
     layout: List[Tuple[str, float, float, float, float, float]] = []
     cursor_x = 0.0
@@ -340,41 +493,69 @@ def _layout_rooms(
     for room_name in rooms:
         w, l, h = _resolve_room_dims(room_name, spec_room_dimensions, floor_height)
 
-        # Wrap to next row if room doesn't fit
         if cursor_x + w > total_width + 0.01 and cursor_x > 0:
             cursor_x = 0.0
-            cursor_y += row_max_l + gap
+            cursor_y += row_max_l + GAP
             row_max_l = 0.0
 
         layout.append((room_name, cursor_x, cursor_y, w, l, h))
-        cursor_x += w + gap
+        cursor_x += w + GAP
         row_max_l = max(row_max_l, l)
 
     return layout
 
 
+def _compute_adjacency(layout: List[Tuple[str, float, float, float, float, float]]) -> Dict[int, Dict[str, bool]]:
+    """
+    For each room index, determine which walls are shared with a neighbour.
+    Returns {room_idx: {south, north, west, east}} booleans.
+    """
+    adj: Dict[int, Dict[str, bool]] = {
+        i: {"south": False, "north": False, "west": False, "east": False} for i in range(len(layout))
+    }
+    tol = GAP + 0.05  # tolerance for adjacency detection
+
+    for i, (_, xi, yi, wi, li, _hi) in enumerate(layout):
+        for j, (_, xj, yj, wj, lj, _hj) in enumerate(layout):
+            if i == j:
+                continue
+            # Room j is directly east of room i?
+            if abs((xi + wi + GAP) - xj) < tol:
+                # Y ranges overlap?
+                if yi < yj + lj and yi + li > yj:
+                    adj[i]["east"] = True
+                    adj[j]["west"] = True
+            # Room j is directly north of room i?
+            if abs((yi + li + GAP) - yj) < tol:
+                if xi < xj + wj and xi + wi > xj:
+                    adj[i]["north"] = True
+                    adj[j]["south"] = True
+
+    return adj
+
+
 # ---------------------------------------------------------------------------
 # Main entry point
 # ---------------------------------------------------------------------------
-
-
 def generate_real_glb(spec_json: Dict[str, Any]) -> bytes:
     """
     Generate a GLB from spec_json["rooms"].
 
-    For every room in spec["rooms"]:
-        create_room_mesh(room)  →  add to scene
-
-    Falls back to a single bounding-box room if rooms list is empty.
+    Each room becomes a separate named mesh node.
+    Walls are thick (WALL_T = 0.2 m).
+    Adjacent rooms get a door gap in the shared wall.
     """
     rooms: List[str] = spec_json.get("rooms") or []
     dimensions = spec_json.get("dimensions") or {}
     room_dimensions = spec_json.get("room_dimensions") or {}
     stories = int(spec_json.get("stories") or 1)
 
-    total_w = float(dimensions.get("width", 10.0) or 10.0)
+    total_w = float(dimensions.get("width", 12.0) or 12.0)
     total_l = float(dimensions.get("length", 10.0) or 10.0)
     floor_h = float(dimensions.get("height", 2.8) or 2.8) / max(stories, 1)
+
+    if not rooms:
+        raise ValueError("Geometry generation failed: spec has no rooms defined")
 
     logger.info(
         "generate_real_glb: %d rooms, footprint=%.1fx%.1f, floor_h=%.1f, stories=%d",
@@ -385,44 +566,38 @@ def generate_real_glb(spec_json: Dict[str, Any]) -> bytes:
         stories,
     )
 
-    # ── No rooms → hard fail, no silent fallback ─────────────────────────────
-    if not rooms:
-        raise ValueError("Geometry generation failed: spec has no rooms defined")
-
-    # ── Layout rooms ─────────────────────────────────────────────────────────
     layout = _layout_rooms(rooms, room_dimensions, total_w, floor_h)
+    adjacency = _compute_adjacency(layout)
 
-    # ── Build combined mesh ───────────────────────────────────────────────────
-    all_verts: List[Vertex] = []
-    all_faces: List[Face] = []
+    all_meshes: List[Mesh] = []
 
     for story in range(stories):
-        z_offset = story * (floor_h + 0.15)  # 0.15 = floor slab thickness
+        z_offset = story * (floor_h + WALL_T)
 
-        for room_name, rx, ry, rw, rl, rh in layout:
-            room_verts, room_faces = create_room_mesh(
-                room_name,
+        for idx, (room_name, rx, ry, rw, rl, rh) in enumerate(layout):
+            adj = adjacency[idx]
+            node_name = f"{room_name}_s{story}" if stories > 1 else room_name
+
+            mesh = build_room_mesh(
+                name=node_name,
                 x=rx,
                 y=ry,
                 w=rw,
                 l=rl,
                 h=rh,
+                z=z_offset,
+                door_south=adj["south"],
+                door_north=adj["north"],
+                door_west=adj["west"],
+                door_east=adj["east"],
             )
-
-            # Apply story Z offset
-            room_verts = [(vx, vy, vz + z_offset) for vx, vy, vz in room_verts]
-
-            # Offset face indices to global vertex list
-            base = len(all_verts)
-            all_verts.extend(room_verts)
-            all_faces.extend([f[0] + base, f[1] + base, f[2] + base] for f in room_faces)
+            all_meshes.append(mesh)
 
     logger.info(
-        "Geometry built: %d rooms x %d stories = %d verts, %d faces",
+        "Geometry built: %d meshes (%d rooms x %d stories)",
+        len(all_meshes),
         len(rooms),
         stories,
-        len(all_verts),
-        len(all_faces),
     )
 
-    return _pack_glb(all_verts, all_faces)
+    return pack_glb_multi_mesh(all_meshes)
