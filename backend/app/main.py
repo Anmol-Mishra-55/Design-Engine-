@@ -49,7 +49,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer
-from fastapi.staticfiles import StaticFiles
+from fastapi.staticfiles import StaticFiles  # noqa: F401 — kept for potential future use
 from prometheus_fastapi_instrumentator import Instrumentator
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.starlette import StarletteIntegration
@@ -178,28 +178,9 @@ app.add_middleware(
 )
 
 
-@app.middleware("http")
-async def core_entry_guard(request: Request, call_next):
-    """
-    Phase 3 — Core Entry Enforcement.
-    POST /api/v1/generate is only reachable with the correct X-Core-Token header.
-    All other callers get 403 immediately, before the route handler runs.
-    The token is injected automatically by /api/v1/core/generate (the public Core entry).
-    """
-    if request.method == "POST" and request.url.path == "/api/v1/generate":
-        token = request.headers.get("X-Core-Token", "")
-        if token != settings.CORE_INTERNAL_TOKEN:
-            return JSONResponse(
-                status_code=403,
-                content={
-                    "error": {
-                        "code": "CORE_BYPASS_BLOCKED",
-                        "message": "Forbidden: direct access not allowed. All requests must go through /api/v1/core/generate.",
-                        "status_code": 403,
-                    }
-                },
-            )
-    return await call_next(request)
+# Phase 3: /api/v1/generate is a hard-blocked route (always 403).
+# The only public entry point is /api/v1/core/generate via core_entry.py.
+# No middleware token check needed — the route handler itself raises 403.
 
 
 @app.middleware("http")
@@ -222,31 +203,10 @@ async def log_requests(request: Request, call_next):
     return response
 
 
-try:
-    import os
-
-    geometry_dir = os.path.join(os.path.dirname(__file__), "..", "data", "geometry_outputs")
-    geometry_dir = os.path.abspath(geometry_dir)
-
-    if os.path.exists(geometry_dir):
-        app.mount("/static/geometry", StaticFiles(directory=geometry_dir), name="geometry")
-        logger.info(f"Static geometry files mounted at /static/geometry -> {geometry_dir}")
-    else:
-        os.makedirs(geometry_dir, exist_ok=True)
-        app.mount("/static/geometry", StaticFiles(directory=geometry_dir), name="geometry")
-        logger.info(f"Created and mounted geometry directory: {geometry_dir}")
-
-    export_dir = os.path.join(os.path.dirname(__file__), "..", "data", "export_outputs")
-    export_dir = os.path.abspath(export_dir)
-    if os.path.exists(export_dir):
-        app.mount("/static/exports", StaticFiles(directory=export_dir), name="exports")
-        logger.info(f"Static export files mounted at /static/exports -> {export_dir}")
-    else:
-        os.makedirs(export_dir, exist_ok=True)
-        app.mount("/static/exports", StaticFiles(directory=export_dir), name="exports")
-        logger.info(f"Created and mounted export directory: {export_dir}")
-except Exception as e:
-    logger.warning(f"Static files mount failed: {e}")
+# Phase 1 / Phase 4: Local static file serving REMOVED.
+# All geometry and export outputs are stored in MongoDB GridFS bucket.
+# URLs are served via /api/v1/files/<bucket>/<file_id> only.
+# /static/geometry and /static/exports are NOT mounted.
 
 
 @app.get("/health", tags=["Public Health"])

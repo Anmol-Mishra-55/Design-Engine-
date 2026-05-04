@@ -228,17 +228,10 @@ class PromptRunnerAdapterBridge:
         )
 
     def _build_rooms(self, sem) -> list:
-        """Build ordered room list from BHK definition room_counts."""
+        """Return the canonical room list from bhk_definitions.json[bhk_key]["rooms"]."""
         if not sem.bhk_definition:
             return []
-        room_counts: Dict[str, int] = sem.bhk_definition.get("room_counts", {})
-        rooms = []
-        for room_type, count in room_counts.items():
-            if count == 1:
-                rooms.append(room_type)
-            else:
-                rooms.extend(f"{room_type}_{i+1}" for i in range(count))
-        return rooms
+        return list(sem.bhk_definition.get("rooms", []))
 
     def _build_objects(self, dimensions: Dict, style: str, sem) -> list:
         """Build structural objects sized to resolved dimensions + style materials."""

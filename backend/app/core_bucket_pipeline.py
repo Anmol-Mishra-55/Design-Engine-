@@ -284,10 +284,14 @@ class CoreBucketCanonicalOrchestrator:
             except Exception as exc:
                 logger.warning("Tripo AI failed: %s", exc)
 
-        # 3. Deterministic room-based geometry — raise on failure, no dummy mesh
+        # Deterministic room-based geometry — raise on failure, no dummy mesh
         from app.geometry_generator_real import generate_real_glb
 
-        glb_bytes = generate_real_glb(spec_json)
+        try:
+            glb_bytes = generate_real_glb(spec_json)
+        except Exception as exc:
+            raise RuntimeError(f"Geometry generation failed: {exc}") from exc
+
         if not glb_bytes or len(glb_bytes) < 100:
             raise RuntimeError("Geometry generation failed: generate_real_glb returned empty output")
         return glb_bytes, "geometry_generator_real"
