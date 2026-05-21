@@ -333,6 +333,187 @@ class Mesh:
         self.add_quad((ix1, iy1, z_bot), (ox1, oy1, z_bot), (ox1, oy1, z_top), (ix1, iy1, z_top))
 
 
+# ── Furniture helpers ────────────────────────────────────────────────────────
+
+
+def _add_box(m: Mesh, x: float, y: float, z: float, bw: float, bl: float, bh: float) -> None:
+    x1, y1, z1 = x + bw, y + bl, z + bh
+    m.add_quad((x, y, z), (x1, y, z), (x1, y1, z), (x, y1, z))
+    m.add_quad((x, y1, z1), (x1, y1, z1), (x1, y, z1), (x, y, z1))
+    m.add_quad((x, y, z), (x, y, z1), (x1, y, z1), (x1, y, z))
+    m.add_quad((x1, y1, z), (x1, y1, z1), (x, y1, z1), (x, y1, z))
+    m.add_quad((x, y1, z), (x, y1, z1), (x, y, z1), (x, y, z))
+    m.add_quad((x1, y, z), (x1, y, z1), (x1, y1, z1), (x1, y1, z))
+
+
+def _room_base_type(name: str) -> str:
+    key = name.split("_s")[0]
+    parts = key.rsplit("_", 1)
+    return parts[0] if len(parts) == 2 and parts[1].isdigit() else key
+
+
+def _add_furniture(m: Mesh, rt: str, x: float, y: float, w: float, l: float, z: float) -> None:
+    p = WALL_T + 0.1  # inner padding from wall face
+
+    # ── Bedrooms ──────────────────────────────────────────────────────────────
+    if rt in ("master_bedroom", "bedroom", "bedroom_2", "bedroom_3", "bedroom_4", "bedroom_5"):
+        # Bed against north wall, centred
+        bw, bl = min(1.6, w - 2 * p), min(2.0, l * 0.5)
+        bx, by = x + (w - bw) / 2, y + l - p - bl
+        _add_box(m, bx, by, z, bw, bl, 0.5)  # mattress
+        _add_box(m, bx, by + bl - 0.15, z + 0.5, bw, 0.1, 0.55)  # headboard
+        _add_box(m, bx + 0.1, by + bl - 0.35, z + 0.5, 0.5, 0.3, 0.12)  # pillow
+        # Bedside table
+        if bx - x - p > 0.4:
+            _add_box(m, bx - p - 0.45, by + bl - 0.5, z, 0.45, 0.45, 0.55)
+        # Wardrobe against west wall
+        _add_box(m, x + p, y + p, z, min(1.2, w * 0.3), 0.6, 2.0)
+
+    # ── Living / Hall ─────────────────────────────────────────────────────────
+    elif rt in ("hall", "living", "living_room"):
+        sw = min(2.2, w - 2 * p)
+        # 3-seater sofa against south wall
+        _add_box(m, x + (w - sw) / 2, y + p, z, sw, 0.9, 0.85)
+        # Coffee table in centre
+        _add_box(m, x + (w - 1.0) / 2, y + l * 0.38, z, 1.0, 0.55, 0.42)
+        # TV unit against north wall
+        tw = min(1.6, w - 2 * p)
+        _add_box(m, x + (w - tw) / 2, y + l - p - 0.45, z, tw, 0.45, 0.5)
+        # TV panel on top
+        _add_box(m, x + (w - tw * 0.7) / 2, y + l - p - 0.42, z + 0.5, tw * 0.7, 0.08, 0.55)
+        # Side chair
+        _add_box(m, x + p, y + l * 0.35, z, 0.55, 0.55, 0.9)
+
+    # ── Kitchen ───────────────────────────────────────────────────────────────
+    elif rt == "kitchen":
+        # Base counter along south wall
+        _add_box(m, x + p, y + p, z, w - 2 * p, 0.6, 0.9)
+        # Side counter along west wall
+        _add_box(m, x + p, y + p + 0.6, z, 0.6, min(l * 0.4, l - 2 * p - 0.6), 0.9)
+        # Overhead cabinet above base counter
+        _add_box(m, x + p, y + p, z + 1.4, w - 2 * p, 0.35, 0.65)
+        # Refrigerator box in corner
+        _add_box(m, x + w - p - 0.7, y + p, z, 0.7, 0.7, 1.8)
+
+    # ── Dining ────────────────────────────────────────────────────────────────
+    elif rt in ("dining", "dining_room"):
+        tw, tl = min(1.4, w - 2 * p), min(0.85, l * 0.4)
+        tx, ty = x + (w - tw) / 2, y + (l - tl) / 2
+        _add_box(m, tx, ty, z, tw, tl, 0.75)  # table
+        # 4 chairs around table
+        for cx, cy in [
+            (tx - 0.55, ty + (tl - 0.45) / 2),
+            (tx + tw + 0.1, ty + (tl - 0.45) / 2),
+            (tx + (tw - 0.45) / 2, ty - 0.55),
+            (tx + (tw - 0.45) / 2, ty + tl + 0.1),
+        ]:
+            _add_box(m, cx, cy, z, 0.45, 0.45, 0.9)
+
+    # ── Bathrooms ─────────────────────────────────────────────────────────────
+    elif rt in ("bathroom", "bathroom_2", "bathroom_3", "bathroom_4", "master_bathroom", "common_bathroom", "toilet"):
+        # Toilet in near corner
+        _add_box(m, x + p, y + p, z, 0.38, 0.65, 0.42)  # bowl
+        _add_box(m, x + p, y + p + 0.45, z + 0.3, 0.38, 0.2, 0.12)  # cistern
+        # Sink/vanity
+        _add_box(m, x + p, y + l - p - 0.45, z, 0.5, 0.45, 0.85)
+        # Shower tray in far corner (only if room wide enough)
+        if w > 1.5 and l > 2.0:
+            _add_box(m, x + w - p - 0.9, y + p, z, 0.9, 0.9, 0.05)
+
+    # ── Study / Home Office ───────────────────────────────────────────────────
+    elif rt == "study":
+        dw = min(1.4, w - 2 * p)
+        # Desk against north wall
+        _add_box(m, x + (w - dw) / 2, y + l - p - 0.65, z, dw, 0.65, 0.75)
+        # Monitor on desk
+        _add_box(m, x + (w - 0.5) / 2, y + l - p - 0.6, z + 0.75, 0.5, 0.08, 0.4)
+        # Chair in front of desk
+        _add_box(m, x + (w - 0.55) / 2, y + l - p - 1.3, z, 0.55, 0.55, 0.9)
+        # Bookshelf against east wall
+        _add_box(m, x + w - p - 0.3, y + p, z, 0.3, min(1.2, l - 2 * p), 1.9)
+
+    # ── Pooja Room ────────────────────────────────────────────────────────────
+    elif rt == "pooja_room":
+        pw = min(0.9, w - 2 * p)
+        # Altar shelf against north wall
+        _add_box(m, x + (w - pw) / 2, y + l - p - 0.4, z + 0.8, pw, 0.3, 0.05)
+        # Platform/mandir base
+        _add_box(m, x + (w - pw) / 2, y + l - p - 0.4, z, pw, 0.4, 0.8)
+        # Prayer mat (flat)
+        mw = min(0.6, w - 2 * p)
+        _add_box(m, x + (w - mw) / 2, y + p, z, mw, 0.9, 0.03)
+
+    # ── Balconies ─────────────────────────────────────────────────────────────
+    elif rt in ("balcony", "balcony_1", "balcony_2", "balcony_3"):
+        # Small bistro table
+        _add_box(m, x + (w - 0.6) / 2, y + (l - 0.6) / 2, z, 0.6, 0.6, 0.72)
+        # Two chairs on either side
+        if w > 1.0:
+            _add_box(m, x + p, y + (l - 0.45) / 2, z, 0.45, 0.45, 0.85)
+            _add_box(m, x + w - p - 0.45, y + (l - 0.45) / 2, z, 0.45, 0.45, 0.85)
+        # Planter box along railing
+        _add_box(m, x + p, y + l - p - 0.25, z, w - 2 * p, 0.25, 0.35)
+
+    # ── Garage ────────────────────────────────────────────────────────────────
+    elif rt == "garage":
+        # Car silhouette
+        cw, cl = min(2.0, w - 2 * p), min(4.5, l - 2 * p)
+        _add_box(m, x + (w - cw) / 2, y + p, z, cw, cl, 1.5)
+        # Workbench along side wall
+        _add_box(m, x + p, y + p, z, 0.6, min(1.5, l * 0.3), 0.9)
+
+    # ── Home Theatre ─────────────────────────────────────────────────────────
+    elif rt == "home_theatre":
+        # Screen wall
+        sw = min(w - 2 * p, 3.0)
+        _add_box(m, x + (w - sw) / 2, y + l - p - 0.15, z + 0.6, sw, 0.1, 1.4)
+        # Rows of seats (2 rows × 3 seats)
+        seat_w = min((w - 2 * p) / 3, 0.6)
+        for row, ry in enumerate([y + l * 0.35, y + l * 0.6]):
+            for col in range(3):
+                sx = x + p + col * (seat_w + 0.1)
+                _add_box(m, sx, ry, z, seat_w, 0.55, 0.9)
+
+    # ── Jacuzzi Deck ─────────────────────────────────────────────────────────
+    elif rt == "jacuzzi_deck":
+        # Jacuzzi tub centred
+        jw, jl = min(1.8, w - 2 * p), min(1.8, l * 0.45)
+        _add_box(m, x + (w - jw) / 2, y + (l - jl) / 2, z, jw, jl, 0.65)
+        # Deck lounger
+        _add_box(m, x + p, y + p, z, 0.7, min(1.9, l - 2 * p), 0.35)
+
+    # ── Terrace ───────────────────────────────────────────────────────────────
+    elif rt == "terrace":
+        # Outdoor seating set
+        _add_box(m, x + p, y + p, z, min(2.0, w * 0.35), 0.9, 0.85)  # sofa
+        _add_box(m, x + p + 0.5, y + p + 1.1, z, 1.0, 0.6, 0.42)  # table
+        # Planter boxes along perimeter
+        _add_box(m, x + p, y + l - p - 0.3, z, w - 2 * p, 0.3, 0.4)
+        _add_box(m, x + w - p - 0.3, y + p, z, 0.3, l - 2 * p, 0.4)
+
+    # ── Garden ────────────────────────────────────────────────────────────────
+    elif rt == "garden":
+        # Lawn area (flat green slab)
+        lw, ll = max(w - 2 * p - 1.0, 1.0), max(l - 2 * p - 1.0, 1.0)
+        _add_box(m, x + (w - lw) / 2, y + (l - ll) / 2, z, lw, ll, 0.05)
+        # Garden bench
+        _add_box(m, x + p, y + l - p - 0.5, z, min(1.4, w * 0.3), 0.5, 0.45)
+        # Tree stumps (2 planters)
+        _add_box(m, x + p + 0.5, y + p + 0.5, z, 0.5, 0.5, 0.4)
+        _add_box(m, x + w - p - 1.0, y + p + 0.5, z, 0.5, 0.5, 0.4)
+
+    # ── Store / Utility ───────────────────────────────────────────────────────
+    elif rt in ("store", "utility"):
+        # Shelving units along walls
+        _add_box(m, x + p, y + p, z, 0.4, min(l - 2 * p, 1.5), 1.8)
+        _add_box(m, x + w - p - 0.4, y + p, z, 0.4, min(l - 2 * p, 1.5), 1.8)
+
+    # ── Passage / Corridor ────────────────────────────────────────────────────
+    elif rt in ("passage", "corridor"):
+        # Slim console table against wall
+        _add_box(m, x + p, y + (l - 0.8) / 2, z, min(0.3, w * 0.25), 0.8, 0.85)
+
+
 # ── Build one room ────────────────────────────────────────────────────────────
 
 
@@ -370,13 +551,67 @@ def build_room_mesh(
     # East wall (x=x+w, normal=+X)
     m.add_thick_wall(x + w, y, x + w, y + l, z0, z1, (1.0, 0.0), door=door_east)
 
+    # Furniture
+    _add_furniture(m, _room_base_type(name), x, y, w, l, z0)
+
     return m
 
 
 # ── GLB packer ────────────────────────────────────────────────────────────────
 
+# Per-room-type base colors [R, G, B] in linear space (approx)
+_ROOM_COLORS: Dict[str, List[float]] = {
+    "master_bedroom": [0.85, 0.70, 0.70],
+    "bedroom": [0.80, 0.75, 0.90],
+    "bedroom_2": [0.75, 0.80, 0.90],
+    "bedroom_3": [0.70, 0.85, 0.90],
+    "bedroom_4": [0.70, 0.85, 0.85],
+    "bedroom_5": [0.70, 0.80, 0.85],
+    "hall": [0.95, 0.90, 0.75],
+    "living": [0.95, 0.90, 0.75],
+    "living_room": [0.95, 0.90, 0.75],
+    "kitchen": [0.80, 0.95, 0.80],
+    "dining": [0.95, 0.85, 0.70],
+    "dining_room": [0.95, 0.85, 0.70],
+    "bathroom": [0.70, 0.85, 0.95],
+    "master_bathroom": [0.65, 0.80, 0.95],
+    "common_bathroom": [0.70, 0.85, 0.95],
+    "toilet": [0.75, 0.88, 0.95],
+    "balcony": [0.75, 0.95, 0.80],
+    "study": [0.90, 0.85, 0.70],
+    "pooja_room": [0.95, 0.88, 0.65],
+    "garage": [0.80, 0.80, 0.80],
+    "passage": [0.90, 0.90, 0.85],
+    "corridor": [0.90, 0.90, 0.85],
+    "store": [0.85, 0.82, 0.78],
+    "utility": [0.82, 0.85, 0.78],
+}
+_DEFAULT_COLOR = [0.88, 0.88, 0.88]
+
+
+def _room_color(name: str) -> List[float]:
+    """Return RGBA color for a room by matching its base type."""
+    key = name.split("_s")[0]  # strip story suffix
+    parts = key.rsplit("_", 1)
+    candidates = [key, parts[0] if len(parts) == 2 and parts[1].isdigit() else key]
+    for c in candidates:
+        if c in _ROOM_COLORS:
+            return _ROOM_COLORS[c] + [1.0]
+    # try prefix match
+    for k, v in _ROOM_COLORS.items():
+        if key.startswith(k):
+            return v + [1.0]
+    return _DEFAULT_COLOR + [1.0]
+
+
+def _swap_yz(v: Vertex) -> Vertex:
+    """Convert from Z-up (XYZ) to Y-up (XZY) for glTF standard orientation."""
+    x, y, z = v
+    return (x, z, -y)
+
 
 def _normals_for_mesh(m: Mesh) -> List[Vertex]:
+    # compute normals in original space then swap
     normals = [[0.0, 0.0, 0.0] for _ in m.verts]
     for tri in m.tris:
         v0, v1, v2 = m.verts[tri[0]], m.verts[tri[1]], m.verts[tri[2]]
@@ -392,7 +627,8 @@ def _normals_for_mesh(m: Mesh) -> List[Vertex]:
     result: List[Vertex] = []
     for n in normals:
         mag = math.sqrt(n[0] ** 2 + n[1] ** 2 + n[2] ** 2)
-        result.append((n[0] / mag, n[1] / mag, n[2] / mag) if mag > 0 else (0.0, 0.0, 1.0))
+        raw = (n[0] / mag, n[1] / mag, n[2] / mag) if mag > 0 else (0.0, 0.0, 1.0)
+        result.append(_swap_yz(raw))
     return result
 
 
@@ -404,7 +640,8 @@ def _pad4(b: bytes) -> bytes:
 def pack_glb_multi_mesh(meshes: List[Mesh]) -> bytes:
     """
     Pack named Mesh objects into a single GLB 2.0 file.
-    Each mesh = its own node → viewers show separate rooms.
+    - Y-up orientation (swap Y↔Z so floor lies on XZ plane)
+    - Per-room colored PBR materials
     """
     if not meshes:
         raise ValueError("No meshes to pack")
@@ -413,6 +650,7 @@ def pack_glb_multi_mesh(meshes: List[Mesh]) -> bytes:
     buffer_views = []
     accessors = []
     gltf_meshes = []
+    gltf_materials = []
     nodes = []
     offset = 0
 
@@ -420,9 +658,11 @@ def pack_glb_multi_mesh(meshes: List[Mesh]) -> bytes:
         if not m.verts or not m.tris:
             continue
 
+        # Apply Y-up swap to all vertices
+        verts_yup = [_swap_yz(v) for v in m.verts]
         norms = _normals_for_mesh(m)
 
-        pos_buf = _pad4(b"".join(struct.pack("<fff", *v) for v in m.verts))
+        pos_buf = _pad4(b"".join(struct.pack("<fff", *v) for v in verts_yup))
         nor_buf = _pad4(b"".join(struct.pack("<fff", *n) for n in norms))
         idx_buf = _pad4(b"".join(struct.pack("<I", i) for tri in m.tris for i in tri))
 
@@ -441,18 +681,54 @@ def pack_glb_multi_mesh(meshes: List[Mesh]) -> bytes:
         offset += len(idx_buf)
         bin_chunks.append(idx_buf)
 
+        # Compute POSITION min/max for accessor (required by spec)
+        xs = [v[0] for v in verts_yup]
+        ys = [v[1] for v in verts_yup]
+        zs = [v[2] for v in verts_yup]
+
         acc_pos = len(accessors)
-        accessors.append({"bufferView": bv_pos, "componentType": 5126, "count": len(m.verts), "type": "VEC3"})
+        accessors.append(
+            {
+                "bufferView": bv_pos,
+                "componentType": 5126,
+                "count": len(verts_yup),
+                "type": "VEC3",
+                "min": [min(xs), min(ys), min(zs)],
+                "max": [max(xs), max(ys), max(zs)],
+            }
+        )
         acc_nor = len(accessors)
-        accessors.append({"bufferView": bv_nor, "componentType": 5126, "count": len(m.verts), "type": "VEC3"})
+        accessors.append({"bufferView": bv_nor, "componentType": 5126, "count": len(verts_yup), "type": "VEC3"})
         acc_idx = len(accessors)
         accessors.append({"bufferView": bv_idx, "componentType": 5125, "count": len(m.tris) * 3, "type": "SCALAR"})
+
+        # Material
+        mat_idx = len(gltf_materials)
+        rgba = _room_color(m.name)
+        gltf_materials.append(
+            {
+                "name": f"{m.name}_mat",
+                "pbrMetallicRoughness": {
+                    "baseColorFactor": rgba,
+                    "metallicFactor": 0.0,
+                    "roughnessFactor": 0.8,
+                },
+                "doubleSided": True,
+            }
+        )
 
         mesh_idx = len(gltf_meshes)
         gltf_meshes.append(
             {
                 "name": m.name,
-                "primitives": [{"attributes": {"POSITION": acc_pos, "NORMAL": acc_nor}, "indices": acc_idx, "mode": 4}],
+                "primitives": [
+                    {
+                        "attributes": {"POSITION": acc_pos, "NORMAL": acc_nor},
+                        "indices": acc_idx,
+                        "mode": 4,
+                        "material": mat_idx,
+                    }
+                ],
             }
         )
         nodes.append({"mesh": mesh_idx, "name": m.name})
@@ -463,11 +739,12 @@ def pack_glb_multi_mesh(meshes: List[Mesh]) -> bytes:
     bin_data = b"".join(bin_chunks)
 
     gltf = {
-        "asset": {"version": "2.0", "generator": "BHIV-RoomGeometry-v3"},
+        "asset": {"version": "2.0", "generator": "BHIV-RoomGeometry-v4"},
         "scene": 0,
         "scenes": [{"nodes": list(range(len(nodes)))}],
         "nodes": nodes,
         "meshes": gltf_meshes,
+        "materials": gltf_materials,
         "accessors": accessors,
         "bufferViews": buffer_views,
         "buffers": [{"byteLength": len(bin_data)}],
