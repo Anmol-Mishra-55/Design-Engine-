@@ -61,15 +61,19 @@ def calculate_estimated_cost(spec_json: Dict[str, Any], city: str, budget: Optio
 
 
 def _extract_export_urls(spec_json: Dict[str, Any], spec_id: str) -> Dict[str, str]:
-    """Extract bucket URLs from spec metadata. Returns bucket API paths only."""
+    """
+    Extract Bucket URLs from spec metadata.
+    Phase 1: ONLY returns real Bucket URLs from metadata.
+    If metadata has no export_urls, returns empty strings — callers must handle missing URLs.
+    NO fallback to /api/v1/files/... local paths.
+    """
     metadata = spec_json.get("metadata", {}) if isinstance(spec_json.get("metadata"), dict) else {}
     export_urls = metadata.get("export_urls", {}) if isinstance(metadata.get("export_urls"), dict) else {}
 
-    # All URLs must come from bucket
     return {
-        "glb": export_urls.get("glb") or f"/api/v1/files/geometry/{spec_id}.glb",
-        "stl": export_urls.get("stl") or f"/api/v1/files/geometry/exports/{spec_id}.stl",
-        "step": export_urls.get("step") or f"/api/v1/files/geometry/exports/{spec_id}.step",
+        "glb": export_urls.get("glb", ""),
+        "stl": export_urls.get("stl", ""),
+        "step": export_urls.get("step", ""),
     }
 
 
@@ -128,12 +132,13 @@ async def _persist_spec(
 
 
 def _absolute_url(base_url: str, path: str) -> str:
-    """Convert a relative bucket path to a full clickable URL."""
+    """Return path as-is if it's already a full URL, otherwise skip (no local path construction)."""
     if not path:
         return path
     if path.startswith("http"):
         return path
-    return f"{base_url.rstrip('/')}{path}"
+    # Phase 1: do NOT construct local URLs — return empty so callers know it's missing
+    return ""
 
 
 @router.post("/generate", status_code=403)
@@ -163,12 +168,12 @@ async def get_spec(spec_id: str, current_user: str = Depends(get_current_user)):
         if not db_spec:
             raise HTTPException(
                 status_code=404,
-                detail=f"Specification '{spec_id}' not found. Generate a design first using /api/v1/generate",
+                detail=f"Specification '{spec_id}' not found.",
             )
 
         spec_json = db_spec.get("spec_json") or {}
         export_urls = _extract_export_urls(spec_json, spec_id)
-        preview_url = db_spec.get("preview_url") or db_spec.get("geometry_url") or export_urls["glb"]
+        preview_url = db_spec.get("preview_url") or db_spec.get("geometry_url") or export_urls.get("glb", "")
 
         estimated_cost = db_spec.get("estimated_cost")
         if estimated_cost is None:

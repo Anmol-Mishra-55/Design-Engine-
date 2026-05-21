@@ -5,11 +5,10 @@ Core Entry Router — Phase 3
 
 Flow:
     Client → POST /api/v1/core/generate
-           → injects X-Core-Token header internally
            → calls CoreBucketCanonicalOrchestrator.execute()
-           → returns result
+           → returns result with Bucket URLs only
 
-Direct POST /api/v1/generate without X-Core-Token → 403 (blocked by middleware).
+Phase 1: All URLs come from Bucket. No local path fallbacks.
 """
 
 import logging
@@ -18,13 +17,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
-from app.api.generate import (
-    _absolute_url,
-    _extract_budget,
-    _extract_export_urls,
-    _persist_spec,
-    calculate_estimated_cost,
-)
+from app.api.generate import _extract_budget, _persist_spec, calculate_estimated_cost
 from app.auth_mongodb import get_current_user
 from app.core_bucket_pipeline import CoreBucketCanonicalOrchestrator
 from app.prompt_runner_adapter import PromptRunnerUnavailableError
@@ -43,10 +36,8 @@ async def core_generate(
     current_user: str = Depends(get_current_user),
 ):
     """
-    Public Core entry point.
-    This is the ONLY route clients should call for design generation.
-    Internally routes through CoreBucketCanonicalOrchestrator.
-    Direct calls to /api/v1/generate are blocked (403).
+    Public Core entry point — the ONLY route for design generation.
+    Returns Bucket URLs only. No local paths.
     """
     start_time = time.time()
 
@@ -97,7 +88,20 @@ async def core_generate(
     estimated_cost = calculate_estimated_cost(spec_json=spec_json, city=req_city, budget=budget)
     generation_time_ms = int((time.time() - start_time) * 1000)
 
+    # Phase 1: export URLs come ONLY from bucket artifacts — no local path construction
+    artifacts = canonical_result.artifacts
+    glb_url = artifacts["glb"].url if "glb" in artifacts else ""
+    stl_url = artifacts["stl"].url if "stl" in artifacts else ""
+    step_url = artifacts["step"].url if "step" in artifacts else ""
+    spec_bucket_url = artifacts["spec"].url if "spec" in artifacts else ""
+    preview_url = glb_url
+    export_urls = {kind: a.url for kind, a in artifacts.items()}
+
     metadata = spec_json.setdefault("metadata", {})
+    thumbnail_url = metadata.get("meshy_thumbnail_url") or None
+    meshy_video_url = metadata.get("meshy_video_url") or None
+    preview_id = thumbnail_url.rstrip("/").split("/")[-1] if thumbnail_url else ""
+
     metadata["estimated_cost"] = estimated_cost
     metadata["currency"] = "INR"
     metadata["generation_provider"] = canonical_result.provider
@@ -106,23 +110,24 @@ async def core_generate(
     metadata["generation_time_ms"] = generation_time_ms
     metadata["bucket_trace_id"] = canonical_result.bucket_trace_id
     metadata["entry_point"] = "core"
+    metadata["export_urls"] = export_urls
     if budget:
         metadata["budget_provided"] = budget
 
     spec_json["estimated_cost"] = {"total": estimated_cost, "currency": "INR"}
 
-    base_url = str(req.base_url)
-    export_urls = _extract_export_urls(spec_json, spec_id)
-    export_urls_abs = {k: _absolute_url(base_url, v) for k, v in export_urls.items()}
-    preview_url = export_urls_abs["glb"]
-    compliance_check_id = f"check_{spec_id}"
+    def _dl(bucket_url: str, bucket_name: str) -> str:
+        artifact_id = bucket_url.rstrip("/").split("/")[-1]
+        return f"http://localhost:8000/api/v1/files/{bucket_name}/{artifact_id}"
 
-    thumbnail_abs = _absolute_url(base_url, metadata.get("meshy_thumbnail_url", ""))
-    meshy_video_url = metadata.get("meshy_video_url", "")
-
-    metadata["export_urls"] = export_urls_abs
-    if thumbnail_abs:
-        metadata["meshy_thumbnail_url"] = thumbnail_abs
+    download_urls = {
+        "glb": _dl(glb_url, "geometry") if glb_url else "",
+        "stl": _dl(stl_url, "geometry") if stl_url else "",
+        "step": _dl(step_url, "geometry") if step_url else "",
+        "spec_json": _dl(spec_bucket_url, "files") if spec_bucket_url else "",
+    }
+    if preview_id:
+        download_urls["preview_png"] = f"http://localhost:8000/api/v1/files/previews/{preview_id}"
 
     effective_user_id = await _persist_spec(
         spec_id=spec_id,
@@ -134,24 +139,25 @@ async def core_generate(
         generation_time_ms=generation_time_ms,
     )
 
-    logger.info("Core generate complete: spec_id=%s provider=%s", spec_id, canonical_result.provider)
+    logger.info("Core generate complete: spec_id=%s provider=%s glb=%s", spec_id, canonical_result.provider, glb_url)
 
     return GenerateResponse(
         spec_id=spec_id,
         spec_json=spec_json,
         preview_url=preview_url,
         estimated_cost=estimated_cost,
-        compliance_check_id=compliance_check_id,
+        compliance_check_id=f"check_{spec_id}",
         created_at=datetime.now(timezone.utc),
         spec_version=1,
         user_id=effective_user_id,
         city=req_city,
         lm_provider=canonical_result.provider,
         generation_time_ms=generation_time_ms,
-        export_urls=export_urls_abs,
-        glb_url=export_urls_abs.get("glb"),
-        stl_url=export_urls_abs.get("stl"),
-        step_url=export_urls_abs.get("step"),
-        thumbnail_url=thumbnail_abs or None,
-        meshy_video_url=meshy_video_url or None,
+        export_urls=export_urls,
+        glb_url=glb_url,
+        stl_url=stl_url,
+        step_url=step_url,
+        thumbnail_url=thumbnail_url,
+        meshy_video_url=meshy_video_url,
+        download_urls=download_urls,
     )

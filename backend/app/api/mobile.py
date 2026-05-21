@@ -1,12 +1,8 @@
 from app.api.evaluate import evaluate
-
-# from app.api.generate import generate  # Avoid circular import
 from app.api.iterate import iterate
-
-# from app.api.switch import switch  # Avoid circular import
 from app.auth_mongodb import get_current_user, get_db
 from app.schemas import EvaluateRequest, GenerateRequest, IterateRequest, SwitchRequest
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Request
 
 router = APIRouter()
 
@@ -14,13 +10,13 @@ router = APIRouter()
 @router.post("/mobile/generate")
 async def mobile_generate(
     req: GenerateRequest,
+    request: Request,
     current_user: str = Depends(get_current_user),
 ):
-    """Mobile wrapper for generate endpoint"""
-    # Import locally to avoid circular dependency
-    from app.api.generate import generate_design
+    """Mobile wrapper — routes through Core only."""
+    from app.api.core_entry import core_generate
 
-    return await generate_design(req)
+    return await core_generate(req, request, current_user)
 
 
 @router.post("/mobile/evaluate")
@@ -29,13 +25,14 @@ async def mobile_evaluate(
     current_user: str = Depends(get_current_user),
 ):
     """Mobile wrapper for evaluate endpoint"""
-    return await evaluate(req, current_user, db)
+    return await evaluate(req, current_user)
 
 
 @router.post("/mobile/iterate")
 async def mobile_iterate(
     req: IterateRequest,
     current_user: str = Depends(get_current_user),
+    db=Depends(get_db),
 ):
     """Mobile wrapper for iterate endpoint"""
     return await iterate(req, current_user, db)
@@ -45,25 +42,19 @@ async def mobile_iterate(
 async def mobile_switch(
     req: SwitchRequest,
     current_user: str = Depends(get_current_user),
+    db=Depends(get_db),
 ):
-    """Mobile wrapper for switch endpoint - converts to query format"""
+    """Mobile wrapper for switch endpoint"""
     from app.api.switch import SwitchRequest as SwitchReq
     from app.api.switch import switch_material
 
-    # Convert target/update format to natural language query
     target = req.target.object_id or req.target.object_query or "object"
-
     query_parts = [f"change {target}"]
-
     if req.update.material:
         query_parts.append(f"material to {req.update.material}")
     if req.update.color_hex:
         query_parts.append(f"color to {req.update.color_hex}")
-
-    query = " ".join(query_parts)
-
-    # Create request with query format
-    switch_req = SwitchReq(spec_id=req.spec_id, query=query)
+    switch_req = SwitchReq(spec_id=req.spec_id, query=" ".join(query_parts))
     return await switch_material(switch_req, db)
 
 

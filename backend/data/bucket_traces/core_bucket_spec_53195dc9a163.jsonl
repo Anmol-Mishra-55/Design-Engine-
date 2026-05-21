@@ -1,0 +1,3 @@
+{"timestamp": "2026-05-21T09:28:47.547245+00:00", "trace_id": "core_bucket_spec_53195dc9a163", "stage": "core_ingress", "payload": {"spec_id": "spec_53195dc9a163", "user_id": "phase5_test", "city": "Mumbai"}}
+{"timestamp": "2026-05-21T09:28:49.039966+00:00", "trace_id": "core_bucket_spec_53195dc9a163", "stage": "bucket_request_stored", "payload": {"bucket_path": "requests/core_bucket_spec_53195dc9a163.json", "url": "https://bhiv-bucket.onrender.com/bucket/artifact/288c299f-81bf-4554-b09f-50e6c1b4c5cd"}}
+{"timestamp": "2026-05-21T09:28:49.064745+00:00", "trace_id": "core_bucket_spec_53195dc9a163", "stage": "prompt_runner_response", "payload": {"provider": "platform_adapter", "design_type": "2BHK", "rooms_count": 6}}

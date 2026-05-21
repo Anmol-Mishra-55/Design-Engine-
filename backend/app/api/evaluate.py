@@ -23,35 +23,8 @@ router = APIRouter()
 
 
 def save_evaluation_to_file(request: EvaluateRequest) -> str:
-    """Save evaluation to local file when database is unavailable"""
-    import uuid
-
-    eval_id = f"eval_{uuid.uuid4().hex[:8]}"
-
-    now = datetime.now(timezone.utc)
-    evaluation_data = {
-        "eval_id": eval_id,
-        "spec_id": request.spec_id,
-        "user_id": request.user_id,
-        "rating": request.rating,
-        "notes": request.notes or "",
-        "feedback_text": request.feedback_text or "",
-        "created_at": now.isoformat(),
-        "timestamp": now.strftime("%Y-%m-%d %H:%M:%S"),
-    }
-
-    eval_dir = "data/evaluations"
-    os.makedirs(eval_dir, exist_ok=True)
-
-    eval_file = os.path.join(eval_dir, f"{eval_id}.json")
-    with open(eval_file, "w") as f:
-        json.dump(evaluation_data, f, indent=2)
-
-    log_file = os.path.join(eval_dir, "evaluations.jsonl")
-    with open(log_file, "a") as f:
-        f.write(json.dumps(evaluation_data) + "\n")
-
-    return eval_id
+    """Phase 4: local file fallback REMOVED. Raises so caller knows DB is required."""
+    raise RuntimeError("Database unavailable — evaluation cannot be saved without MongoDB")
 
 
 @router.post("/evaluate", response_model=EvaluateResponse)

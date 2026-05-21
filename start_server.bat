@@ -1,16 +1,9 @@
 @echo off
-echo Activating virtual environment and starting server...
+REM Run from: C:\Users\Anmol\Desktop\Backend\
+REM Sets PYTHONPATH so both 'app' and 'platform_adapter' are importable
 
-cd /d c:\Users\Anmol\Desktop\Backend
+set PYTHONPATH=C:\Users\Anmol\Desktop\Backend\backend;C:\Users\Anmol\Desktop\Backend
 
-REM Activate virtual environment
-call .venv\Scripts\activate.bat
+cd /d C:\Users\Anmol\Desktop\Backend\backend
 
-REM Change to backend directory
-cd backend
-
-REM Start the server
-echo Starting FastAPI server...
-python -m uvicorn app.main_simple:app --reload --host 0.0.0.0 --port 8000
-
-pause
+C:\Users\Anmol\Desktop\Backend\.venv\Scripts\uvicorn.exe app.main:app --reload --host 0.0.0.0 --port 8000

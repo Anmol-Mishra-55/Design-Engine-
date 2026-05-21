@@ -32,3 +32,4 @@ class GenerateResponse(BaseModel):
     step_url: Optional[str] = None
     thumbnail_url: Optional[str] = None
     meshy_video_url: Optional[str] = None
+    download_urls: Optional[Dict[str, str]] = None

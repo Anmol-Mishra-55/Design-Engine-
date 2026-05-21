@@ -42,6 +42,13 @@ class GenerateResponse(BaseModel):
     user_id: str
     city: Optional[str] = None
     lm_provider: Optional[str] = None
+    glb_url: Optional[str] = None
+    stl_url: Optional[str] = None
+    step_url: Optional[str] = None
+    thumbnail_url: Optional[str] = None
+    meshy_video_url: Optional[str] = None
+    export_urls: Optional[Dict[str, str]] = None
+    download_urls: Optional[Dict[str, str]] = None
 
 
 # Switch endpoint schemas (material switching)

@@ -57,12 +57,13 @@ async def audit_user_data(user_id: str, current_user: str = Depends(get_current_
 
 @router.get("/audit/storage")
 async def audit_storage(current_user: str = Depends(get_current_user)):
-    """Audit all local storage directories"""
+    """Audit storage — Phase 4: all artifacts in Bucket, not local disk."""
+    from app.storage import _BUCKET_BASE
+
     return {
-        "storage_audit": {
-            "data/specs": {"exists": True, "file_count": 10, "total_size_mb": 2.5},
-            "data/geometry_outputs": {"exists": True, "file_count": 8, "total_size_mb": 15.2},
-        },
+        "storage_backend": "bucket",
+        "bucket_url": _BUCKET_BASE,
+        "note": "All artifacts stored in live Bucket service. Local data/ directories are not used for artifacts.",
         "audit_timestamp": datetime.now().isoformat(),
         "audited_by": current_user,
     }
@@ -106,23 +107,13 @@ def _check_local_file(filepath: str) -> dict:
 
 
 def _check_preview_files(spec_id: str) -> dict:
-    """Check for preview files"""
-    preview_dir = "data/previews"
-    if not os.path.exists(preview_dir):
-        return {"exists": False, "count": 0}
-
-    files = [f for f in os.listdir(preview_dir) if spec_id in f and not f.endswith("_metadata.json")]
-    return {"exists": len(files) > 0, "count": len(files), "files": files}
+    """Phase 4: previews are in Bucket, not local disk."""
+    return {"exists": False, "count": 0, "note": "Previews stored in Bucket"}
 
 
 def _check_geometry_files(spec_id: str) -> dict:
-    """Check for geometry files"""
-    geometry_dir = "data/geometry_outputs"
-    if not os.path.exists(geometry_dir):
-        return {"exists": False, "count": 0}
-
-    files = [f for f in os.listdir(geometry_dir) if spec_id in f and not f.endswith("_metadata.json")]
-    return {"exists": len(files) > 0, "count": len(files), "files": files}
+    """Phase 4: geometry is in Bucket, not local disk."""
+    return {"exists": False, "count": 0, "note": "Geometry stored in Bucket"}
 
 
 def _check_evaluation_files(spec_id: str) -> dict:

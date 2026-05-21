@@ -251,31 +251,8 @@ async def upload_report_file(file: UploadFile = File(...), current_user: str = D
     except Exception as e:
         logger.error(f"Database storage failed: {e}")
 
-    # Store file locally with unique name
-    local_dir = "data/uploads"
-    os.makedirs(local_dir, exist_ok=True)
-    local_path = os.path.join(local_dir, unique_filename)
-
-    with open(local_path, "wb") as f:
-        f.write(file_content)
-
-    # Store metadata locally
-    metadata = {
-        "upload_id": upload_id,
-        "original_filename": file.filename,
-        "stored_filename": unique_filename,
-        "file_path": file_path,
-        "file_size": len(file_content),
-        "content_type": file.content_type,
-        "user": current_user,
-        "local_path": local_path,
-        "signed_url": signed_url,
-        "uploaded_at": datetime.now().isoformat(),
-    }
-
-    metadata_path = os.path.join(local_dir, f"{upload_id}_metadata.json")
-    with open(metadata_path, "w") as f:
-        json.dump(metadata, f, indent=2)
+    # Store file locally with unique name — Phase 4: upload only to Bucket, no local write
+    local_path = None
 
     return {
         "message": "File uploaded successfully",
@@ -338,31 +315,8 @@ async def upload_preview_file(
         except Exception as e:
             logger.error(f"Database storage failed: {e}")
 
-        # Store file locally
-        local_dir = "data/previews"
-        os.makedirs(local_dir, exist_ok=True)
-        local_path = os.path.join(local_dir, path)
-
-        with open(local_path, "wb") as f:
-            f.write(preview_bytes)
-
-        # Store metadata locally
-        metadata = {
-            "upload_id": upload_id,
-            "spec_id": spec_id,
-            "original_filename": file.filename,
-            "stored_filename": path,
-            "file_type": file_extension,
-            "file_size": len(preview_bytes),
-            "signed_url": signed_url,
-            "user": current_user,
-            "local_path": local_path,
-            "uploaded_at": datetime.now().isoformat(),
-        }
-
-        metadata_path = os.path.join(local_dir, f"{upload_id}_metadata.json")
-        with open(metadata_path, "w") as f:
-            json.dump(metadata, f, indent=2)
+        # Phase 4: upload to Bucket only, no local write
+        local_path = None
 
         return {
             "message": "Preview uploaded successfully",
@@ -434,31 +388,8 @@ async def upload_geometry_file(
     except Exception as e:
         logger.error(f"Database storage failed: {e}")
 
-    # Store file locally
-    local_dir = "data/geometry_outputs"
-    os.makedirs(local_dir, exist_ok=True)
-    local_path = os.path.join(local_dir, path)
-
-    with open(local_path, "wb") as f:
-        f.write(geometry_bytes)
-
-    # Store metadata locally
-    metadata = {
-        "upload_id": upload_id,
-        "spec_id": spec_id,
-        "original_filename": file.filename,
-        "stored_filename": path,
-        "file_type": file_type,
-        "file_size": len(geometry_bytes),
-        "signed_url": signed_url,
-        "user": current_user,
-        "local_path": local_path,
-        "uploaded_at": datetime.now().isoformat(),
-    }
-
-    metadata_path = os.path.join(local_dir, f"{upload_id}_metadata.json")
-    with open(metadata_path, "w") as f:
-        json.dump(metadata, f, indent=2)
+    # Phase 4: upload to Bucket only, no local write to data/geometry_outputs
+    local_path = None
 
     return {
         "message": "Geometry uploaded successfully",

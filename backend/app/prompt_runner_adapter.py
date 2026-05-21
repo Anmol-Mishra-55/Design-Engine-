@@ -160,17 +160,24 @@ class PromptRunnerAdapterBridge:
         )
 
         # ── Step 3: Resolve dimensions ───────────────────────────────────────
-        dimensions = await self._extract_dimensions(parameters, prompt, constraints, context)
+        constraints_dict = constraints if isinstance(constraints, dict) else {}
+        has_area_constraint = bool(
+            constraints_dict.get("max_area")
+            or constraints_dict.get("area")
+            or constraints_dict.get("width")
+            or constraints_dict.get("length")
+        )
+        dimensions = await self._extract_dimensions(parameters, prompt, constraints_dict, context)
 
-        # Override with BHK canonical dimensions when no explicit dims in prompt
-        if sem.bhk_definition and not self._has_explicit_dimensions(prompt):
+        # Override with BHK canonical dimensions ONLY when no area constraint and no explicit dims in prompt
+        if sem.bhk_definition and not self._has_explicit_dimensions(prompt) and not has_area_constraint:
             bhk_dims = sem.bhk_definition.get("dimensions", {})
             dimensions["width"] = bhk_dims.get("width_m", dimensions["width"])
             dimensions["length"] = bhk_dims.get("length_m", dimensions["length"])
             dimensions["height"] = bhk_dims.get("height_m", dimensions["height"])
 
-        # Override with detected area if available
-        if sem.area_sqm and not self._has_explicit_dimensions(prompt):
+        # Override with detected area from prompt (e.g. "1500 sqft") — takes priority over BHK defaults
+        if sem.area_sqm and not self._has_explicit_dimensions(prompt) and not has_area_constraint:
             side = sem.area_sqm**0.5
             dimensions["width"] = round(side, 2)
             dimensions["length"] = round(side, 2)
@@ -211,8 +218,21 @@ class PromptRunnerAdapterBridge:
         if sem.bhk_definition:
             spec_json["room_counts"] = sem.bhk_definition.get("room_counts", {})
             spec_json["adjacency"] = sem.bhk_definition.get("adjacency", {})
-            spec_json["room_dimensions"] = sem.bhk_definition.get("room_dimensions", {})
             spec_json["typical_budget_inr"] = sem.bhk_definition.get("typical_budget_inr", {})
+
+            # Scale room_dimensions proportionally to actual floor area
+            bhk_dims = sem.bhk_definition.get("dimensions", {})
+            canonical_area = bhk_dims.get("width_m", 10.0) * bhk_dims.get("length_m", 10.0)
+            actual_area = dimensions["width"] * dimensions["length"]
+            scale = (actual_area / canonical_area) ** 0.5 if canonical_area > 0 else 1.0
+            raw_room_dims = sem.bhk_definition.get("room_dimensions", {})
+            spec_json["room_dimensions"] = {
+                room: {
+                    "width_m": round(v["width_m"] * scale, 2),
+                    "length_m": round(v["length_m"] * scale, 2),
+                }
+                for room, v in raw_room_dims.items()
+            }
 
         return spec_json
 
@@ -346,24 +366,34 @@ class PromptRunnerAdapterBridge:
     async def _extract_dimensions(
         self, parameters: Dict[str, Any], prompt: str, constraints: Dict[str, Any], context: Dict[str, Any]
     ) -> Dict[str, float]:
-        """Extract dimensions from parameters or prompt"""
+        """Extract dimensions from parameters, constraints (max_area), or prompt"""
         dimensions = {}
 
-        # Try parameters first (from platform_adapter)
+        # Try explicit width/length/height from parameters first
         for key in ["width", "length", "height", "plot_area"]:
             val = parameters.get(key)
             if isinstance(val, (int, float)) and val > 0:
                 dimensions[key] = float(val)
 
-        # Try constraints
+        # Try explicit width/length/height from constraints
         if not dimensions:
             for key in ["width", "length", "height"]:
                 val = constraints.get(key)
                 if isinstance(val, (int, float)) and val > 0:
                     dimensions[key] = float(val)
 
-        # Parse from prompt using regex
-        if not dimensions:
+        # Handle max_area from constraints — convert to width x length
+        if "width" not in dimensions and "length" not in dimensions:
+            max_area = constraints.get("max_area") or constraints.get("area")
+            if isinstance(max_area, (int, float)) and max_area > 0:
+                # Treat values > 500 as sqft, <= 500 as sqm
+                area_sqm = max_area / 10.764 if max_area > 500 else float(max_area)
+                side = area_sqm**0.5
+                dimensions["width"] = round(side, 2)
+                dimensions["length"] = round(side, 2)
+
+        # Parse WxL from prompt using regex
+        if "width" not in dimensions:
             pattern = r"(\d+(?:\.\d+)?)\s*(?:x|by|×)\s*(\d+(?:\.\d+)?)"
             match = re.search(pattern, prompt.lower())
             if match:

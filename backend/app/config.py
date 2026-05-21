@@ -232,6 +232,14 @@ class Settings(BaseSettings):
     RL_LEARNING_RATE: float = Field(default=0.001, description="RL learning rate")
 
     # ============================================================================
+    # BUCKET STORAGE SERVICE
+    # ============================================================================
+    BUCKET_URL: str = Field(
+        default="https://bhiv-bucket.onrender.com",
+        description="Live Bucket storage service URL (Siddhesh)",
+    )
+
+    # ============================================================================
     # CORE INTERNAL TOKEN — blocks direct /generate calls
     # ============================================================================
     CORE_INTERNAL_TOKEN: str = Field(

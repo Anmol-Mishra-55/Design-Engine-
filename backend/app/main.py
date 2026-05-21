@@ -105,7 +105,7 @@ async def startup_event():
     print("API Docs: http://0.0.0.0:8000/docs")
     print("Health Check: http://0.0.0.0:8000/health")
     print("Database: MongoDB (attempting connection...)")
-    print("Storage: MongoDB GridFS")
+    print("Storage: Bucket (https://bhiv-bucket.onrender.com)")
     print("Request logging is ENABLED")
     print("=" * 70 + "\n")
 
@@ -114,7 +114,7 @@ async def startup_event():
         await connect_to_mongo(settings.MONGODB_URL, settings.MONGODB_DATABASE)
         logger.info("MongoDB connected successfully")
         logger.info(f"Database: {settings.MONGODB_DATABASE}")
-        logger.info("GridFS Buckets: files, previews, geometry, compliance")
+        logger.info("Storage: Bucket service — all artifacts via https://bhiv-bucket.onrender.com")
     except Exception as e:
         logger.warning(f"MongoDB connection failed: {e}")
         logger.warning("Server will start without database (some features disabled)")

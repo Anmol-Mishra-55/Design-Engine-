@@ -223,44 +223,34 @@ async def call_rl_agent(
 
 
 async def call_geometry_agent(spec_json: Dict[str, Any], request_id: str, auth_token: str = None) -> AgentResult:
-    """Call geometry generation agent (.GLB file generation)"""
+    """
+    Phase 3+4: Geometry generation via geometry_generator_real + Bucket upload.
+    Does NOT call /api/v1/geometry/generate (blocked).
+    Does NOT produce local file paths or placeholder URLs.
+    Fails hard if geometry or Bucket upload fails.
+    """
     start = time.time()
     agent_name = "geometry_agent"
 
     try:
-        logger.info(f"[{request_id}] Calling geometry generation agent")
+        logger.info(f"[{request_id}] Generating geometry via geometry_generator_real")
+        from app.geometry_generator_real import generate_real_glb
+        from app.storage import upload_to_bucket
 
-        # Prepare headers with authentication
-        headers = {"Content-Type": "application/json"}
-        if auth_token:
-            headers["Authorization"] = f"Bearer {auth_token}"
+        glb_bytes = generate_real_glb(spec_json)
+        if not glb_bytes or len(glb_bytes) < 100:
+            raise RuntimeError("generate_real_glb returned empty output")
 
-        # Use the new geometry generator API
-        async with httpx.AsyncClient(timeout=60.0) as client:
-            geometry_request = {"spec_json": spec_json, "request_id": request_id, "format": "glb"}
+        geometry_url = await upload_to_bucket("geometry", f"{request_id}.glb", glb_bytes, "model/gltf-binary")
 
-            try:
-                response = await client.post(
-                    "http://localhost:8000/api/v1/geometry/generate", json=geometry_request, headers=headers
-                )
-                response.raise_for_status()
-                result_data = response.json()
-
-                logger.info(f"[{request_id}] Geometry generated: {result_data.get('file_size_bytes')} bytes")
-
-            except Exception as e:
-                logger.warning(f"Geometry API failed: {e}, using fallback")
-                result_data = {
-                    "geometry_url": f"/api/v1/geometry/download/{request_id}.glb",
-                    "format": "glb",
-                    "file_size_bytes": 0,
-                    "generation_time_ms": 100,
-                    "note": "Fallback geometry placeholder",
-                }
-
+        result_data = {
+            "geometry_url": geometry_url,
+            "format": "glb",
+            "file_size_bytes": len(glb_bytes),
+            "generation_time_ms": int((time.time() - start) * 1000),
+        }
+        logger.info(f"[{request_id}] Geometry stored in Bucket: {geometry_url}")
         duration_ms = int((time.time() - start) * 1000)
-        logger.info(f"[{request_id}] Geometry agent completed in {duration_ms}ms")
-
         return AgentResult(agent_name=agent_name, success=True, duration_ms=duration_ms, data=result_data)
 
     except Exception as e:

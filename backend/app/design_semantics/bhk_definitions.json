@@ -85,7 +85,7 @@
 
   "3BHK": {
     "label": "3 Bedroom Hall Kitchen",
-    "rooms": ["master_bedroom", "bedroom_2", "bedroom_3", "hall", "dining", "kitchen", "master_bathroom", "bathroom_2", "common_bathroom"],
+    "rooms": ["master_bedroom", "bedroom_2", "bedroom_3", "hall", "dining", "kitchen", "master_bathroom", "bathroom_2", "common_bathroom", "balcony_1", "balcony_2"],
     "room_counts": {
       "bedroom": 3,
       "hall": 1,
@@ -138,7 +138,7 @@
 
   "4BHK": {
     "label": "4 Bedroom Hall Kitchen",
-    "rooms": ["master_bedroom", "bedroom_2", "bedroom_3", "bedroom_4", "hall", "dining", "kitchen", "master_bathroom", "bathroom_2", "bathroom_3", "common_bathroom", "study"],
+    "rooms": ["master_bedroom", "bedroom_2", "bedroom_3", "bedroom_4", "hall", "dining", "kitchen", "master_bathroom", "bathroom_2", "bathroom_3", "common_bathroom", "study", "balcony_1", "balcony_2"],
     "room_counts": {
       "bedroom": 4,
       "hall": 1,
@@ -198,7 +198,7 @@
 
   "5BHK": {
     "label": "5 Bedroom Hall Kitchen",
-    "rooms": ["master_bedroom", "bedroom_2", "bedroom_3", "bedroom_4", "bedroom_5", "hall", "dining", "kitchen", "master_bathroom", "bathroom_2", "bathroom_3", "bathroom_4", "common_bathroom", "study", "pooja_room"],
+    "rooms": ["master_bedroom", "bedroom_2", "bedroom_3", "bedroom_4", "bedroom_5", "hall", "dining", "kitchen", "master_bathroom", "bathroom_2", "bathroom_3", "bathroom_4", "common_bathroom", "study", "pooja_room", "balcony_1", "balcony_2", "balcony_3"],
     "room_counts": {
       "bedroom": 5,
       "hall": 1,

@@ -1,0 +1,1 @@
+{"success":false,"error":"Integration boundary violation: only Core integration is allowed","request_id":"2997bd15-9fb7-4202-aad4-d3d8db45add8","timestamp":"2026-05-21T08:39:14.426383Z"}

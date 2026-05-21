@@ -1,9 +1,9 @@
 """
-BHIV AI Assistant API - Integrated into main backend
-Orchestrates calls to Task 7, Sohum's MCP, and Ranjeet's RL systems
+BHIV AI Assistant API
+Phase 3: All design generation routes through Core pipeline only.
+Phase 4: All URLs come from Bucket, no fake S3 paths.
 """
 
-import asyncio
 import logging
 from datetime import datetime
 from typing import Dict, List, Optional
@@ -17,10 +17,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/bhiv/v1", tags=["BHIV Assistant"])
 
 
-# Request/Response Models
 class DesignRequest(BaseModel):
-    """User request for design generation"""
-
     user_id: str
     prompt: str = Field(description="Natural language design prompt")
     city: str = Field(description="City for compliance (Mumbai, Pune, etc.)")
@@ -29,8 +26,6 @@ class DesignRequest(BaseModel):
 
 
 class ComplianceResult(BaseModel):
-    """Compliance check result from Sohum's system"""
-
     compliant: bool
     violations: List[str] = []
     geometry_url: Optional[str] = None
@@ -38,30 +33,18 @@ class ComplianceResult(BaseModel):
 
 
 class RLOptimization(BaseModel):
-    """RL optimization from Ranjeet's system"""
-
     optimized_layout: Dict
     confidence: float
     reward_score: float
 
 
 class BHIVResponse(BaseModel):
-    """Unified BHIV Assistant response"""
-
     request_id: str
     spec_id: str
     spec_json: Dict
-
-    # From Task 7
     preview_url: str
-
-    # From Sohum MCP
     compliance: ComplianceResult
-
-    # From Ranjeet RL
     rl_optimization: Optional[RLOptimization] = None
-
-    # Metadata
     processing_time_ms: int
     timestamp: datetime
 
@@ -73,168 +56,133 @@ class BHIVAssistant:
         self.http_client = None
 
     async def _get_client(self) -> httpx.AsyncClient:
-        """Get or create HTTP client"""
         if not self.http_client:
             self.http_client = httpx.AsyncClient(timeout=60.0)
         return self.http_client
 
-    async def generate_design(self, request: DesignRequest) -> BHIVResponse:
+    async def _run_pipeline(self, request: DesignRequest) -> BHIVResponse:
         """
-        Main orchestration flow:
-        1. Call Task 7 to generate spec from prompt
-        2. Call Sohum's MCP for compliance check
-        3. Call Ranjeet's RL for optimization (optional)
-        4. Aggregate and return unified response
+        Phase 3: routes through CoreBucketCanonicalOrchestrator only.
+        Phase 4: preview_url is a real Bucket URL.
         """
         start_time = datetime.now()
         request_id = f"bhiv_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
-
         client = await self._get_client()
 
         try:
-            # STEP 1: Generate spec from prompt (Task 7 - Internal)
-            logger.info(f"[{request_id}] Step 1: Generating spec internally...")
-            spec_result = await self._call_internal_generate(request)
+            spec_result = await self._call_core_pipeline(request)
 
-            # STEP 2: Run compliance check (Sohum's MCP)
-            logger.info(f"[{request_id}] Step 2: Running compliance check...")
             compliance_result = await self._call_sohum_compliance(
                 client, spec_result["spec_json"], request.city, request.project_id or request_id
             )
 
-            # STEP 3: Get RL optimization (Ranjeet's RL) - Optional
             rl_result = None
             try:
-                logger.info(f"[{request_id}] Step 3: Getting RL optimization...")
                 rl_result = await self._call_ranjeet_rl(client, spec_result["spec_json"], request.city)
             except Exception as e:
                 logger.warning(f"[{request_id}] RL optimization failed (non-blocking): {e}")
 
-            # STEP 4: Aggregate response
             processing_time = int((datetime.now() - start_time).total_seconds() * 1000)
 
             return BHIVResponse(
                 request_id=request_id,
                 spec_id=spec_result["spec_id"],
                 spec_json=spec_result["spec_json"],
-                preview_url=spec_result.get("preview_url", ""),
+                preview_url=spec_result["preview_url"],
                 compliance=ComplianceResult(**compliance_result),
                 rl_optimization=RLOptimization(**rl_result) if rl_result else None,
                 processing_time_ms=processing_time,
                 timestamp=datetime.now(),
             )
 
+        except HTTPException:
+            raise
         except Exception as e:
-            logger.error(f"[{request_id}] Error in design generation: {str(e)}", exc_info=True)
+            logger.error(f"[{request_id}] Error in design pipeline: {str(e)}", exc_info=True)
             raise HTTPException(status_code=500, detail=f"Design generation failed: {str(e)}")
 
-    async def _call_internal_generate(self, request: DesignRequest) -> Dict:
-        """Call internal Task 7 generate logic"""
-        from app.lm_adapter import run_local_lm
-        from app.utils import generate_spec_id
+    async def _call_core_pipeline(self, request: DesignRequest) -> Dict:
+        """Phase 3+4: Route through Core. Returns Bucket URL."""
+        from app.core_bucket_pipeline import CoreBucketCanonicalOrchestrator
+        from app.utils import create_new_spec_id
 
-        # Use internal LM adapter
-        params = {
-            "user_id": request.user_id,
-            "strategy": request.context.get("style", "modern"),
-            "extracted_dimensions": request.context.get("dimensions", {}),
-        }
-
-        lm_result = run_local_lm(request.prompt, params)
-        spec_id = generate_spec_id()
-
-        return {
+        spec_id = create_new_spec_id()
+        core_payload = {
             "spec_id": spec_id,
-            "spec_json": lm_result["spec_json"],
-            "preview_url": f"https://bhiv-previews.s3.amazonaws.com/{spec_id}.glb",
+            "user_id": request.user_id,
+            "project_id": request.project_id,
+            "prompt": request.prompt,
+            "city": request.city,
+            "style": request.context.get("style", "modern") if request.context else "modern",
+            "context": request.context or {},
+            "constraints": {},
         }
+        orchestrator = CoreBucketCanonicalOrchestrator()
+        result = await orchestrator.execute(spec_id=spec_id, request_payload=core_payload)
+        glb_artifact = result.artifacts.get("glb")
+        preview_url = glb_artifact.url if glb_artifact else ""
+        if not preview_url:
+            raise RuntimeError("Core pipeline did not return a Bucket GLB URL")
+        return {"spec_id": spec_id, "spec_json": result.spec_json, "preview_url": preview_url}
 
     async def _call_sohum_compliance(
         self, client: httpx.AsyncClient, spec_json: Dict, city: str, project_id: str
     ) -> Dict:
-        """Call Sohum's MCP compliance endpoint"""
         sohum_url = getattr(settings, "SOHAM_URL", "https://ai-rule-api-w7z5.onrender.com")
-        url = f"{sohum_url}/compliance/run_case"
-
         payload = {"spec_json": spec_json, "city": city, "project_id": project_id}
-
         try:
-            response = await client.post(url, json=payload, timeout=90.0)
+            response = await client.post(f"{sohum_url}/compliance/run_case", json=payload, timeout=90.0)
             response.raise_for_status()
             return response.json()
-
         except httpx.HTTPError as e:
             logger.error(f"Sohum compliance check failed: {e}")
-            # Return default non-compliant result
             return {
                 "compliant": False,
-                "violations": [f"Compliance check service unavailable: {str(e)}"],
+                "violations": [f"Service unavailable: {e}"],
                 "geometry_url": None,
                 "case_id": None,
             }
 
     async def _call_ranjeet_rl(self, client: httpx.AsyncClient, spec_json: Dict, city: str) -> Optional[Dict]:
-        """Call Ranjeet's RL optimization endpoint"""
         yotta_url = getattr(settings, "YOTTA_URL", "https://api.yotta.com")
-        url = f"{yotta_url}/rl/predict"
-
         headers = {}
         yotta_key = getattr(settings, "YOTTA_API_KEY_RL", None)
         if yotta_key:
             headers["Authorization"] = f"Bearer {yotta_key}"
-
-        payload = {"spec_json": spec_json, "city": city, "constraints": {}}
-
         try:
-            response = await client.post(url, json=payload, headers=headers)
+            response = await client.post(
+                f"{yotta_url}/rl/predict", json={"spec_json": spec_json, "city": city}, headers=headers
+            )
             response.raise_for_status()
             return response.json()
-
         except httpx.HTTPError as e:
             logger.warning(f"RL optimization failed: {e}")
             return None
 
 
-# Create instance
 assistant = BHIVAssistant()
 
 
-# API Endpoints
 @router.post("/design", response_model=BHIVResponse)
 async def create_design(request: DesignRequest):
-    """
-    Generate complete design with compliance and RL optimization
-
-    This endpoint orchestrates:
-    1. Task 7: Generate spec from natural language prompt
-    2. Sohum's MCP: Run compliance check
-    3. Ranjeet's RL: Optimize land utilization
-    """
-    return await assistant.generate_design(request)
+    """Generate complete design — routes through Core only."""
+    return await assistant._run_pipeline(request)
 
 
 @router.get("/health")
 async def health_check():
-    """Health check for BHIV Assistant"""
     client = await assistant._get_client()
-
-    # Check connectivity to external systems
-    health = {"bhiv": "ok", "task7_internal": "ok", "sohum_mcp": "unknown", "ranjeet_rl": "unknown"}
-
-    # Test Sohum MCP
+    health = {"bhiv": "ok", "sohum_mcp": "unknown", "ranjeet_rl": "unknown"}
     try:
         sohum_url = getattr(settings, "SOHAM_URL", "https://ai-rule-api-w7z5.onrender.com")
-        response = await client.get(f"{sohum_url}/health", timeout=5.0)
-        health["sohum_mcp"] = "ok" if response.status_code == 200 else "error"
+        r = await client.get(f"{sohum_url}/health", timeout=5.0)
+        health["sohum_mcp"] = "ok" if r.status_code == 200 else "error"
     except:
         health["sohum_mcp"] = "unreachable"
-
-    # Test Ranjeet RL
     try:
         yotta_url = getattr(settings, "YOTTA_URL", "https://api.yotta.com")
-        response = await client.get(f"{yotta_url}/health", timeout=5.0)
-        health["ranjeet_rl"] = "ok" if response.status_code == 200 else "error"
+        r = await client.get(f"{yotta_url}/health", timeout=5.0)
+        health["ranjeet_rl"] = "ok" if r.status_code == 200 else "error"
     except:
         health["ranjeet_rl"] = "unreachable"
-
     return health
