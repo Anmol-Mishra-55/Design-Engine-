@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 WALL_T = 0.25  # wall thickness in metres (visible at normal scale)
 DOOR_W = 0.9  # door opening width in metres
 DOOR_H = 2.1  # door opening height in metres
-GAP = WALL_T  # gap between adjacent room origins = one shared wall thickness
+GAP = 0.0  # rooms share walls — no gap between room origins
 
 Vertex = Tuple[float, float, float]
 Triangle = Tuple[int, int, int]
@@ -605,9 +605,12 @@ def _room_color(name: str) -> List[float]:
 
 
 def _swap_yz(v: Vertex) -> Vertex:
-    """Convert from Z-up (XYZ) to Y-up (XZY) for glTF standard orientation."""
+    """Convert from Z-up (XYZ) to Y-up (XZY) for glTF standard orientation.
+    Rooms are built in XY plane with Z as height.
+    glTF Y-up: X stays, Y=height(Z), Z=-depth(-Y) so floor sits at Y=0.
+    """
     x, y, z = v
-    return (x, z, -y)
+    return (x, z, y)
 
 
 def _normals_for_mesh(m: Mesh) -> List[Vertex]:
@@ -811,7 +814,7 @@ def generate_real_glb(spec_json: Dict[str, Any]) -> bytes:
     all_meshes: List[Mesh] = []
 
     for story in range(stories):
-        z_offset = story * (floor_h + WALL_T)
+        z_offset = story * floor_h  # floors stack directly, no gap between
         for idx, (room_name, rx, ry, rw, rl, rh) in enumerate(layout):
             d = door_map[idx]
             node_name = f"{room_name}_s{story}" if stories > 1 else room_name
