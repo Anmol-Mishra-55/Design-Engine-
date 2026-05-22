@@ -1,0 +1,2 @@
+{"timestamp": "2026-05-22T11:18:55.841048+00:00", "trace_id": "core_bucket_spec_665635edef7c", "stage": "core_ingress", "payload": {"spec_id": "spec_665635edef7c", "user_id": "test_2bhk_01", "city": "Pune"}}
+{"timestamp": "2026-05-22T11:18:57.185881+00:00", "trace_id": "core_bucket_spec_665635edef7c", "stage": "bucket_request_stored", "payload": {"bucket_path": "requests/core_bucket_spec_665635edef7c.json", "url": "https://bhiv-bucket.onrender.com/bucket/artifact/e6c6133a-c58e-4136-acfe-e3ca75970f1e"}}
