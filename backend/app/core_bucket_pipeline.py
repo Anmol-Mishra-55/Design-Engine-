@@ -334,10 +334,9 @@ def _rooms_to_stl(spec_json: Dict[str, Any], spec_id: str, glb_bytes: bytes) -> 
     layout = _layout_rooms(rooms, room_dimensions, total_w, floor_h)
 
     for story in range(stories):
-        z_off = story * (floor_h + WALL_T)
+        z_off = story * floor_h
         for room_name, rx, ry, rw, rl, rh in layout:
             z0, z1 = z_off, z_off + rh
-            # 8 corners of this room box
             verts = [
                 (rx, ry, z0),
                 (rx + rw, ry, z0),
@@ -350,19 +349,18 @@ def _rooms_to_stl(spec_json: Dict[str, Any], spec_id: str, glb_bytes: bytes) -> 
             ]
             faces = [
                 (0, 1, 2),
-                (0, 2, 3),  # bottom
+                (0, 2, 3),
                 (7, 6, 5),
-                (7, 5, 4),  # top
+                (7, 5, 4),
                 (0, 1, 5),
-                (0, 5, 4),  # south
+                (0, 5, 4),
                 (1, 2, 6),
-                (1, 6, 5),  # east
+                (1, 6, 5),
                 (2, 3, 7),
-                (2, 7, 6),  # north
+                (2, 7, 6),
                 (3, 0, 4),
-                (3, 4, 7),  # west
+                (3, 4, 7),
             ]
-            solid_name = f"{room_name}_s{story}" if stories > 1 else room_name
             for ai, bi, ci in faces:
                 a, b, c = verts[ai], verts[bi], verts[ci]
                 n = _tri_normal(a, b, c)
@@ -414,7 +412,7 @@ def _rooms_to_step(spec_json: Dict[str, Any], spec_id: str, glb_bytes: bytes) ->
     if rooms:
         layout = _layout_rooms(rooms, room_dimensions, total_w, floor_h)
         for story in range(stories):
-            z_off = story * (floor_h + WALL_T)
+            z_off = story * floor_h
             for room_name, rx, ry, rw, rl, rh in layout:
                 z0, z1 = z_off, z_off + rh
                 pts = [

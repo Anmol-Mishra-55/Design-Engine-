@@ -154,7 +154,8 @@ class PromptRunnerAdapterBridge:
         resolved_city = sem.city or city or "Mumbai"
         resolved_style = sem.style_key or style or "modern"
         resolved_stories = (
-            sem.stories
+            int(constraints_dict.get("max_stories") or constraints_dict.get("stories") or 0)
+            or sem.stories
             or self._extract_stories(parameters, prompt)
             or (sem.bhk_definition.get("stories", 1) if sem.bhk_definition else 1)
         )
