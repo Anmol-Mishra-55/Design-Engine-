@@ -514,11 +514,29 @@ def _add_furniture(m: Mesh, rt: str, x: float, y: float, w: float, l: float, z: 
         _add_box(m, x + p, y + (l - 0.8) / 2, z, min(0.3, w * 0.25), 0.8, 0.85)
 
 
+def _compute_shared_walls(
+    layout: List[Tuple[str, float, float, float, float, float]],
+) -> Dict[int, Dict[str, bool]]:
+    n = len(layout)
+    shared: Dict[int, Dict[str, bool]] = {
+        i: {"south": False, "north": False, "west": False, "east": False} for i in range(n)
+    }
+    tol = 0.01
+    for i, (_, xi, yi, wi, li, _hi) in enumerate(layout):
+        for j, (_, xj, yj, wj, lj, _hj) in enumerate(layout):
+            if i >= j:
+                continue
+            if abs((xi + wi) - xj) < tol and yi < yj + lj - tol and yi + li > yj + tol:
+                shared[j]["west"] = True
+            if abs((yi + li) - yj) < tol and xi < xj + wj - tol and xi + wi > xj + tol:
+                shared[j]["south"] = True
+    return shared
+
+
 # ── Build one room ────────────────────────────────────────────────────────────
 
 
 def build_room_mesh(
-    name: str,
     x: float,
     y: float,
     w: float,
@@ -529,10 +547,14 @@ def build_room_mesh(
     door_north: bool = False,
     door_west: bool = False,
     door_east: bool = False,
+    shared_south: bool = False,
+    shared_north: bool = False,
+    shared_west: bool = False,
+    shared_east: bool = False,
 ) -> Mesh:
     """
     Build one room: floor + ceiling + 4 thick walls with optional door gaps.
-    Phase 2: each room is a fully enclosed volume, not a plane.
+    shared_* flags suppress a wall entirely when the neighbour already built it.
     """
     m = Mesh(name)
     z0, z1 = z, z + h
@@ -542,14 +564,18 @@ def build_room_mesh(
     # Ceiling
     m.add_quad((x, y + l, z1), (x + w, y + l, z1), (x + w, y, z1), (x, y, z1))
 
-    # South wall (y=y, normal=-Y)
-    m.add_thick_wall(x, y, x + w, y, z0, z1, (0.0, -1.0), door=door_south)
-    # North wall (y=y+l, normal=+Y)
-    m.add_thick_wall(x + w, y + l, x, y + l, z0, z1, (0.0, 1.0), door=door_north)
-    # West wall (x=x, normal=-X)
-    m.add_thick_wall(x, y + l, x, y, z0, z1, (-1.0, 0.0), door=door_west)
-    # East wall (x=x+w, normal=+X)
-    m.add_thick_wall(x + w, y, x + w, y + l, z0, z1, (1.0, 0.0), door=door_east)
+    # South wall (y=y, normal=-Y) — skip if shared (neighbour to south built it)
+    if not shared_south:
+        m.add_thick_wall(x, y, x + w, y, z0, z1, (0.0, -1.0), door=door_south)
+    # North wall (y=y+l, normal=+Y) — always build (neighbour to north will skip theirs)
+    if not shared_north:
+        m.add_thick_wall(x + w, y + l, x, y + l, z0, z1, (0.0, 1.0), door=door_north)
+    # West wall (x=x, normal=-X) — skip if shared
+    if not shared_west:
+        m.add_thick_wall(x, y + l, x, y, z0, z1, (-1.0, 0.0), door=door_west)
+    # East wall (x=x+w, normal=+X) — always build
+    if not shared_east:
+        m.add_thick_wall(x + w, y, x + w, y + l, z0, z1, (1.0, 0.0), door=door_east)
 
     # Furniture
     _add_furniture(m, _room_base_type(name), x, y, w, l, z0)
@@ -811,12 +837,14 @@ def generate_real_glb(spec_json: Dict[str, Any]) -> bytes:
 
     layout = _layout_rooms(rooms, room_dims, total_w, floor_h)
     door_map = _compute_doors(layout, adjacency_spec)
+    shared_map = _compute_shared_walls(layout)
     all_meshes: List[Mesh] = []
 
     for story in range(stories):
         z_offset = story * floor_h  # floors stack directly, no gap between
         for idx, (room_name, rx, ry, rw, rl, rh) in enumerate(layout):
             d = door_map[idx]
+            s = shared_map[idx]
             node_name = f"{room_name}_s{story}" if stories > 1 else room_name
             mesh = build_room_mesh(
                 name=node_name,
@@ -830,6 +858,10 @@ def generate_real_glb(spec_json: Dict[str, Any]) -> bytes:
                 door_north=d["north"],
                 door_west=d["west"],
                 door_east=d["east"],
+                shared_south=s["south"],
+                shared_north=s["north"],
+                shared_west=s["west"],
+                shared_east=s["east"],
             )
             all_meshes.append(mesh)
 
