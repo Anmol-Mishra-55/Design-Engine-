@@ -537,6 +537,7 @@ def _compute_shared_walls(
 
 
 def build_room_mesh(
+    name: str,
     x: float,
     y: float,
     w: float,

@@ -153,6 +153,7 @@ class PromptRunnerAdapterBridge:
         # ── Step 2: Resolve final values (semantics > payload > defaults) ────
         resolved_city = sem.city or city or "Mumbai"
         resolved_style = sem.style_key or style or "modern"
+        constraints_dict = constraints if isinstance(constraints, dict) else {}
         resolved_stories = (
             int(constraints_dict.get("max_stories") or constraints_dict.get("stories") or 0)
             or sem.stories
@@ -161,7 +162,6 @@ class PromptRunnerAdapterBridge:
         )
 
         # ── Step 3: Resolve dimensions ───────────────────────────────────────
-        constraints_dict = constraints if isinstance(constraints, dict) else {}
         has_area_constraint = bool(
             constraints_dict.get("max_area")
             or constraints_dict.get("area")
