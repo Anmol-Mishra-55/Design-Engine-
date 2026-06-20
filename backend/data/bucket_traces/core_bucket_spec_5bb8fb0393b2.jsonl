@@ -1,0 +1,3 @@
+{"timestamp": "2026-06-20T07:23:46.493721+00:00", "trace_id": "core_bucket_spec_5bb8fb0393b2", "stage": "core_ingress", "payload": {"spec_id": "spec_5bb8fb0393b2", "user_id": "user_01", "city": "Mumbai"}}
+{"timestamp": "2026-06-20T07:24:19.132311+00:00", "trace_id": "core_bucket_spec_5bb8fb0393b2", "stage": "bucket_request_stored", "payload": {"bucket_path": "requests/core_bucket_spec_5bb8fb0393b2.json", "url": "https://bhiv-bucket.onrender.com/bucket/artifact/49cd2d55-8ad2-4543-a0f4-108a796d5f0b"}}
+{"timestamp": "2026-06-20T07:24:19.138494+00:00", "trace_id": "core_bucket_spec_5bb8fb0393b2", "stage": "prompt_runner_response", "payload": {"provider": "platform_adapter", "design_type": "house", "rooms_count": 0}}

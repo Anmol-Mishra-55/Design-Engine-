@@ -111,7 +111,7 @@ def _resolve_room_dims(
     return 3.5, 4.0, floor_height
 
 
-# ── Layout engine ─────────────────────────────────────────────────────────────
+# ── Layout engine ─────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 
 def _layout_rooms(
@@ -119,42 +119,125 @@ def _layout_rooms(
     spec_room_dimensions: Dict[str, Any],
     total_width: float,
     floor_height: float,
+    adjacency: Dict[str, Any] = None,
 ) -> List[Tuple[str, float, float, float, float, float]]:
     """
-    Pack rooms left-to-right, wrapping to next row when width exceeded.
-    Rooms are separated by GAP so shared walls are physically distinct.
-    Returns list of (name, x, y, w, l, h) — inner dimensions.
+    Adjacency-driven grid layout:
+    1. Resolve each room's (w, l, h).
+    2. Place rooms in rows using the adjacency graph to ensure
+       adjacent rooms always share an exact edge — zero gap.
+    3. Row boundary is snapped to the tallest room in that row
+       so the next row always starts flush.
 
-    Phase 2 fix: use max(total_width, widest_room * 1.5) so rooms never
-    all collapse into a single column.
+    Key fix over old approach: cursor_y advances by the ACTUAL max
+    length of placed rooms in the current row, not by the max_l of
+    rooms yet to be assigned — so no row creates a vertical gap.
     """
     if not rooms:
         return []
 
-    # Compute per-room dims first so we can set a sensible row width
-    dims = [_resolve_room_dims(r, spec_room_dimensions, floor_height) for r in rooms]
-    max_w = max(d[0] for d in dims)
-    total_room_w = sum(d[0] for d in dims) + GAP * (len(dims) - 1)
-    # Row width: use total_width but ensure at least 2 rooms wide
-    row_width = max(total_width, max_w * 2.0 + GAP, total_room_w / max(math.ceil(len(dims) / 3), 1))
+    adj = adjacency or {}
 
-    layout: List[Tuple[str, float, float, float, float, float]] = []
-    cursor_x = 0.0
-    cursor_y = 0.0
-    row_max_l = 0.0
+    # Per-room dimensions
+    dims: Dict[str, Tuple[float, float, float]] = {
+        r: _resolve_room_dims(r, spec_room_dimensions, floor_height) for r in rooms
+    }
 
-    for room_name, (w, l, h) in zip(rooms, dims):
-        # Wrap to next row if this room doesn't fit
-        if cursor_x > 0 and cursor_x + w > row_width + 0.01:
-            cursor_x = 0.0
-            cursor_y += row_max_l + GAP
-            row_max_l = 0.0
+    def _base(name: str) -> str:
+        parts = name.rsplit("_", 1)
+        return parts[0] if len(parts) == 2 and parts[1].isdigit() else name
 
-        layout.append((room_name, cursor_x, cursor_y, w, l, h))
-        cursor_x += w + GAP
-        row_max_l = max(row_max_l, l)
+    # Build bidirectional adjacency
+    adj_map: Dict[str, List[str]] = {r: [] for r in rooms}
+    for ra, neighbours in adj.items():
+        if not isinstance(neighbours, list) or ra not in adj_map:
+            continue
+        for rb in neighbours:
+            if rb not in adj_map:
+                continue
+            if rb not in adj_map[ra]:
+                adj_map[ra].append(rb)
+            if ra not in adj_map[rb]:
+                adj_map[rb].append(ra)
 
-    return layout
+    # --- classify rooms into layout bands ---
+    # band 0 (south): bedrooms
+    # band 1 (middle): hall, living, dining, kitchen
+    # band 2 (north): bathrooms, balconies, small service rooms
+    _SOUTH = {"master_bedroom", "bedroom", "bedroom_2", "bedroom_3", "bedroom_4", "bedroom_5", "study", "garage"}
+    _NORTH = {
+        "master_bathroom",
+        "bathroom",
+        "bathroom_2",
+        "bathroom_3",
+        "bathroom_4",
+        "common_bathroom",
+        "toilet",
+        "balcony",
+        "balcony_1",
+        "balcony_2",
+        "balcony_3",
+        "store",
+        "utility",
+        "passage",
+        "corridor",
+        "pooja_room",
+    }
+
+    def _band(name: str) -> int:
+        b = _base(name)
+        if b in _SOUTH:
+            return 0
+        if b in _NORTH:
+            return 2
+        return 1  # hall, kitchen, dining, living etc.
+
+    band0 = [r for r in rooms if _band(r) == 0]
+    band1 = [r for r in rooms if _band(r) == 1]
+    band2 = [r for r in rooms if _band(r) == 2]
+
+    # order: south band left-to-right, middle band, north band
+    ordered = band0 + band1 + band2
+    # add any rooms not classified
+    ordered += [r for r in rooms if r not in ordered]
+
+    placed: Dict[str, Tuple[float, float, float, float, float]] = {}
+
+    def _place_row(row_rooms: List[str], start_y: float) -> float:
+        """Place a list of rooms left-to-right at start_y.
+        All rooms are stretched to the same length (max l in row)
+        so the next row starts flush with no gaps.
+        Returns y of next row."""
+        if not row_rooms:
+            return start_y
+        # Find max length in this row
+        max_l = max(dims[r][1] for r in row_rooms if r not in placed)
+        if max_l == 0:
+            return start_y
+        cx = 0.0
+        for r in row_rooms:
+            if r in placed:
+                continue
+            w, l, h = dims[r]
+            # Stretch l to max_l so all rooms in row share the same south/north edge
+            placed[r] = (cx, start_y, w, max_l, h)
+            cx += w
+        return start_y + max_l
+
+    # Place south band at y=0
+    y = _place_row(band0, 0.0)
+    # Place middle band flush at y = max_l of south band
+    y = _place_row(band1, y)
+    # Place north band flush at y = max_l of middle band
+    _place_row(band2, y)
+
+    # Any leftover rooms
+    remaining = [r for r in rooms if r not in placed]
+    if remaining:
+        max_y = max(py + pl for _, px, py, pw, pl, ph in [(r, *placed[r]) for r in placed]) if placed else 0.0
+        _place_row(remaining, max_y)
+
+    return [(r, *placed[r]) for r in rooms if r in placed]
 
 
 # ── Door placement ────────────────────────────────────────────────────────────
@@ -169,7 +252,7 @@ def _compute_doors(
 
     Two sources:
       1. spec_json["adjacency"] — explicit adjacency pairs from BHK definition
-      2. Spatial proximity — rooms that are physically touching (GAP apart)
+      2. Spatial proximity — rooms that are physically touching
 
     Returns {room_idx: {south, north, west, east}} booleans.
     """
@@ -181,23 +264,22 @@ def _compute_doors(
     # Build name → index map
     name_to_idx: Dict[str, int] = {}
     for i, (name, *_) in enumerate(layout):
-        # strip _1/_2 suffix for adjacency lookup
         base = name.rsplit("_", 1)[0] if name.rsplit("_", 1)[-1].isdigit() else name
         name_to_idx[name] = i
-        name_to_idx[base] = i  # allow base name lookup
+        name_to_idx[base] = i
 
-    # 1. Spatial adjacency — rooms touching within tolerance
-    tol = GAP * 1.5
+    # 1. Spatial adjacency — rooms sharing an edge (touching within 0.05 m)
+    tol = 0.05
     for i, (_, xi, yi, wi, li, _hi) in enumerate(layout):
         for j, (_, xj, yj, wj, lj, _hj) in enumerate(layout):
             if i >= j:
                 continue
             # j is east of i?
-            if abs((xi + wi + GAP) - xj) < tol and yi < yj + lj and yi + li > yj:
+            if abs((xi + wi) - xj) < tol and yi < yj + lj - tol and yi + li > yj + tol:
                 doors[i]["east"] = True
                 doors[j]["west"] = True
             # j is north of i?
-            if abs((yi + li + GAP) - yj) < tol and xi < xj + wj and xi + wi > xj:
+            if abs((yi + li) - yj) < tol and xi < xj + wj - tol and xi + wi > xj + tol:
                 doors[i]["north"] = True
                 doors[j]["south"] = True
 
@@ -517,17 +599,24 @@ def _add_furniture(m: Mesh, rt: str, x: float, y: float, w: float, l: float, z: 
 def _compute_shared_walls(
     layout: List[Tuple[str, float, float, float, float, float]],
 ) -> Dict[int, Dict[str, bool]]:
+    """
+    When two rooms share an edge, only ONE of them should build that wall
+    to avoid double-wall gaps. Rule: the room with the higher index suppresses
+    its shared wall (the lower-index room already built it).
+    """
     n = len(layout)
     shared: Dict[int, Dict[str, bool]] = {
         i: {"south": False, "north": False, "west": False, "east": False} for i in range(n)
     }
-    tol = 0.01
+    tol = 0.05
     for i, (_, xi, yi, wi, li, _hi) in enumerate(layout):
         for j, (_, xj, yj, wj, lj, _hj) in enumerate(layout):
             if i >= j:
                 continue
+            # j is directly east of i → j suppresses its west wall
             if abs((xi + wi) - xj) < tol and yi < yj + lj - tol and yi + li > yj + tol:
                 shared[j]["west"] = True
+            # j is directly north of i → j suppresses its south wall
             if abs((yi + li) - yj) < tol and xi < xj + wj - tol and xi + wi > xj + tol:
                 shared[j]["south"] = True
     return shared
@@ -800,6 +889,363 @@ def pack_glb_multi_mesh(meshes: List[Mesh]) -> bytes:
     )
 
 
+# ── Domain-specific mesh builders ────────────────────────────────────────────
+
+
+def _build_vehicles_meshes(spec_json: Dict[str, Any]) -> List[Mesh]:
+    design_type = (spec_json.get("design_type") or "drone").lower()
+    dims = spec_json.get("dimensions") or {}
+    W = float(dims.get("width", 1.0))
+    L = float(dims.get("length", 1.5))
+    H = float(dims.get("height", 0.5))
+    meshes: List[Mesh] = []
+
+    if design_type in ("drone", "quadcopter", "uav"):
+        body = Mesh("drone_body")
+        bw, bl, bh = W * 0.3, L * 0.2, H * 0.4
+        _add_box(body, -bw / 2, -bl / 2, 0.0, bw, bl, bh)
+        meshes.append(body)
+        for i, (ax, ay) in enumerate(
+            [(W * 0.35, L * 0.25), (-W * 0.35, L * 0.25), (W * 0.35, -L * 0.25), (-W * 0.35, -L * 0.25)]
+        ):
+            arm = Mesh(f"arm_{i}")
+            _add_box(arm, ax - W * 0.05, ay - L * 0.025, bh * 0.3, W * 0.1, L * 0.05, bh * 0.15)
+            meshes.append(arm)
+            rotor = Mesh(f"rotor_{i}")
+            _add_box(rotor, ax - W * 0.18, ay - L * 0.025, bh * 0.55, W * 0.36, L * 0.05, 0.02)
+            meshes.append(rotor)
+        for i, (lx, ly) in enumerate(
+            [(W * 0.2, L * 0.15), (-W * 0.2, L * 0.15), (W * 0.2, -L * 0.15), (-W * 0.2, -L * 0.15)]
+        ):
+            leg = Mesh(f"leg_{i}")
+            _add_box(leg, lx - 0.02, ly - 0.02, -H * 0.25, 0.04, 0.04, H * 0.3)
+            meshes.append(leg)
+
+    elif design_type in ("spacecraft", "rocket", "starship"):
+        fuselage = Mesh("fuselage")
+        _add_box(fuselage, -W / 2, -L * 0.55, 0.0, W, L * 0.7, H * 0.8)
+        meshes.append(fuselage)
+        nose = Mesh("nose_cone")
+        nw = W * 0.6
+        _add_box(nose, -nw / 2, L * 0.15, H * 0.4, nw, L * 0.2, H * 0.5)
+        meshes.append(nose)
+        for i, ex in enumerate([-W * 0.3, 0.0, W * 0.3]):
+            nozzle = Mesh(f"nozzle_{i}")
+            _add_box(nozzle, ex - W * 0.08, -L * 0.55, 0.0, W * 0.16, L * 0.12, H * 0.2)
+            meshes.append(nozzle)
+        for i, (wx, wy) in enumerate([(-W, -L * 0.2), (W * 0.5, -L * 0.2)]):
+            wing = Mesh(f"wing_{i}")
+            _add_box(wing, wx, wy, H * 0.1, W * 0.5, L * 0.15, H * 0.05)
+            meshes.append(wing)
+        port = Mesh("docking_port")
+        _add_box(port, -W * 0.15, L * 0.33, H * 0.3, W * 0.3, W * 0.3, H * 0.15)
+        meshes.append(port)
+
+    elif design_type in ("rover", "truck", "lorry"):
+        body = Mesh("vehicle_body")
+        _add_box(body, -W / 2, -L / 2, H * 0.2, W, L * 0.65, H * 0.55)
+        meshes.append(body)
+        cab = Mesh("cab")
+        _add_box(cab, -W * 0.4, L * 0.05, H * 0.75, W * 0.8, L * 0.3, H * 0.45)
+        meshes.append(cab)
+        for i, (wx, wy) in enumerate(
+            [(-W * 0.42, -L * 0.35), (W * 0.3, -L * 0.35), (-W * 0.42, L * 0.2), (W * 0.3, L * 0.2)]
+        ):
+            wheel = Mesh(f"wheel_{i}")
+            _add_box(wheel, wx, wy, 0.0, W * 0.12, L * 0.15, H * 0.2)
+            meshes.append(wheel)
+
+    elif design_type in ("ship", "vessel", "boat", "yacht"):
+        hull = Mesh("hull")
+        _add_box(hull, -W / 2, -L / 2, 0.0, W, L, H * 0.35)
+        meshes.append(hull)
+        deck = Mesh("deck")
+        _add_box(deck, -W * 0.4, -L * 0.45, H * 0.35, W * 0.8, L * 0.6, H * 0.05)
+        meshes.append(deck)
+        bridge = Mesh("bridge")
+        _add_box(bridge, -W * 0.25, L * 0.1, H * 0.4, W * 0.5, L * 0.2, H * 0.4)
+        meshes.append(bridge)
+        mast = Mesh("mast")
+        _add_box(mast, -0.05, -L * 0.1, H * 0.4, 0.1, 0.1, H * 0.8)
+        meshes.append(mast)
+
+    else:
+        generic = Mesh(design_type)
+        _add_box(generic, -W / 2, -L / 2, 0.0, W, L, H)
+        meshes.append(generic)
+
+    return meshes
+
+
+def _build_objects_meshes(spec_json: Dict[str, Any]) -> List[Mesh]:
+    design_type = (spec_json.get("design_type") or "box").lower()
+    dims = spec_json.get("dimensions") or {}
+    W = float(dims.get("width", 1.0))
+    L = float(dims.get("length", 1.0))
+    H = float(dims.get("height", 1.0))
+    meshes: List[Mesh] = []
+
+    if design_type in ("box", "crate"):
+        body = Mesh("crate_body")
+        _add_box(body, 0.0, 0.0, 0.0, W, L, H)
+        meshes.append(body)
+        lid = Mesh("crate_lid")
+        _add_box(lid, 0.02, 0.02, H, W - 0.04, L - 0.04, H * 0.06)
+        meshes.append(lid)
+        cr = H * 0.08
+        for ci, (cx, cy) in enumerate([(0.0, 0.0), (W - cr, 0.0), (0.0, L - cr), (W - cr, L - cr)]):
+            corner = Mesh(f"corner_{ci}")
+            _add_box(corner, cx, cy, 0.0, cr, cr, H)
+            meshes.append(corner)
+
+    elif design_type == "barrel":
+        body = Mesh("barrel_body")
+        _add_box(body, 0.0, 0.0, 0.0, W, L, H * 0.85)
+        meshes.append(body)
+        top_cap = Mesh("barrel_top")
+        _add_box(top_cap, W * 0.05, L * 0.05, H * 0.85, W * 0.9, L * 0.9, H * 0.08)
+        meshes.append(top_cap)
+        for hi, hz in enumerate([H * 0.2, H * 0.5, H * 0.75]):
+            hoop = Mesh(f"hoop_{hi}")
+            _add_box(hoop, -0.02, -0.02, hz, W + 0.04, L + 0.04, H * 0.04)
+            meshes.append(hoop)
+
+    elif design_type in ("wall", "partition"):
+        wall_m = Mesh("wall_panel")
+        _add_box(wall_m, 0.0, 0.0, 0.0, W, L, H)
+        meshes.append(wall_m)
+
+    elif design_type in ("door", "gate"):
+        frame = Mesh("door_frame")
+        t = max(W * 0.08, 0.05)
+        _add_box(frame, 0.0, 0.0, 0.0, t, L, H)
+        _add_box(frame, W - t, 0.0, 0.0, t, L, H)
+        _add_box(frame, 0.0, 0.0, H - t, W, L, t)
+        meshes.append(frame)
+        panel = Mesh("door_panel")
+        _add_box(panel, t, L * 0.05, 0.0, W - 2 * t, L * 0.05, H - t)
+        meshes.append(panel)
+
+    elif design_type in ("staircase", "stair", "stairway"):
+        n_steps = max(int(H / 0.18), 4)
+        riser = H / n_steps
+        run = L / n_steps
+        for i in range(n_steps):
+            step = Mesh(f"step_{i:02d}")
+            _add_box(step, 0.0, i * run, 0.0, W, run, riser * (i + 1))
+            meshes.append(step)
+        for si, sx in enumerate([0.0, W - 0.05]):
+            stringer = Mesh(f"stringer_{si}")
+            _add_box(stringer, sx, 0.0, 0.0, 0.05, L, H * 0.15)
+            meshes.append(stringer)
+
+    else:
+        generic = Mesh(design_type)
+        _add_box(generic, 0.0, 0.0, 0.0, W, L, H)
+        meshes.append(generic)
+
+    return meshes
+
+
+def _build_gameplay_meshes(spec_json: Dict[str, Any]) -> List[Mesh]:
+    design_type = (spec_json.get("design_type") or "obstacle").lower()
+    dims = spec_json.get("dimensions") or {}
+    W = float(dims.get("width", 1.0))
+    L = float(dims.get("length", 1.0))
+    H = float(dims.get("height", 1.5))
+    meshes: List[Mesh] = []
+
+    if design_type in ("checkpoint", "finish_line", "waypoint"):
+        post_w = max(W * 0.08, 0.15)
+        left = Mesh("post_left")
+        _add_box(left, 0.0, 0.0, 0.0, post_w, L, H)
+        meshes.append(left)
+        right = Mesh("post_right")
+        _add_box(right, W - post_w, 0.0, 0.0, post_w, L, H)
+        meshes.append(right)
+        bar = Mesh("crossbar")
+        _add_box(bar, 0.0, 0.0, H - post_w, W, L, post_w)
+        meshes.append(bar)
+        trigger = Mesh("trigger_zone")
+        _add_box(trigger, post_w, 0.0, 0.0, W - 2 * post_w, L * 0.2, H - post_w)
+        meshes.append(trigger)
+
+    elif design_type in ("obstacle", "barrier", "hurdle"):
+        base = Mesh("obstacle_base")
+        _add_box(base, 0.0, 0.0, 0.0, W, L, H * 0.15)
+        meshes.append(base)
+        body = Mesh("obstacle_body")
+        _add_box(body, W * 0.1, L * 0.1, H * 0.15, W * 0.8, L * 0.8, H * 0.75)
+        meshes.append(body)
+        for i in range(3):
+            stripe = Mesh(f"stripe_{i}")
+            sz = H * 0.15 + i * H * 0.2
+            _add_box(stripe, -0.01, -0.01, sz, W + 0.02, L + 0.02, H * 0.06)
+            meshes.append(stripe)
+
+    elif design_type in ("collectible", "coin", "gem", "pickup", "powerup"):
+        gem = Mesh("collectible_body")
+        _add_box(gem, 0.0, 0.0, 0.0, W, L, H)
+        meshes.append(gem)
+        glow = Mesh("collectible_glow")
+        pad = W * 0.1
+        _add_box(glow, -pad, -pad, -pad, W + 2 * pad, L + 2 * pad, H + 2 * pad)
+        meshes.append(glow)
+
+    elif design_type in ("spawn_point", "spawn", "spawn_zone"):
+        platform = Mesh("spawn_platform")
+        _add_box(platform, 0.0, 0.0, 0.0, W, L, H * 0.08)
+        meshes.append(platform)
+        arrow = Mesh("spawn_arrow")
+        _add_box(arrow, W * 0.35, L * 0.3, H * 0.08, W * 0.3, L * 0.4, H * 0.06)
+        meshes.append(arrow)
+        tip = Mesh("spawn_tip")
+        _add_box(tip, W * 0.25, L * 0.7, H * 0.08, W * 0.5, L * 0.2, H * 0.06)
+        meshes.append(tip)
+
+    elif design_type in ("interactable", "interactive", "trigger"):
+        pedestal = Mesh("interactable_pedestal")
+        _add_box(pedestal, W * 0.3, L * 0.3, 0.0, W * 0.4, L * 0.4, H * 0.5)
+        meshes.append(pedestal)
+        top = Mesh("interactable_top")
+        _add_box(top, W * 0.2, L * 0.2, H * 0.5, W * 0.6, L * 0.6, H * 0.15)
+        meshes.append(top)
+        button = Mesh("interactable_button")
+        _add_box(button, W * 0.38, L * 0.38, H * 0.65, W * 0.24, L * 0.24, H * 0.08)
+        meshes.append(button)
+
+    else:
+        generic = Mesh(design_type)
+        _add_box(generic, 0.0, 0.0, 0.0, W, L, H)
+        meshes.append(generic)
+
+    return meshes
+
+
+def _build_environment_meshes(spec_json: Dict[str, Any]) -> List[Mesh]:
+    design_type = (spec_json.get("design_type") or "forest").lower().replace(" ", "_")
+    dims = spec_json.get("dimensions") or {}
+    W = float(dims.get("width", 50.0))
+    L = float(dims.get("length", 50.0))
+    H = float(dims.get("height", 20.0))
+    meshes: List[Mesh] = []
+
+    if design_type == "forest":
+        ground = Mesh("forest_ground")
+        _add_box(ground, 0.0, 0.0, 0.0, W, L, 0.2)
+        meshes.append(ground)
+        cols, rows = 5, 5
+        for row in range(rows):
+            for col in range(cols):
+                tx = W * 0.1 + col * (W * 0.8 / (cols - 1))
+                ty = L * 0.1 + row * (L * 0.8 / (rows - 1))
+                trunk = Mesh(f"trunk_{row}_{col}")
+                _add_box(trunk, tx - 0.3, ty - 0.3, 0.2, 0.6, 0.6, H * 0.45)
+                meshes.append(trunk)
+                canopy = Mesh(f"canopy_{row}_{col}")
+                cr = H * 0.28
+                _add_box(canopy, tx - cr, ty - cr, H * 0.4, cr * 2, cr * 2, H * 0.5)
+                meshes.append(canopy)
+        ug = Mesh("undergrowth")
+        _add_box(ug, W * 0.05, L * 0.05, 0.2, W * 0.9, L * 0.9, H * 0.08)
+        meshes.append(ug)
+
+    elif design_type in ("city_block", "urban_area", "street_scene"):
+        road = Mesh("road")
+        _add_box(road, 0.0, 0.0, 0.0, W * 0.35, L, 0.1)
+        meshes.append(road)
+        sidewalk = Mesh("sidewalk")
+        _add_box(sidewalk, W * 0.35, 0.0, 0.0, W * 0.12, L, 0.15)
+        meshes.append(sidewalk)
+        bw = W * 0.12
+        for i in range(4):
+            bld = Mesh(f"building_{i}")
+            bx = W * 0.47 + i * (W * 0.13)
+            bh = H * (0.4 + i * 0.15)
+            _add_box(bld, bx, L * 0.05, 0.0, bw, L * 0.9, bh)
+            meshes.append(bld)
+        for i in range(3):
+            pole = Mesh(f"streetlight_{i}")
+            px, py = W * 0.38, L * 0.15 + i * (L * 0.35)
+            _add_box(pole, px, py, 0.0, 0.08, 0.08, H * 0.35)
+            arm = Mesh(f"light_arm_{i}")
+            _add_box(arm, px, py, H * 0.33, W * 0.05, 0.04, 0.04)
+            meshes.append(pole)
+            meshes.append(arm)
+
+    elif design_type in ("industrial_zone", "factory_area", "industrial_complex"):
+        ground = Mesh("industrial_ground")
+        _add_box(ground, 0.0, 0.0, 0.0, W, L, 0.2)
+        meshes.append(ground)
+        factory = Mesh("factory_building")
+        _add_box(factory, W * 0.1, L * 0.1, 0.2, W * 0.5, L * 0.6, H * 0.55)
+        meshes.append(factory)
+        for i, sx in enumerate([W * 0.15, W * 0.35]):
+            stack = Mesh(f"smokestack_{i}")
+            _add_box(stack, sx, L * 0.15, H * 0.55, W * 0.06, W * 0.06, H * 0.5)
+            meshes.append(stack)
+        for i in range(3):
+            tank = Mesh(f"tank_{i}")
+            _add_box(tank, W * 0.65 + i * W * 0.1, L * 0.2, 0.2, W * 0.08, W * 0.08, H * 0.3)
+            meshes.append(tank)
+        conveyor = Mesh("conveyor")
+        _add_box(conveyor, W * 0.1, L * 0.72, 0.2, W * 0.6, L * 0.08, H * 0.08)
+        meshes.append(conveyor)
+        pipeline = Mesh("pipeline")
+        _add_box(pipeline, W * 0.62, L * 0.1, H * 0.18, W * 0.04, L * 0.8, H * 0.04)
+        meshes.append(pipeline)
+
+    elif design_type in ("ocean_zone", "sea_zone", "underwater", "marine_environment", "ocean"):
+        seabed = Mesh("seabed")
+        _add_box(seabed, 0.0, 0.0, 0.0, W, L, 0.5)
+        meshes.append(seabed)
+        water_surface = Mesh("water_surface")
+        _add_box(water_surface, 0.0, 0.0, H * 0.85, W, L, 0.15)
+        meshes.append(water_surface)
+        for i in range(4):
+            coral = Mesh(f"coral_{i}")
+            _add_box(coral, W * (0.15 + i * 0.2), L * (0.2 + (i % 2) * 0.4), 0.5, W * 0.06, L * 0.04, H * 0.12)
+            meshes.append(coral)
+        for i in range(3):
+            rock = Mesh(f"rock_{i}")
+            _add_box(rock, W * (0.1 + i * 0.35), L * (0.6 + (i % 2) * 0.15), 0.5, W * 0.1, L * 0.08, H * 0.08)
+            meshes.append(rock)
+
+    elif design_type in ("desert", "dune", "arid"):
+        ground = Mesh("desert_ground")
+        _add_box(ground, 0.0, 0.0, 0.0, W, L, 0.3)
+        meshes.append(ground)
+        for i, (dx, dy, dh, dw, dl) in enumerate(
+            [
+                (W * 0.05, L * 0.1, H * 0.12, W * 0.3, L * 0.25),
+                (W * 0.4, L * 0.05, H * 0.18, W * 0.25, L * 0.3),
+                (W * 0.6, L * 0.5, H * 0.14, W * 0.35, L * 0.2),
+                (W * 0.1, L * 0.65, H * 0.1, W * 0.2, L * 0.28),
+            ]
+        ):
+            dune = Mesh(f"dune_{i}")
+            _add_box(dune, dx, dy, 0.3, dw, dl, dh)
+            meshes.append(dune)
+        for i in range(3):
+            ctx, cty = W * (0.2 + i * 0.3), L * (0.35 + (i % 2) * 0.2)
+            trunk = Mesh(f"cactus_trunk_{i}")
+            _add_box(trunk, ctx, cty, 0.3, W * 0.03, L * 0.02, H * 0.18)
+            arm = Mesh(f"cactus_arm_{i}")
+            _add_box(arm, ctx + W * 0.03, cty, H * 0.1, W * 0.05, L * 0.015, H * 0.08)
+            meshes.append(trunk)
+            meshes.append(arm)
+
+    else:
+        ground = Mesh("environment_ground")
+        _add_box(ground, 0.0, 0.0, 0.0, W, L, 0.2)
+        meshes.append(ground)
+        feature = Mesh(design_type)
+        _add_box(feature, W * 0.1, L * 0.1, 0.2, W * 0.8, L * 0.8, H * 0.5)
+        meshes.append(feature)
+
+    return meshes
+
+
 # ── Main entry point ──────────────────────────────────────────────────────────
 
 
@@ -815,6 +1261,23 @@ def generate_real_glb(spec_json: Dict[str, Any]) -> bytes:
       - Bedroom ≠ Hall ≠ Kitchen — different dimensions, different positions
       - Raises ValueError if rooms list is empty (no dummy mesh)
     """
+    domain = (spec_json.get("domain") or "architecture").lower()
+
+    _DOMAIN_BUILDERS = {
+        "vehicles": _build_vehicles_meshes,
+        "objects": _build_objects_meshes,
+        "gameplay": _build_gameplay_meshes,
+        "environment": _build_environment_meshes,
+    }
+
+    if domain in _DOMAIN_BUILDERS:
+        logger.info("generate_real_glb: domain=%s, type=%s", domain, spec_json.get("design_type"))
+        all_meshes = _DOMAIN_BUILDERS[domain](spec_json)
+        if not all_meshes:
+            raise ValueError(f"Domain builder for '{domain}' produced no meshes")
+        return pack_glb_multi_mesh(all_meshes)
+
+    # Architecture (default) — room-based layout
     rooms: List[str] = spec_json.get("rooms") or []
     dimensions = spec_json.get("dimensions") or {}
     room_dims = spec_json.get("room_dimensions") or {}
@@ -836,13 +1299,13 @@ def generate_real_glb(spec_json: Dict[str, Any]) -> bytes:
         stories,
     )
 
-    layout = _layout_rooms(rooms, room_dims, total_w, floor_h)
+    layout = _layout_rooms(rooms, room_dims, total_w, floor_h, adjacency_spec)
     door_map = _compute_doors(layout, adjacency_spec)
     shared_map = _compute_shared_walls(layout)
     all_meshes: List[Mesh] = []
 
     for story in range(stories):
-        z_offset = story * floor_h  # floors stack directly, no gap between
+        z_offset = story * floor_h
         for idx, (room_name, rx, ry, rw, rl, rh) in enumerate(layout):
             d = door_map[idx]
             s = shared_map[idx]

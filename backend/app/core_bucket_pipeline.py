@@ -331,7 +331,7 @@ def _rooms_to_stl(spec_json: Dict[str, Any], spec_id: str, glb_bytes: bytes) -> 
         lines.append(f"endsolid bhiv_{spec_id}_{source_hash}")
         return ("\n".join(lines) + "\n").encode("utf-8")
 
-    layout = _layout_rooms(rooms, room_dimensions, total_w, floor_h)
+    layout = _layout_rooms(rooms, room_dimensions, total_w, floor_h, spec_json.get("adjacency") or {})
 
     for story in range(stories):
         z_off = story * floor_h
@@ -410,7 +410,7 @@ def _rooms_to_step(spec_json: Dict[str, Any], spec_id: str, glb_bytes: bytes) ->
 
     entity_id = 10
     if rooms:
-        layout = _layout_rooms(rooms, room_dimensions, total_w, floor_h)
+        layout = _layout_rooms(rooms, room_dimensions, total_w, floor_h, spec_json.get("adjacency") or {})
         for story in range(stories):
             z_off = story * floor_h
             for room_name, rx, ry, rw, rl, rh in layout:

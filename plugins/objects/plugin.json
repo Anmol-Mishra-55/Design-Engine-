@@ -1,0 +1,42 @@
+{
+  "domain": "objects",
+  "version": "1.0.0",
+  "detection_keywords": [
+    "box", "crate", "barrel", "drum", "wall", "partition",
+    "door", "gate", "entrance", "staircase", "stair", "stairway",
+    "prop", "container"
+  ],
+  "detection_patterns": [
+    "\\b(box|crate|barrel|drum)\\b",
+    "\\b(wall|partition)\\b",
+    "\\b(door|gate|entrance)\\b",
+    "\\b(staircase|stair|stairway)\\b",
+    "\\b(standalone|prop|object|mesh)\\b"
+  ],
+  "intents": {
+    "design_creation": {
+      "patterns": ["design", "create", "build", "generate", "model"],
+      "module": "objects",
+      "tasks": ["extract_object_type", "generate_mesh_spec", "create_geometry"],
+      "output_format": "mesh_specification"
+    }
+  },
+  "extractors": {
+    "object_type": {
+      "type": "keyword",
+      "keywords": ["box", "crate", "barrel", "wall", "door", "staircase"]
+    },
+    "subtype": {
+      "type": "regex",
+      "pattern": "\\b(box|crate|barrel|wall|door|staircase)\\b",
+      "group": 1,
+      "case_insensitive": true
+    }
+  },
+  "constraint_rules": {
+    "material": {
+      "type": "keyword",
+      "keywords": ["wood", "metal", "concrete", "brick", "steel", "plastic"]
+    }
+  }
+}

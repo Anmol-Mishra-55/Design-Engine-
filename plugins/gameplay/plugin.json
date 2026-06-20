@@ -1,0 +1,44 @@
+{
+  "domain": "gameplay",
+  "version": "1.0.0",
+  "detection_keywords": [
+    "spawn", "spawn point", "checkpoint", "waypoint", "finish line",
+    "obstacle", "barrier", "hurdle", "collectible", "pickup", "powerup",
+    "coin", "gem", "interactable", "trigger", "interactive object",
+    "game object", "runner", "game element", "game world"
+  ],
+  "detection_patterns": [
+    "\\b(spawn\\s*point|spawn\\s*zone|player\\s*spawn)\\b",
+    "\\b(checkpoint|finish\\s*line|waypoint)\\b",
+    "\\b(obstacle|barrier|hurdle)\\b",
+    "\\b(collectible|pickup|powerup|coin|gem)\\b",
+    "\\b(interactable|interactive|trigger\\s*zone)\\b",
+    "\\b(collision\\s*box|material\\s*tag|trigger\\s*volume)\\b"
+  ],
+  "intents": {
+    "design_creation": {
+      "patterns": ["design", "create", "build", "generate", "place"],
+      "module": "gameplay",
+      "tasks": ["extract_gameplay_type", "generate_trigger_volume", "create_geometry"],
+      "output_format": "gameplay_specification"
+    }
+  },
+  "extractors": {
+    "gameplay_type": {
+      "type": "keyword",
+      "keywords": ["spawn_point", "spawn", "checkpoint", "obstacle", "collectible", "interactable", "pickup", "trigger"]
+    },
+    "subtype": {
+      "type": "regex",
+      "pattern": "\\b(spawn_point|spawn|checkpoint|obstacle|collectible|interactable)\\b",
+      "group": 1,
+      "case_insensitive": true
+    }
+  },
+  "constraint_rules": {
+    "units": {
+      "type": "keyword",
+      "keywords": ["game_units", "meters", "units"]
+    }
+  }
+}

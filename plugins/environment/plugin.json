@@ -1,0 +1,44 @@
+{
+  "domain": "environment",
+  "version": "1.0.0",
+  "detection_keywords": [
+    "forest", "jungle", "woodland", "woods", "desert", "dune", "sahara", "arid",
+    "city block", "urban area", "street scene", "city street", "industrial zone",
+    "factory area", "industrial complex", "ocean", "sea zone", "underwater",
+    "marine environment", "biome", "terrain", "landscape", "environment"
+  ],
+  "detection_patterns": [
+    "\\b(forest|jungle|woodland|woods)\\b",
+    "\\b(desert|dune|sahara|arid)\\b",
+    "\\b(city\\s*block|urban\\s*area|street\\s*scene|city\\s*street)\\b",
+    "\\b(industrial\\s*zone|factory\\s*area|industrial\\s*complex)\\b",
+    "\\b(ocean|sea\\s*zone|underwater|marine\\s*environment)\\b",
+    "\\b(terrain|biome|landscape|smokestack|pipeline|conveyor)\\b"
+  ],
+  "intents": {
+    "design_creation": {
+      "patterns": ["design", "create", "build", "generate", "render"],
+      "module": "environment",
+      "tasks": ["extract_biome_type", "generate_grouped_geometry", "create_environment"],
+      "output_format": "environment_specification"
+    }
+  },
+  "extractors": {
+    "environment_type": {
+      "type": "keyword",
+      "keywords": ["forest", "desert", "city_block", "city block", "industrial_zone", "industrial zone", "ocean_zone", "ocean"]
+    },
+    "subtype": {
+      "type": "regex",
+      "pattern": "\\b(forest|jungle|desert|city\\s*block|industrial\\s*zone|ocean|ocean\\s*zone|underwater)\\b",
+      "group": 1,
+      "case_insensitive": true
+    }
+  },
+  "constraint_rules": {
+    "scale": {
+      "type": "keyword",
+      "keywords": ["large", "massive", "wide", "expansive"]
+    }
+  }
+}

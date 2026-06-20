@@ -1,0 +1,43 @@
+{
+  "domain": "vehicles",
+  "version": "1.0.0",
+  "detection_keywords": [
+    "drone", "quadcopter", "uav", "multirotor", "rover", "truck", "lorry",
+    "ship", "vessel", "boat", "yacht", "tanker", "spacecraft", "rocket",
+    "satellite", "starship", "cargo vehicle", "mars rover", "lunar rover"
+  ],
+  "detection_patterns": [
+    "\\b(drone|uav|quadcopter|multirotor)\\b",
+    "\\b(rover|mars\\s+rover|lunar\\s+rover)\\b",
+    "\\b(truck|lorry|semi[-\\s]truck)\\b",
+    "\\b(ship|vessel|boat|yacht|tanker)\\b",
+    "\\b(spacecraft|rocket|satellite|starship)\\b",
+    "\\b(rotor|propeller|hull|thruster|fuselage)\\b"
+  ],
+  "intents": {
+    "design_creation": {
+      "patterns": ["design", "create", "build", "generate", "model"],
+      "module": "vehicles",
+      "tasks": ["extract_vehicle_type", "generate_mesh_spec", "create_geometry"],
+      "output_format": "mesh_specification"
+    }
+  },
+  "extractors": {
+    "vehicle_type": {
+      "type": "keyword",
+      "keywords": ["drone", "quadcopter", "uav", "rover", "truck", "ship", "vessel", "spacecraft", "rocket", "satellite"]
+    },
+    "subtype": {
+      "type": "regex",
+      "pattern": "\\b(drone|rover|truck|ship|spacecraft)\\b",
+      "group": 1,
+      "case_insensitive": true
+    }
+  },
+  "constraint_rules": {
+    "scale": {
+      "type": "keyword",
+      "keywords": ["micro", "small", "medium", "large"]
+    }
+  }
+}
