@@ -1,0 +1,190 @@
+{
+  "version": "2.0",
+  "description": "Generation templates derived from semantic_taxonomy.json. One entry per entity. geometry_family and generation_mode drive TTG dispatch.",
+
+  "templates": {
+
+    "1bhk": {
+      "domain": "architecture",
+      "geometry_family": "apartment_layout",
+      "generation_mode": "layout",
+      "supported_outputs": ["glb", "stl", "step"]
+    },
+
+    "2bhk": {
+      "domain": "architecture",
+      "geometry_family": "apartment_layout",
+      "generation_mode": "layout",
+      "supported_outputs": ["glb", "stl", "step"]
+    },
+
+    "villa": {
+      "domain": "architecture",
+      "geometry_family": "residential_compound",
+      "generation_mode": "layout",
+      "supported_outputs": ["glb", "stl", "step"]
+    },
+
+    "office": {
+      "domain": "architecture",
+      "geometry_family": "commercial_floor_plan",
+      "generation_mode": "layout",
+      "supported_outputs": ["glb", "stl", "step"]
+    },
+
+    "warehouse": {
+      "domain": "architecture",
+      "geometry_family": "industrial_floor_plan",
+      "generation_mode": "layout",
+      "supported_outputs": ["glb", "stl", "step"]
+    },
+
+    "box": {
+      "domain": "object",
+      "geometry_family": "primitive_prop",
+      "generation_mode": "mesh",
+      "supported_outputs": ["glb", "stl", "step"]
+    },
+
+    "crate": {
+      "domain": "object",
+      "geometry_family": "primitive_prop",
+      "generation_mode": "mesh",
+      "supported_outputs": ["glb", "stl", "step"]
+    },
+
+    "barrel": {
+      "domain": "object",
+      "geometry_family": "primitive_prop",
+      "generation_mode": "mesh",
+      "supported_outputs": ["glb", "stl", "step"]
+    },
+
+    "wall": {
+      "domain": "object",
+      "geometry_family": "structural_element",
+      "generation_mode": "mesh",
+      "supported_outputs": ["glb", "stl", "step"]
+    },
+
+    "door": {
+      "domain": "object",
+      "geometry_family": "structural_element",
+      "generation_mode": "mesh",
+      "supported_outputs": ["glb", "stl", "step"]
+    },
+
+    "staircase": {
+      "domain": "object",
+      "geometry_family": "structural_element",
+      "generation_mode": "mesh",
+      "supported_outputs": ["glb", "stl", "step"]
+    },
+
+    "drone": {
+      "domain": "vehicle",
+      "geometry_family": "rotorcraft",
+      "generation_mode": "mesh",
+      "supported_outputs": ["glb", "stl", "step"]
+    },
+
+    "rover": {
+      "domain": "vehicle",
+      "geometry_family": "wheeled_vehicle",
+      "generation_mode": "mesh",
+      "supported_outputs": ["glb", "stl", "step"]
+    },
+
+    "truck": {
+      "domain": "vehicle",
+      "geometry_family": "wheeled_vehicle",
+      "generation_mode": "mesh",
+      "supported_outputs": ["glb", "stl", "step"]
+    },
+
+    "ship": {
+      "domain": "vehicle",
+      "geometry_family": "marine_vessel",
+      "generation_mode": "mesh",
+      "supported_outputs": ["glb", "stl", "step"]
+    },
+
+    "spacecraft": {
+      "domain": "vehicle",
+      "geometry_family": "aerospace_vehicle",
+      "generation_mode": "mesh",
+      "supported_outputs": ["glb", "stl", "step"]
+    },
+
+    "spawn_point": {
+      "domain": "gameplay",
+      "geometry_family": "logic_marker",
+      "generation_mode": "trigger_volume",
+      "supported_outputs": ["glb", "stl", "step"]
+    },
+
+    "checkpoint": {
+      "domain": "gameplay",
+      "geometry_family": "logic_marker",
+      "generation_mode": "trigger_volume",
+      "supported_outputs": ["glb", "stl", "step"]
+    },
+
+    "obstacle": {
+      "domain": "gameplay",
+      "geometry_family": "gameplay_prop",
+      "generation_mode": "mesh",
+      "supported_outputs": ["glb", "stl", "step"]
+    },
+
+    "collectible": {
+      "domain": "gameplay",
+      "geometry_family": "gameplay_prop",
+      "generation_mode": "mesh",
+      "supported_outputs": ["glb", "stl", "step"]
+    },
+
+    "interactable": {
+      "domain": "gameplay",
+      "geometry_family": "gameplay_prop",
+      "generation_mode": "mesh",
+      "supported_outputs": ["glb", "stl", "step"]
+    },
+
+    "forest": {
+      "domain": "environment",
+      "geometry_family": "vegetation_zone",
+      "generation_mode": "grouped_geometry",
+      "supported_outputs": ["glb", "stl", "step"]
+    },
+
+    "desert": {
+      "domain": "environment",
+      "geometry_family": "terrain_zone",
+      "generation_mode": "grouped_geometry",
+      "supported_outputs": ["glb", "stl", "step"]
+    },
+
+    "city_block": {
+      "domain": "environment",
+      "geometry_family": "urban_zone",
+      "generation_mode": "grouped_geometry",
+      "supported_outputs": ["glb", "stl", "step"]
+    },
+
+    "industrial_zone": {
+      "domain": "environment",
+      "geometry_family": "industrial_zone",
+      "generation_mode": "grouped_geometry",
+      "supported_outputs": ["glb", "stl", "step"]
+    },
+
+    "ocean_zone": {
+      "domain": "environment",
+      "geometry_family": "aquatic_zone",
+      "generation_mode": "grouped_geometry",
+      "supported_outputs": ["glb", "stl", "step"]
+    }
+
+  }
+}

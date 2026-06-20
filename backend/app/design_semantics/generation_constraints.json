@@ -1,0 +1,128 @@
+{
+  "version": "2.0",
+  "description": "Domain contamination constraints. Enforced before LM dispatch and TTG routing. Any forbidden_term or forbidden_domain match triggers DOMAIN_CONTAMINATION rejection.",
+
+  "enforcement_policy": {
+    "mode": "strict",
+    "on_violation": "reject_with_error",
+    "error_code": "DOMAIN_CONTAMINATION",
+    "log_violations": true
+  },
+
+  "domains": {
+
+    "vehicle": {
+      "allowed_geometry_families": [
+        "rotorcraft",
+        "wheeled_vehicle",
+        "marine_vessel",
+        "aerospace_vehicle",
+        "tracked_vehicle"
+      ],
+      "forbidden_terms": [
+        "room",
+        "bedroom",
+        "kitchen",
+        "living_room"
+      ],
+      "forbidden_domains": [
+        "architecture",
+        "gameplay"
+      ],
+      "supported_generation_modes": [
+        "mesh"
+      ]
+    },
+
+    "architecture": {
+      "allowed_geometry_families": [
+        "apartment_layout",
+        "residential_compound",
+        "commercial_floor_plan",
+        "industrial_floor_plan"
+      ],
+      "forbidden_terms": [
+        "rotor",
+        "wing",
+        "engine",
+        "thruster"
+      ],
+      "forbidden_domains": [
+        "vehicle",
+        "gameplay",
+        "environment"
+      ],
+      "supported_generation_modes": [
+        "layout"
+      ]
+    },
+
+    "environment": {
+      "allowed_geometry_families": [
+        "vegetation_zone",
+        "terrain_zone",
+        "urban_zone",
+        "industrial_zone",
+        "aquatic_zone"
+      ],
+      "forbidden_terms": [
+        "bedroom",
+        "vehicle_engine"
+      ],
+      "forbidden_domains": [
+        "architecture",
+        "vehicle",
+        "gameplay"
+      ],
+      "supported_generation_modes": [
+        "grouped_geometry"
+      ]
+    },
+
+    "gameplay": {
+      "allowed_geometry_families": [
+        "logic_marker",
+        "gameplay_prop"
+      ],
+      "forbidden_terms": [
+        "apartment_layout",
+        "kitchen"
+      ],
+      "forbidden_domains": [
+        "architecture",
+        "vehicle",
+        "environment"
+      ],
+      "supported_generation_modes": [
+        "mesh",
+        "trigger_volume"
+      ]
+    },
+
+    "object": {
+      "allowed_geometry_families": [
+        "primitive_prop",
+        "structural_element"
+      ],
+      "forbidden_terms": [
+        "room",
+        "bedroom",
+        "rotor",
+        "engine",
+        "spawn_point",
+        "tree",
+        "wave"
+      ],
+      "forbidden_domains": [
+        "architecture",
+        "vehicle",
+        "gameplay",
+        "environment"
+      ],
+      "supported_generation_modes": [
+        "mesh"
+      ]
+    }
+
+  }
+}

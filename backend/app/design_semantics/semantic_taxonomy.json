@@ -1,0 +1,232 @@
+{
+  "version": "1.0",
+  "description": "Semantic taxonomy for multi-domain design generation. Each domain defines its subtypes, canonical components, allowed/forbidden object classes, and generator scope.",
+
+  "domains": {
+
+    "architecture": {
+      "label": "Architecture",
+      "description": "Habitable built structures — residential and commercial.",
+      "generator": "architecture_generator",
+      "subtypes": {
+        "1BHK": {
+          "ref": "bhk_definitions.json#1BHK",
+          "canonical_components": ["bedroom", "hall", "kitchen", "bathroom", "balcony", "door", "wall", "staircase"],
+          "allowed_object_classes": ["wall", "door", "staircase", "box", "crate"],
+          "forbidden_object_classes": ["rotor", "propeller", "wheel", "track", "hull", "engine", "spawn_point", "checkpoint", "obstacle", "collectible", "interactable", "tree", "wave", "sand_dune", "smokestack"],
+          "spatial_scale": "micro",
+          "units": "meters"
+        },
+        "2BHK": {
+          "ref": "bhk_definitions.json#2BHK",
+          "canonical_components": ["master_bedroom", "bedroom_2", "hall", "kitchen", "master_bathroom", "common_bathroom", "balcony", "door", "wall", "staircase"],
+          "allowed_object_classes": ["wall", "door", "staircase", "box", "crate"],
+          "forbidden_object_classes": ["rotor", "propeller", "wheel", "track", "hull", "engine", "spawn_point", "checkpoint", "obstacle", "collectible", "interactable", "tree", "wave", "sand_dune", "smokestack"],
+          "spatial_scale": "micro",
+          "units": "meters"
+        },
+        "villa": {
+          "ref": "bhk_definitions.json#VILLA",
+          "canonical_components": ["master_bedroom", "bedroom_2", "bedroom_3", "bedroom_4", "hall", "dining", "kitchen", "study", "garage", "garden", "terrace", "door", "wall", "staircase"],
+          "allowed_object_classes": ["wall", "door", "staircase", "barrel", "box", "crate"],
+          "forbidden_object_classes": ["rotor", "propeller", "wheel", "track", "hull", "engine", "spawn_point", "checkpoint", "obstacle", "collectible", "interactable", "wave", "sand_dune", "smokestack"],
+          "spatial_scale": "small",
+          "units": "meters"
+        },
+        "office": {
+          "canonical_components": ["open_floor", "cabin", "conference_room", "reception", "server_room", "pantry", "restroom", "corridor", "door", "wall", "staircase"],
+          "allowed_object_classes": ["wall", "door", "staircase", "box", "crate"],
+          "forbidden_object_classes": ["rotor", "propeller", "wheel", "track", "hull", "engine", "spawn_point", "checkpoint", "obstacle", "collectible", "interactable", "wave", "sand_dune", "smokestack"],
+          "spatial_scale": "small",
+          "units": "meters"
+        },
+        "warehouse": {
+          "canonical_components": ["storage_bay", "loading_dock", "office_block", "mezzanine", "fire_exit", "door", "wall", "barrel", "crate", "box"],
+          "allowed_object_classes": ["wall", "door", "staircase", "box", "crate", "barrel"],
+          "forbidden_object_classes": ["rotor", "propeller", "wheel", "track", "hull", "engine", "spawn_point", "checkpoint", "obstacle", "collectible", "interactable", "wave", "sand_dune"],
+          "spatial_scale": "medium",
+          "units": "meters"
+        }
+      }
+    },
+
+    "objects": {
+      "label": "Object / Prop",
+      "description": "Standalone physical props and structural elements used across domains.",
+      "generator": "object_generator",
+      "subtypes": {
+        "box": {
+          "canonical_components": ["body", "lid", "corner_bracket"],
+          "allowed_object_classes": ["box"],
+          "forbidden_object_classes": ["room", "rotor", "propeller", "wheel", "engine", "hull", "spawn_point", "checkpoint"],
+          "spatial_scale": "micro",
+          "units": "meters"
+        },
+        "crate": {
+          "canonical_components": ["body", "slats", "handle"],
+          "allowed_object_classes": ["crate"],
+          "forbidden_object_classes": ["room", "rotor", "propeller", "wheel", "engine", "hull", "spawn_point", "checkpoint"],
+          "spatial_scale": "micro",
+          "units": "meters"
+        },
+        "barrel": {
+          "canonical_components": ["body", "lid", "band"],
+          "allowed_object_classes": ["barrel"],
+          "forbidden_object_classes": ["room", "rotor", "propeller", "wheel", "engine", "hull", "spawn_point", "checkpoint"],
+          "spatial_scale": "micro",
+          "units": "meters"
+        },
+        "wall": {
+          "canonical_components": ["face", "edge", "corner"],
+          "allowed_object_classes": ["wall"],
+          "forbidden_object_classes": ["rotor", "propeller", "engine", "spawn_point", "checkpoint"],
+          "spatial_scale": "micro",
+          "units": "meters"
+        },
+        "door": {
+          "canonical_components": ["frame", "panel", "hinge", "handle"],
+          "allowed_object_classes": ["door"],
+          "forbidden_object_classes": ["rotor", "engine", "spawn_point", "checkpoint"],
+          "spatial_scale": "micro",
+          "units": "meters"
+        },
+        "staircase": {
+          "canonical_components": ["step", "riser", "railing", "landing"],
+          "allowed_object_classes": ["staircase"],
+          "forbidden_object_classes": ["rotor", "engine", "spawn_point", "checkpoint"],
+          "spatial_scale": "micro",
+          "units": "meters"
+        }
+      }
+    },
+
+    "vehicles": {
+      "label": "Vehicle",
+      "description": "Autonomous, aerial, ground, marine, and space vehicles.",
+      "generator": "vehicle_generator",
+      "subtypes": {
+        "drone": {
+          "canonical_components": ["frame", "rotor", "motor", "battery", "camera_mount", "landing_gear"],
+          "allowed_object_classes": ["rotor", "propeller", "frame", "motor", "battery", "camera_mount", "landing_gear"],
+          "forbidden_object_classes": ["room", "bedroom", "kitchen", "hall", "balcony", "door", "wall", "staircase", "wheel", "hull", "track", "spawn_point", "checkpoint", "obstacle", "collectible", "tree", "wave", "sand_dune"],
+          "spatial_scale": "micro",
+          "units": "meters"
+        },
+        "rover": {
+          "canonical_components": ["chassis", "wheel", "suspension", "sensor_array", "solar_panel", "antenna"],
+          "allowed_object_classes": ["wheel", "chassis", "suspension", "sensor_array", "solar_panel", "antenna"],
+          "forbidden_object_classes": ["room", "bedroom", "kitchen", "hall", "balcony", "rotor", "propeller", "hull", "spawn_point", "checkpoint", "obstacle", "collectible", "tree", "wave"],
+          "spatial_scale": "small",
+          "units": "meters"
+        },
+        "truck": {
+          "canonical_components": ["cab", "chassis", "wheel", "engine", "cargo_bed", "axle", "exhaust"],
+          "allowed_object_classes": ["wheel", "chassis", "engine", "cab", "cargo_bed", "axle"],
+          "forbidden_object_classes": ["room", "bedroom", "kitchen", "hall", "rotor", "propeller", "hull", "spawn_point", "checkpoint", "obstacle", "collectible", "tree", "wave"],
+          "spatial_scale": "medium",
+          "units": "meters"
+        },
+        "ship": {
+          "canonical_components": ["hull", "deck", "mast", "engine", "propeller", "rudder", "anchor"],
+          "allowed_object_classes": ["hull", "deck", "mast", "engine", "propeller", "rudder"],
+          "forbidden_object_classes": ["room", "bedroom", "kitchen", "hall", "rotor", "wheel", "track", "spawn_point", "checkpoint", "obstacle", "collectible", "tree", "sand_dune"],
+          "spatial_scale": "large",
+          "units": "meters"
+        },
+        "spacecraft": {
+          "canonical_components": ["fuselage", "engine", "thruster", "solar_panel", "docking_port", "antenna", "heat_shield"],
+          "allowed_object_classes": ["fuselage", "engine", "thruster", "solar_panel", "docking_port", "antenna", "heat_shield"],
+          "forbidden_object_classes": ["room", "bedroom", "kitchen", "hall", "wheel", "rotor", "hull", "track", "spawn_point", "checkpoint", "collectible", "tree", "wave", "sand_dune"],
+          "spatial_scale": "large",
+          "units": "meters"
+        }
+      }
+    },
+
+    "gameplay": {
+      "label": "Gameplay Element",
+      "description": "Game-world objects and logic triggers.",
+      "generator": "gameplay_generator",
+      "subtypes": {
+        "spawn_point": {
+          "canonical_components": ["marker", "radius_zone", "team_tag"],
+          "allowed_object_classes": ["spawn_point", "marker", "radius_zone"],
+          "forbidden_object_classes": ["room", "bedroom", "kitchen", "rotor", "propeller", "wheel", "hull", "engine", "tree", "wave", "sand_dune", "wall", "door"],
+          "spatial_scale": "micro",
+          "units": "game_units"
+        },
+        "checkpoint": {
+          "canonical_components": ["trigger_zone", "flag_post", "progress_indicator"],
+          "allowed_object_classes": ["checkpoint", "trigger_zone", "flag_post"],
+          "forbidden_object_classes": ["room", "bedroom", "kitchen", "rotor", "propeller", "wheel", "hull", "engine", "tree", "wave", "sand_dune"],
+          "spatial_scale": "micro",
+          "units": "game_units"
+        },
+        "obstacle": {
+          "canonical_components": ["mesh_body", "collision_box", "material_tag"],
+          "allowed_object_classes": ["obstacle", "box", "crate", "barrel", "wall"],
+          "forbidden_object_classes": ["room", "bedroom", "kitchen", "rotor", "propeller", "wheel", "engine", "tree", "wave", "sand_dune", "spawn_point", "checkpoint"],
+          "spatial_scale": "micro",
+          "units": "game_units"
+        },
+        "collectible": {
+          "canonical_components": ["mesh_body", "trigger_zone", "vfx_aura", "score_value"],
+          "allowed_object_classes": ["collectible", "box", "crate", "barrel"],
+          "forbidden_object_classes": ["room", "bedroom", "kitchen", "rotor", "propeller", "wheel", "engine", "tree", "wave", "sand_dune", "spawn_point", "checkpoint"],
+          "spatial_scale": "micro",
+          "units": "game_units"
+        },
+        "interactable": {
+          "canonical_components": ["mesh_body", "trigger_zone", "interaction_prompt", "state_machine"],
+          "allowed_object_classes": ["interactable", "door", "box", "crate", "barrel", "wall"],
+          "forbidden_object_classes": ["room", "bedroom", "kitchen", "rotor", "propeller", "wheel", "engine", "tree", "wave", "sand_dune"],
+          "spatial_scale": "micro",
+          "units": "game_units"
+        }
+      }
+    },
+
+    "environment": {
+      "label": "Environment / Biome",
+      "description": "Large-scale terrain and environmental zones.",
+      "generator": "environment_generator",
+      "subtypes": {
+        "forest": {
+          "canonical_components": ["tree", "undergrowth", "path", "stream", "rock", "canopy"],
+          "allowed_object_classes": ["tree", "undergrowth", "path", "stream", "rock", "canopy", "box", "crate"],
+          "forbidden_object_classes": ["room", "bedroom", "kitchen", "rotor", "propeller", "wheel", "hull", "engine", "spawn_point", "checkpoint", "smokestack", "wave", "sand_dune"],
+          "spatial_scale": "large",
+          "units": "meters"
+        },
+        "desert": {
+          "canonical_components": ["sand_dune", "rock_formation", "oasis", "dried_riverbed", "cactus"],
+          "allowed_object_classes": ["sand_dune", "rock_formation", "oasis", "cactus", "box", "crate", "barrel"],
+          "forbidden_object_classes": ["room", "bedroom", "kitchen", "rotor", "propeller", "hull", "engine", "spawn_point", "checkpoint", "tree", "wave", "smokestack"],
+          "spatial_scale": "large",
+          "units": "meters"
+        },
+        "city_block": {
+          "canonical_components": ["road", "sidewalk", "building_shell", "street_light", "traffic_signal", "alley"],
+          "allowed_object_classes": ["road", "building_shell", "wall", "door", "box", "crate", "barrel"],
+          "forbidden_object_classes": ["rotor", "propeller", "hull", "engine", "spawn_point", "checkpoint", "tree", "wave", "sand_dune", "smokestack"],
+          "spatial_scale": "large",
+          "units": "meters"
+        },
+        "industrial_zone": {
+          "canonical_components": ["factory_shell", "smokestack", "pipeline", "conveyor", "storage_tank", "loading_area", "wall", "door"],
+          "allowed_object_classes": ["factory_shell", "smokestack", "pipeline", "wall", "door", "box", "crate", "barrel"],
+          "forbidden_object_classes": ["rotor", "propeller", "hull", "engine", "spawn_point", "checkpoint", "tree", "wave", "sand_dune"],
+          "spatial_scale": "large",
+          "units": "meters"
+        },
+        "ocean_zone": {
+          "canonical_components": ["wave", "ocean_floor", "reef", "underwater_rock", "current_zone", "surface_plane"],
+          "allowed_object_classes": ["wave", "ocean_floor", "reef", "rock", "barrel"],
+          "forbidden_object_classes": ["room", "bedroom", "kitchen", "rotor", "propeller", "wheel", "engine", "spawn_point", "checkpoint", "tree", "sand_dune", "smokestack"],
+          "spatial_scale": "large",
+          "units": "meters"
+        }
+      }
+    }
+  }
+}
