@@ -1,0 +1,442 @@
+{
+  "metadata": {
+    "id": "penthouse",
+    "version": "v1.0.0",
+    "type": "residential",
+    "title": "Penthouse",
+    "description": "Premium top-floor residential unit with exclusive terrace access, double-height volumes, panoramic views, and no shared walls or slabs above. The penthouse is defined by its relationship to the sky — the terrace is a primary living space, not an afterthought.",
+    "owner": "rudra",
+    "status": "active",
+    "tags": ["penthouse", "residential", "luxury", "top-floor", "terrace", "panoramic", "premium"]
+  },
+  "body": {
+    "purpose": "Provide the highest-quality residential unit in a multi-storey building, where the occupant has exclusive access to the roof terrace, unobstructed views on multiple facades, and spatial qualities — double-height volumes, skylights, indoor-outdoor continuity — that are impossible on lower floors. The penthouse is not simply a large apartment; it is a fundamentally different spatial experience defined by its position at the top of the building.",
+    "planning_philosophy": "The plan is organised around the view and the terrace. Every primary space — living, master bedroom, dining — must be oriented toward the best view and connected to the terrace. The terrace is not a balcony; it is an outdoor room that extends the living area. The double-height volume over the living area, where structurally feasible, is the defining interior spatial quality. The plan must exploit the absence of a slab above — skylights, roof glazing, and exposed structure are all available as design tools that lower-floor units cannot use.",
+
+    "occupancy": {
+      "typical_occupants": 3,
+      "occupant_profile": "high-net-worth individual, couple, or small family",
+      "lifestyle_notes": "Occupant entertains extensively on the terrace. Outdoor dining, lounging, and landscape are primary lifestyle activities. Home office is a standard requirement. Domestic staff may be live-in. Privacy from adjacent buildings and overlooking is a primary concern — the terrace must be screened from neighbouring towers."
+    },
+
+    "required_spaces": [
+      {
+        "name": "main_living",
+        "area": { "min_sqft": 300, "max_sqft": 500 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 16, "unit": "ft" },
+          { "dimension": "ceiling_height", "min_value": 12, "unit": "ft" }
+        ],
+        "notes": "Primary social space. Must connect directly to the main terrace via full-height sliding or folding glazed doors. Double-height ceiling to roof or mezzanine is the preferred spatial treatment. Must receive panoramic views on at least two facades."
+      },
+      {
+        "name": "formal_dining",
+        "area": { "min_sqft": 130, "max_sqft": 220 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 12, "unit": "ft" }
+        ],
+        "notes": "Dining for 8–10 persons. Open-plan with living or partial wall separation. Must connect to the terrace for outdoor dining extension."
+      },
+      {
+        "name": "kitchen",
+        "area": { "min_sqft": 110, "max_sqft": 180 },
+        "dimensions": [
+          { "dimension": "counter_length", "min_value": 16, "unit": "ft" },
+          { "dimension": "width", "min_value": 10, "unit": "ft" }
+        ],
+        "notes": "Full working kitchen with island. Must have a service entry from the building service corridor. Must connect to dining and have a pass-through or visual connection to the living area."
+      },
+      {
+        "name": "master_bedroom",
+        "area": { "min_sqft": 250, "max_sqft": 400 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 15, "unit": "ft" },
+          { "dimension": "ceiling_height", "min_value": 11, "unit": "ft" }
+        ],
+        "notes": "Primary bedroom with attached dressing room and bathroom. Must have direct access to the terrace or a private terrace section. Must receive panoramic views. Skylight over the bedroom or bathroom is a preferred feature."
+      },
+      {
+        "name": "master_dressing",
+        "area": { "min_sqft": 60, "max_sqft": 100 },
+        "notes": "Walk-in dressing room attached to master bedroom. Full-height fitted wardrobes on all walls."
+      },
+      {
+        "name": "master_bathroom",
+        "area": { "min_sqft": 70, "max_sqft": 120 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 7, "unit": "ft" }
+        ],
+        "notes": "Attached to master bedroom. WC, double wash basin, walk-in shower, freestanding bathtub, and heated towel rail. Skylight or view window preferred. Accessed from master bedroom or dressing room only."
+      },
+      {
+        "name": "bedroom_2",
+        "area": { "min_sqft": 160, "max_sqft": 250 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 12, "unit": "ft" }
+        ],
+        "notes": "Second bedroom with attached or adjacent bathroom. Must receive natural light and views."
+      },
+      {
+        "name": "bathroom_2",
+        "area": { "min_sqft": 50, "max_sqft": 80 },
+        "notes": "Attached to bedroom_2. WC, wash basin, shower."
+      },
+      {
+        "name": "guest_toilet",
+        "area": { "min_sqft": 25, "max_sqft": 40 },
+        "notes": "Powder room for guests. WC and wash basin. Accessible from entry foyer without entering any bedroom."
+      },
+      {
+        "name": "main_terrace",
+        "area": { "min_sqft": 500, "max_sqft": 3000 },
+        "dimensions": [
+          { "dimension": "minimum_usable_width", "min_value": 12, "unit": "ft" }
+        ],
+        "notes": "Exclusive roof terrace. Primary outdoor living space. Must be accessible from main living and master bedroom. Must accommodate outdoor dining, lounge seating, and landscape planting. Must be screened from overlooking by adjacent towers. Structural waterproofing and drainage mandatory."
+      },
+      {
+        "name": "entry_foyer",
+        "area": { "min_sqft": 50, "max_sqft": 100 },
+        "notes": "Main entry zone. Must be a statement space — the entry experience of a penthouse must reflect its premium position. Distributes to living, bedrooms, and kitchen without passing through any of them."
+      }
+    ],
+
+    "optional_spaces": [
+      {
+        "name": "home_office",
+        "area": { "min_sqft": 100, "max_sqft": 180 },
+        "notes": "Dedicated work-from-home room with views. Closable door mandatory."
+      },
+      {
+        "name": "bedroom_3",
+        "area": { "min_sqft": 140, "max_sqft": 220 },
+        "notes": "Third bedroom for child or guest. Attached or adjacent bathroom preferred."
+      },
+      {
+        "name": "family_lounge",
+        "area": { "min_sqft": 120, "max_sqft": 200 },
+        "notes": "Informal family gathering space. May open to terrace."
+      },
+      {
+        "name": "servant_quarter",
+        "area": { "min_sqft": 80, "max_sqft": 120 },
+        "notes": "Domestic staff bedroom in service zone. Natural light and ventilation mandatory."
+      },
+      {
+        "name": "servant_bathroom",
+        "area": { "min_sqft": 30, "max_sqft": 45 },
+        "notes": "Accessed from service zone only."
+      },
+      {
+        "name": "utility_room",
+        "area": { "min_sqft": 40, "max_sqft": 70 },
+        "notes": "Washing machine, dryer, ironing. Accessed from service zone."
+      },
+      {
+        "name": "private_pool",
+        "area": { "min_sqft": 200, "max_sqft": 600 },
+        "notes": "On main terrace. Structural engineer approval mandatory. Pool deck minimum 6 ft wide on all accessible sides. Overflow or infinity edge preferred for view integration."
+      },
+      {
+        "name": "outdoor_kitchen",
+        "area": { "min_sqft": 60, "max_sqft": 120 },
+        "notes": "On main terrace. BBQ, sink, and counter. Connected to indoor kitchen via service passage."
+      },
+      {
+        "name": "mezzanine_study",
+        "area": { "min_sqft": 80, "max_sqft": 150 },
+        "notes": "Mezzanine level over the double-height living area. Accessed by a feature staircase or library ladder. Study or library use."
+      },
+      {
+        "name": "wine_cellar",
+        "area": { "min_sqft": 30, "max_sqft": 60 },
+        "notes": "Temperature-controlled storage. Accessed from dining or kitchen."
+      }
+    ],
+
+    "space_relationships": [
+      {
+        "from_space": "main_living",
+        "to_space": "main_terrace",
+        "relationship": "direct_access",
+        "notes": "Full-height sliding or folding glazed doors connecting living to terrace. This connection is the defining spatial relationship of the penthouse."
+      },
+      {
+        "from_space": "formal_dining",
+        "to_space": "main_terrace",
+        "relationship": "direct_access",
+        "notes": "Outdoor dining extends from the formal dining area onto the terrace."
+      },
+      {
+        "from_space": "master_bedroom",
+        "to_space": "main_terrace",
+        "relationship": "direct_access",
+        "notes": "Master bedroom must have direct terrace access — a private section of the terrace or a dedicated master terrace."
+      },
+      {
+        "from_space": "master_bedroom",
+        "to_space": "master_dressing",
+        "relationship": "direct_access"
+      },
+      {
+        "from_space": "master_dressing",
+        "to_space": "master_bathroom",
+        "relationship": "direct_access"
+      },
+      {
+        "from_space": "bedroom_2",
+        "to_space": "bathroom_2",
+        "relationship": "direct_access"
+      },
+      {
+        "from_space": "formal_dining",
+        "to_space": "kitchen",
+        "relationship": "adjacent"
+      },
+      {
+        "from_space": "main_living",
+        "to_space": "formal_dining",
+        "relationship": "visual_connect",
+        "notes": "Living and dining open-plan or partial wall separation."
+      },
+      {
+        "from_space": "master_bedroom",
+        "to_space": "main_living",
+        "relationship": "separated",
+        "notes": "Master bedroom must be fully private — not directly accessible from the living area."
+      },
+      {
+        "from_space": "entry_foyer",
+        "to_space": "main_living",
+        "relationship": "adjacent",
+        "notes": "Entry foyer opens to the living area — the first view on entry must be the living space and terrace beyond."
+      }
+    ],
+
+    "circulation": [
+      {
+        "rule": "The first view on entering the penthouse must be the main living area and the terrace or view beyond.",
+        "rationale": "The entry experience of a penthouse must immediately communicate its spatial quality. A view to the terrace or panorama from the entry foyer is the defining arrival experience."
+      },
+      {
+        "rule": "The master bedroom must be accessible without passing through the main living area.",
+        "rationale": "The master bedroom is a private retreat. Guests in the living area must not be on the circulation path to the master bedroom."
+      },
+      {
+        "rule": "The terrace must be accessible from the living area without passing through any bedroom.",
+        "rationale": "The terrace is a social space. Access must be direct from the social zone."
+      },
+      {
+        "rule": "The service zone must have an independent entry from the building service corridor.",
+        "rationale": "Domestic staff and deliveries must not enter through the main foyer."
+      },
+      {
+        "rule": "No bedroom must serve as a circulation path to the terrace or any other space.",
+        "rationale": "All bedrooms are private zones."
+      }
+    ],
+
+    "ventilation": [
+      { "space": "main_living", "requirement": "natural", "notes": "Cross-ventilation mandatory. Full-height glazed openings to terrace provide primary ventilation." },
+      { "space": "master_bedroom", "requirement": "natural", "notes": "Minimum one operable window or terrace door. Cross-ventilation preferred." },
+      { "space": "bedroom_2", "requirement": "natural", "notes": "Minimum one operable window." },
+      { "space": "kitchen", "requirement": "either", "notes": "Ducted exhaust fan mandatory. Duct to external face — not into roof void." },
+      { "space": "master_bathroom", "requirement": "either", "notes": "Skylight with operable vent preferred. Mechanical exhaust fan mandatory as backup." },
+      { "space": "bathroom_2", "requirement": "mechanical", "notes": "Minimum 6 air changes per hour." },
+      { "space": "main_terrace", "requirement": "natural", "notes": "Terrace must be open to sky — no full enclosure permitted." }
+    ],
+
+    "lighting": [
+      {
+        "space": "main_living",
+        "requirement": "natural",
+        "min_window_to_floor_ratio": 0.20,
+        "notes": "Maximum glazing to terrace and views. Skylights over double-height volume preferred."
+      },
+      {
+        "space": "master_bedroom",
+        "requirement": "natural",
+        "min_window_to_floor_ratio": 0.15,
+        "notes": "Panoramic views mandatory. Skylight over bedroom or bathroom preferred."
+      },
+      {
+        "space": "bedroom_2",
+        "requirement": "natural",
+        "min_window_to_floor_ratio": 0.12
+      },
+      {
+        "space": "formal_dining",
+        "requirement": "either",
+        "notes": "Pendant lighting over dining table mandatory. Natural light preferred."
+      },
+      {
+        "space": "kitchen",
+        "requirement": "either",
+        "min_window_to_floor_ratio": 0.08,
+        "notes": "Under-cabinet task lighting mandatory."
+      },
+      {
+        "space": "master_bathroom",
+        "requirement": "either",
+        "notes": "Skylight preferred. IP44-rated fixtures mandatory."
+      },
+      {
+        "space": "bathroom_2",
+        "requirement": "artificial",
+        "notes": "IP44-rated fixtures."
+      },
+      {
+        "space": "main_terrace",
+        "requirement": "natural",
+        "notes": "External lighting for evening use mandatory — uplighting for landscape, downlighting for dining and lounge areas."
+      }
+    ],
+
+    "engineering": [
+      {
+        "category": "structural",
+        "constraint": "Roof slab must be designed for terrace live load minimum 150 kg/sqm plus landscape and pool loads where applicable. Structural engineer to confirm load capacity before terrace design is finalised.",
+        "mandatory": true
+      },
+      {
+        "category": "structural",
+        "constraint": "Double-height void and skylights require structural engineer approval. Roof glazing must be laminated safety glass minimum 12mm.",
+        "mandatory": true
+      },
+      {
+        "category": "plumbing",
+        "constraint": "Terrace drainage must be designed for 100-year storm event. Minimum two roof drains plus overflow scuppers. All terrace drainage to connect to building stormwater system.",
+        "mandatory": true
+      },
+      {
+        "category": "plumbing",
+        "constraint": "Private pool on terrace requires dedicated structural waterproofing, filtration plant room, and overflow tank. Pool water supply and drainage to be independent of domestic supply.",
+        "mandatory": false
+      },
+      {
+        "category": "electrical",
+        "constraint": "Dedicated DB for penthouse. Separate circuits for terrace lighting, terrace power, pool equipment, and outdoor kitchen. AC circuits for all bedrooms and main living. Smart home provision mandatory.",
+        "mandatory": true
+      },
+      {
+        "category": "hvac",
+        "constraint": "AC mandatory in master bedroom, bedroom_2, and main living. All other spaces must be structurally provisioned. Outdoor units on building-designated plant area — not visible from terrace or views.",
+        "mandatory": true
+      },
+      {
+        "category": "fire",
+        "constraint": "Smoke detectors in all bedrooms and main living. Heat detector in kitchen. Terrace must have a clear emergency egress route to building fire escape. Fire-rated entry door mandatory.",
+        "mandatory": true
+      },
+      {
+        "category": "code",
+        "constraint": "Terrace balustrade minimum 3 ft 9 in height. Glass balustrade must be structural laminated glass minimum 15mm. No climbable elements within 18 in of balustrade.",
+        "mandatory": true
+      }
+    ],
+
+    "construction": [
+      {
+        "category": "waterproofing",
+        "guideline": "Terrace waterproofing: two-layer system — primary membrane plus protection screed. Minimum 150mm upstand at all walls and penetrations. Positive drainage slope minimum 1:60 to all drains."
+      },
+      {
+        "category": "finishing",
+        "guideline": "Main living: natural stone or large-format porcelain tile continuous with terrace for indoor-outdoor flow. Master bedroom: wide-plank wood flooring. Terrace: anti-skid natural stone or porcelain tile."
+      },
+      {
+        "category": "glazing",
+        "guideline": "All terrace-facing glazing: double-glazed low-E units minimum 6mm outer + 12mm cavity + 6mm inner. Full-height sliding or folding systems with thermal break frames. Solar control coating on west and south facades."
+      },
+      {
+        "category": "landscape",
+        "guideline": "Terrace landscape: lightweight growing medium maximum 300mm depth. Structural planters at perimeter. Irrigation system with drip lines. Minimum 20% of terrace area as planted surface."
+      },
+      {
+        "category": "acoustic",
+        "guideline": "Inter-bedroom walls minimum STC 55. Entry door minimum STC 45 — penthouse must be acoustically isolated from building common areas. Terrace parapet walls to provide acoustic screening from adjacent towers."
+      },
+      {
+        "category": "security",
+        "guideline": "Dedicated lift access with key card or biometric control. CCTV on terrace perimeter. Smart lock on main entry door. Terrace perimeter alarm."
+      }
+    ],
+
+    "supported_styles": ["modern", "contemporary", "minimalist", "art-deco", "tropical-modern"],
+
+    "constraints": [
+      "Total unit area: 2500–6000 sqft (gross including terrace)",
+      "Terrace mandatory — minimum 500 sqft exclusive access",
+      "Main living must connect directly to terrace via full-height glazed doors",
+      "Master bedroom must have direct terrace access",
+      "No shared slab above — penthouse must be the top floor",
+      "Panoramic views on minimum two facades",
+      "Service zone must have independent entry from building service corridor",
+      "Terrace balustrade minimum 3 ft 9 in height",
+      "Maximum occupancy: 8 persons"
+    ],
+
+    "validation_rules": [
+      {
+        "rule_id": "PH-001",
+        "condition": "main_terrace is present with area >= 500 sqft and exclusive access",
+        "severity": "error"
+      },
+      {
+        "rule_id": "PH-002",
+        "condition": "main_living connects directly to main_terrace via full-height glazed doors",
+        "severity": "error"
+      },
+      {
+        "rule_id": "PH-003",
+        "condition": "master_bedroom has direct access to main_terrace or a private terrace section",
+        "severity": "error"
+      },
+      {
+        "rule_id": "PH-004",
+        "condition": "master_bedroom has attached master_dressing and master_bathroom",
+        "severity": "error"
+      },
+      {
+        "rule_id": "PH-005",
+        "condition": "terrace balustrade height >= 3 ft 9 in",
+        "severity": "error"
+      },
+      {
+        "rule_id": "PH-006",
+        "condition": "terrace has minimum two roof drains plus overflow scuppers",
+        "severity": "error"
+      },
+      {
+        "rule_id": "PH-007",
+        "condition": "service zone has independent entry from building service corridor",
+        "severity": "error"
+      },
+      {
+        "rule_id": "PH-008",
+        "condition": "main_living ceiling height >= 12 ft",
+        "severity": "error"
+      },
+      {
+        "rule_id": "PH-009",
+        "condition": "entry foyer first view is main_living and terrace beyond",
+        "severity": "warning"
+      },
+      {
+        "rule_id": "PH-010",
+        "condition": "master_bedroom area >= 250 sqft",
+        "severity": "error"
+      },
+      {
+        "rule_id": "PH-011",
+        "condition": "terrace waterproofing is two-layer system with minimum 150mm upstand",
+        "severity": "error"
+      },
+      {
+        "rule_id": "PH-012",
+        "condition": "no bedroom serves as circulation path to terrace",
+        "severity": "error"
+      }
+    ]
+  }
+}

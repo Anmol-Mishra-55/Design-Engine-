@@ -1,0 +1,250 @@
+{
+  "metadata": {
+    "id": "1rk",
+    "version": "v1.0.0",
+    "type": "residential",
+    "title": "1 Room Kitchen (1RK)",
+    "description": "Entry-level residential unit with a separate kitchen and a single multipurpose room. The bedroom and living functions share one room; the kitchen is physically separated.",
+    "owner": "rudra",
+    "status": "active",
+    "tags": ["1rk", "residential", "compact", "urban", "entry-level", "single-occupant"]
+  },
+  "body": {
+    "purpose": "Provide an affordable entry-level unit where the kitchen is separated from the living-sleeping room, giving the occupant a functional cooking space without the cost of a full 1BHK. Common in high-density urban rental markets.",
+    "planning_philosophy": "The defining characteristic of a 1RK is the physical separation of the kitchen from the main room. This single boundary — a wall and a door — transforms the spatial experience from a studio into a dwelling with distinct functional zones. The plan must honour that boundary while keeping the unit compact and efficient.",
+
+    "occupancy": {
+      "typical_occupants": 1,
+      "occupant_profile": "single working professional or migrant worker",
+      "lifestyle_notes": "Occupant cooks regularly. The kitchen separation is a primary quality-of-life requirement — cooking odours and clutter must not enter the sleeping area."
+    },
+
+    "required_spaces": [
+      {
+        "name": "living_sleeping_room",
+        "area": { "min_sqft": 150, "max_sqft": 280 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 10, "unit": "ft" },
+          { "dimension": "ceiling_height", "min_value": 9, "unit": "ft" }
+        ],
+        "notes": "Single multipurpose room accommodating bed, seating, and storage. Must have a door that closes it off from the kitchen and entry."
+      },
+      {
+        "name": "kitchen",
+        "area": { "min_sqft": 50, "max_sqft": 90 },
+        "dimensions": [
+          { "dimension": "counter_length", "min_value": 7, "unit": "ft" },
+          { "dimension": "width", "min_value": 6, "unit": "ft" }
+        ],
+        "notes": "Fully enclosed kitchen with hob, sink, and storage. Must have a door separating it from the main room. This separation is the defining feature of a 1RK."
+      },
+      {
+        "name": "bathroom",
+        "area": { "min_sqft": 35, "max_sqft": 55 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 5, "unit": "ft" }
+        ],
+        "notes": "Combined WC, wash basin, and shower. Must be fully enclosed and independently ventilated."
+      },
+      {
+        "name": "entry_passage",
+        "area": { "min_sqft": 15, "max_sqft": 35 },
+        "notes": "Entry zone that distributes to the kitchen, bathroom, and main room without passing through any of them."
+      }
+    ],
+
+    "optional_spaces": [
+      {
+        "name": "dry_balcony",
+        "area": { "min_sqft": 20, "max_sqft": 45 },
+        "notes": "Laundry and drying. Accessed from kitchen or passage, not from the main room."
+      },
+      {
+        "name": "utility_alcove",
+        "area": { "min_sqft": 10, "max_sqft": 20 },
+        "notes": "Washing machine point and mop sink. Can be integrated into the kitchen or passage if space is constrained."
+      }
+    ],
+
+    "space_relationships": [
+      {
+        "from_space": "entry_passage",
+        "to_space": "kitchen",
+        "relationship": "adjacent",
+        "notes": "Kitchen is accessed from the entry passage, not through the main room."
+      },
+      {
+        "from_space": "entry_passage",
+        "to_space": "living_sleeping_room",
+        "relationship": "adjacent",
+        "notes": "Main room is accessed from the entry passage with a closable door."
+      },
+      {
+        "from_space": "kitchen",
+        "to_space": "living_sleeping_room",
+        "relationship": "separated",
+        "notes": "The wall and door between kitchen and main room is the defining spatial boundary of a 1RK. Must not be open-plan."
+      },
+      {
+        "from_space": "bathroom",
+        "to_space": "entry_passage",
+        "relationship": "adjacent",
+        "notes": "Bathroom accessed from passage, not from the main room or kitchen."
+      },
+      {
+        "from_space": "bathroom",
+        "to_space": "kitchen",
+        "relationship": "separated",
+        "notes": "Wet room and food preparation must not share a plumbing wall on the same face."
+      }
+    ],
+
+    "circulation": [
+      {
+        "rule": "The entry passage must distribute to all three spaces — kitchen, bathroom, and main room — without requiring passage through any one of them to reach another.",
+        "rationale": "Prevents the kitchen from becoming a circulation corridor, which would defeat the purpose of the kitchen separation."
+      },
+      {
+        "rule": "The kitchen door must swing into the kitchen, not into the passage.",
+        "rationale": "Passage widths in compact units are typically 3–4 ft. An outward-swinging door creates a collision hazard."
+      },
+      {
+        "rule": "The main room must have a minimum 3 ft clear path from door to window.",
+        "rationale": "Maintains the sense of depth and prevents the room from feeling like a storage space."
+      }
+    ],
+
+    "ventilation": [
+      {
+        "space": "living_sleeping_room",
+        "requirement": "natural",
+        "notes": "Minimum one operable window. Cross-ventilation strongly preferred."
+      },
+      {
+        "space": "kitchen",
+        "requirement": "either",
+        "notes": "Ducted exhaust fan mandatory. If natural ventilation is available, it supplements but does not replace mechanical extraction."
+      },
+      {
+        "space": "bathroom",
+        "requirement": "mechanical",
+        "notes": "Exhaust fan mandatory. Minimum 6 air changes per hour. Duct to external face."
+      },
+      {
+        "space": "entry_passage",
+        "requirement": "either",
+        "notes": "Borrowed light and ventilation from adjacent spaces is acceptable if passage is short."
+      }
+    ],
+
+    "lighting": [
+      {
+        "space": "living_sleeping_room",
+        "requirement": "natural",
+        "min_window_to_floor_ratio": 0.12,
+        "notes": "Window must face an open aspect. The main room carries the entire natural light burden of the unit."
+      },
+      {
+        "space": "kitchen",
+        "requirement": "either",
+        "min_window_to_floor_ratio": 0.08,
+        "notes": "Under-cabinet task lighting mandatory. Natural light preferred but not required given the enclosed nature of the kitchen."
+      },
+      {
+        "space": "bathroom",
+        "requirement": "artificial",
+        "notes": "IP44-rated fixtures. Separate switched circuit."
+      }
+    ],
+
+    "engineering": [
+      {
+        "category": "structural",
+        "constraint": "Minimum floor-to-floor height 10 ft to allow 9 ft clear ceiling after slab and finish.",
+        "mandatory": true
+      },
+      {
+        "category": "plumbing",
+        "constraint": "Kitchen and bathroom must share a common wet wall or be on adjacent walls of the same wet core to minimise pipe runs.",
+        "mandatory": true
+      },
+      {
+        "category": "electrical",
+        "constraint": "Dedicated 20A circuit for kitchen appliances. Minimum 3 double outlets in main room.",
+        "mandatory": true
+      },
+      {
+        "category": "fire",
+        "constraint": "Smoke detector in main room. Heat detector in kitchen. Both interconnected with building fire alarm.",
+        "mandatory": true
+      },
+      {
+        "category": "code",
+        "constraint": "Kitchen must meet minimum habitable room standards if it exceeds 70 sqft — adequate ventilation and natural light required.",
+        "mandatory": true
+      }
+    ],
+
+    "construction": [
+      {
+        "category": "acoustic",
+        "guideline": "Kitchen wall separating it from the main room should achieve minimum STC 45 to contain cooking noise and odour."
+      },
+      {
+        "category": "finishing",
+        "guideline": "Kitchen walls to be tiled to full height behind hob and sink. Washable paint on remaining kitchen walls."
+      },
+      {
+        "category": "storage",
+        "guideline": "Full-height overhead cabinets in kitchen. Built-in wardrobe in main room minimum 4 ft wide."
+      },
+      {
+        "category": "doors",
+        "guideline": "Solid-core door between kitchen and passage to contain cooking odours. Hollow-core acceptable for bathroom and main room."
+      }
+    ],
+
+    "supported_styles": ["modern", "minimalist", "contemporary", "industrial"],
+
+    "constraints": [
+      "Total unit area: 250–450 sqft (gross)",
+      "Kitchen must be physically separated from the main room by a wall and door",
+      "Maximum occupancy: 2 persons",
+      "Minimum ceiling height: 9 ft clear",
+      "Bathroom must be fully enclosed"
+    ],
+
+    "validation_rules": [
+      {
+        "rule_id": "1RK-001",
+        "condition": "kitchen is present and separated from living_sleeping_room by a wall and door",
+        "severity": "error"
+      },
+      {
+        "rule_id": "1RK-002",
+        "condition": "living_sleeping_room area >= 150 sqft",
+        "severity": "error"
+      },
+      {
+        "rule_id": "1RK-003",
+        "condition": "entry_passage distributes to kitchen, bathroom, and main room independently",
+        "severity": "error"
+      },
+      {
+        "rule_id": "1RK-004",
+        "condition": "bathroom is present and fully enclosed",
+        "severity": "error"
+      },
+      {
+        "rule_id": "1RK-005",
+        "condition": "kitchen has mechanical exhaust ventilation",
+        "severity": "error"
+      },
+      {
+        "rule_id": "1RK-006",
+        "condition": "living_sleeping_room has at least one natural light source",
+        "severity": "error"
+      }
+    ]
+  }
+}

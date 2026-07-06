@@ -1,0 +1,307 @@
+{
+  "metadata": {
+    "id": "1bhk",
+    "version": "v1.0.0",
+    "type": "residential",
+    "title": "1 Bedroom Hall Kitchen (1BHK)",
+    "description": "Residential unit with one dedicated bedroom, a separate living hall, and an enclosed kitchen. The first unit type where sleeping, living, and cooking occupy fully distinct zones.",
+    "owner": "rudra",
+    "status": "active",
+    "tags": ["1bhk", "residential", "compact", "urban", "couple", "young-family"]
+  },
+  "body": {
+    "purpose": "Provide a self-contained dwelling for a couple or small family where sleeping, living, and cooking are spatially separated. The 1BHK is the minimum unit type that supports a genuine domestic life — guests can be received in the hall without entering the bedroom.",
+    "planning_philosophy": "The bedroom must be a private retreat, acoustically and visually separated from the hall. The hall is the social heart of the unit and must receive natural light. The kitchen is a working space — it must be efficient and contained, not a thoroughfare. The plan is organised around a central passage that serves all three zones without forcing cross-traffic.",
+
+    "occupancy": {
+      "typical_occupants": 2,
+      "occupant_profile": "couple or young professional with occasional guest",
+      "lifestyle_notes": "Occupants entertain occasionally. The bedroom must be closable during social use of the hall. Work-from-home is a secondary consideration."
+    },
+
+    "required_spaces": [
+      {
+        "name": "bedroom",
+        "area": { "min_sqft": 120, "max_sqft": 200 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 10, "unit": "ft" },
+          { "dimension": "length", "min_value": 11, "unit": "ft" },
+          { "dimension": "ceiling_height", "min_value": 9, "unit": "ft" }
+        ],
+        "notes": "Must accommodate a double bed with access on both long sides, a wardrobe, and a study table. Door must close fully."
+      },
+      {
+        "name": "hall_living",
+        "area": { "min_sqft": 130, "max_sqft": 220 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 11, "unit": "ft" },
+          { "dimension": "ceiling_height", "min_value": 9, "unit": "ft" }
+        ],
+        "notes": "Primary social and living space. Must accommodate a sofa set and a dining table for 2–4 persons. Must receive direct natural light."
+      },
+      {
+        "name": "kitchen",
+        "area": { "min_sqft": 55, "max_sqft": 100 },
+        "dimensions": [
+          { "dimension": "counter_length", "min_value": 8, "unit": "ft" },
+          { "dimension": "width", "min_value": 6.5, "unit": "ft" }
+        ],
+        "notes": "Enclosed kitchen with hob, sink, refrigerator space, and overhead storage. Must have a door or shutter separating it from the hall."
+      },
+      {
+        "name": "bathroom",
+        "area": { "min_sqft": 35, "max_sqft": 60 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 5, "unit": "ft" }
+        ],
+        "notes": "Combined WC, wash basin, and shower. Accessible from the passage, not exclusively from the bedroom."
+      },
+      {
+        "name": "passage_entry",
+        "area": { "min_sqft": 20, "max_sqft": 45 },
+        "notes": "Central distribution zone connecting entry door, bedroom, hall, kitchen, and bathroom. Must allow 3.5 ft clear width for furniture movement."
+      }
+    ],
+
+    "optional_spaces": [
+      {
+        "name": "dry_balcony",
+        "area": { "min_sqft": 25, "max_sqft": 50 },
+        "notes": "Laundry and drying. Accessed from kitchen or passage."
+      },
+      {
+        "name": "pooja_room_alcove",
+        "area": { "min_sqft": 10, "max_sqft": 20 },
+        "notes": "Dedicated prayer alcove. Can be integrated into the passage wall or as a niche in the hall."
+      },
+      {
+        "name": "study_nook",
+        "area": { "min_sqft": 20, "max_sqft": 40 },
+        "notes": "Work-from-home alcove. Can be carved from the hall or bedroom if area permits."
+      }
+    ],
+
+    "space_relationships": [
+      {
+        "from_space": "passage_entry",
+        "to_space": "bedroom",
+        "relationship": "adjacent",
+        "notes": "Bedroom accessed from passage with a closable door. Must not be accessed through the hall."
+      },
+      {
+        "from_space": "passage_entry",
+        "to_space": "hall_living",
+        "relationship": "adjacent",
+        "notes": "Hall opens from the passage. May be open-plan with the passage if area is constrained."
+      },
+      {
+        "from_space": "passage_entry",
+        "to_space": "kitchen",
+        "relationship": "adjacent",
+        "notes": "Kitchen accessed from passage or directly from hall. Must not be accessed through the bedroom."
+      },
+      {
+        "from_space": "passage_entry",
+        "to_space": "bathroom",
+        "relationship": "adjacent",
+        "notes": "Bathroom accessed from passage. Shared bathroom must not be exclusively accessible from the bedroom."
+      },
+      {
+        "from_space": "bedroom",
+        "to_space": "hall_living",
+        "relationship": "separated",
+        "notes": "Bedroom and hall must be separated by a wall and door. No open-plan connection between sleeping and social zones."
+      },
+      {
+        "from_space": "hall_living",
+        "to_space": "kitchen",
+        "relationship": "adjacent",
+        "notes": "Kitchen may open to hall via a pass-through counter or shutter. Full open-plan kitchen-hall is acceptable in modern layouts."
+      },
+      {
+        "from_space": "bathroom",
+        "to_space": "kitchen",
+        "relationship": "separated",
+        "notes": "Wet room and food preparation must not share a plumbing wall on the same face."
+      }
+    ],
+
+    "circulation": [
+      {
+        "rule": "The bedroom must not be a circulation path to any other space.",
+        "rationale": "Bedroom privacy is the primary spatial requirement of a 1BHK. Any through-traffic destroys this."
+      },
+      {
+        "rule": "The passage must allow a minimum 3.5 ft clear width for furniture movement during occupation.",
+        "rationale": "Furniture delivery and rearrangement require this minimum clearance."
+      },
+      {
+        "rule": "The hall must be visible from the entry door to allow guests to be received without entering the private zone.",
+        "rationale": "The social function of the hall depends on its accessibility from the entry."
+      },
+      {
+        "rule": "No bedroom window should be visible from the main entry door.",
+        "rationale": "Visual privacy of the sleeping zone from the entry is a basic domestic requirement."
+      }
+    ],
+
+    "ventilation": [
+      {
+        "space": "bedroom",
+        "requirement": "natural",
+        "notes": "Minimum one operable window. Cross-ventilation preferred. Bedroom must not rely solely on borrowed ventilation from the hall."
+      },
+      {
+        "space": "hall_living",
+        "requirement": "natural",
+        "notes": "Primary natural ventilation zone of the unit. Operable windows mandatory."
+      },
+      {
+        "space": "kitchen",
+        "requirement": "either",
+        "notes": "Ducted exhaust fan mandatory regardless of natural ventilation availability."
+      },
+      {
+        "space": "bathroom",
+        "requirement": "mechanical",
+        "notes": "Exhaust fan mandatory. Minimum 6 air changes per hour. Duct to external face."
+      }
+    ],
+
+    "lighting": [
+      {
+        "space": "bedroom",
+        "requirement": "natural",
+        "min_window_to_floor_ratio": 0.10,
+        "notes": "Window must face an open aspect. Bedroom facing a light well is acceptable only if unobstructed."
+      },
+      {
+        "space": "hall_living",
+        "requirement": "natural",
+        "min_window_to_floor_ratio": 0.12,
+        "notes": "Hall is the primary natural light zone. Must not be an internal room."
+      },
+      {
+        "space": "kitchen",
+        "requirement": "either",
+        "min_window_to_floor_ratio": 0.08,
+        "notes": "Under-cabinet task lighting mandatory."
+      },
+      {
+        "space": "bathroom",
+        "requirement": "artificial",
+        "notes": "IP44-rated fixtures above wash basin."
+      }
+    ],
+
+    "engineering": [
+      {
+        "category": "structural",
+        "constraint": "Minimum floor-to-floor height 10 ft to allow 9 ft clear ceiling after slab and finish.",
+        "mandatory": true
+      },
+      {
+        "category": "plumbing",
+        "constraint": "Kitchen and bathroom must be on a shared wet wall or adjacent wet core. Maximum 15 ft horizontal pipe run from riser.",
+        "mandatory": true
+      },
+      {
+        "category": "electrical",
+        "constraint": "Dedicated 20A circuit for kitchen. Minimum 3 double outlets in bedroom, 4 in hall. Separate circuit for air conditioning in bedroom.",
+        "mandatory": true
+      },
+      {
+        "category": "hvac",
+        "constraint": "Provision for split AC unit in bedroom — outdoor unit ledge or sleeve through external wall. Hall AC provision optional.",
+        "mandatory": true
+      },
+      {
+        "category": "fire",
+        "constraint": "Smoke detector in bedroom and hall. Heat detector in kitchen. All interconnected with building fire alarm.",
+        "mandatory": true
+      },
+      {
+        "category": "code",
+        "constraint": "Bedroom must meet minimum habitable room area of 100 sqft per local building code.",
+        "mandatory": true
+      }
+    ],
+
+    "construction": [
+      {
+        "category": "acoustic",
+        "guideline": "Bedroom party wall to achieve minimum STC 50. Bedroom-to-hall wall minimum STC 45."
+      },
+      {
+        "category": "finishing",
+        "guideline": "Bedroom floor: wood laminate or carpet for acoustic comfort. Hall and kitchen: vitrified tile."
+      },
+      {
+        "category": "storage",
+        "guideline": "Built-in wardrobe in bedroom minimum 5 ft wide, full height. Overhead kitchen cabinets full perimeter."
+      },
+      {
+        "category": "doors",
+        "guideline": "Solid-core door for bedroom for acoustic separation. Solid-core or shutter for kitchen to contain odours."
+      },
+      {
+        "category": "waterproofing",
+        "guideline": "Bathroom floor and walls to 7 ft height fully waterproofed. Kitchen floor waterproofed to 3 ft height at wet areas."
+      }
+    ],
+
+    "supported_styles": ["modern", "contemporary", "minimalist", "scandinavian", "traditional"],
+
+    "constraints": [
+      "Total unit area: 400–650 sqft (gross)",
+      "Bedroom must be a fully enclosed, closable room",
+      "Hall must receive direct natural light",
+      "Kitchen must be separated from the hall by at least a shutter or door",
+      "Bathroom must be accessible from the passage — not exclusively from the bedroom",
+      "Maximum occupancy: 3 persons"
+    ],
+
+    "validation_rules": [
+      {
+        "rule_id": "1BHK-001",
+        "condition": "bedroom is present, enclosed, and has a closable door",
+        "severity": "error"
+      },
+      {
+        "rule_id": "1BHK-002",
+        "condition": "hall_living is present and receives natural light",
+        "severity": "error"
+      },
+      {
+        "rule_id": "1BHK-003",
+        "condition": "kitchen is present and separated from bedroom",
+        "severity": "error"
+      },
+      {
+        "rule_id": "1BHK-004",
+        "condition": "bathroom is accessible from passage without passing through bedroom",
+        "severity": "error"
+      },
+      {
+        "rule_id": "1BHK-005",
+        "condition": "bedroom area >= 120 sqft",
+        "severity": "error"
+      },
+      {
+        "rule_id": "1BHK-006",
+        "condition": "bedroom does not serve as a circulation path to any other space",
+        "severity": "error"
+      },
+      {
+        "rule_id": "1BHK-007",
+        "condition": "kitchen has mechanical exhaust ventilation",
+        "severity": "error"
+      },
+      {
+        "rule_id": "1BHK-008",
+        "condition": "bedroom has natural ventilation",
+        "severity": "warning"
+      }
+    ]
+  }
+}

@@ -1,0 +1,450 @@
+{
+  "metadata": {
+    "id": "4bhk",
+    "version": "v1.0.0",
+    "type": "residential",
+    "title": "4 Bedroom Hall Kitchen (4BHK)",
+    "description": "Large residential unit with four bedrooms, a living hall, formal dining, family lounge, enclosed kitchen, and a service zone with servant's quarter. Introduces dual-zone planning — family zone and service zone — with physically separated circulation paths.",
+    "owner": "rudra",
+    "status": "active",
+    "tags": ["4bhk", "residential", "large", "premium", "joint-family", "service-zone"]
+  },
+  "body": {
+    "purpose": "Provide a premium dwelling for a large family of 5–7 where four bedrooms, formal and informal living, and a dedicated service zone coexist without spatial conflict. The 4BHK is the threshold unit type where a service zone with independent circulation becomes architecturally necessary — domestic staff must be able to move between kitchen, utility, and service entry without crossing the family living areas.",
+    "planning_philosophy": "The plan is organised around three distinct zones: the social zone (entry, formal hall, dining), the private zone (bedroom wing), and the service zone (kitchen, utility, servant's quarter, service entry). The social and private zones share the main entry and main staircase. The service zone has its own entry point and internal circulation. The family lounge bridges the social and private zones as a semi-private gathering space for the family alone.",
+
+    "occupancy": {
+      "typical_occupants": 5,
+      "occupant_profile": "large joint family or premium nuclear family with live-in domestic staff",
+      "lifestyle_notes": "Family entertains formally. Formal dining and living must be presentable independently of the kitchen. Domestic staff require a private room and bathroom accessible from the service zone without entering the family zone. Children require dedicated study space. Elderly members may require ground-floor bedroom with accessible bathroom."
+    },
+
+    "required_spaces": [
+      {
+        "name": "master_bedroom",
+        "area": { "min_sqft": 180, "max_sqft": 280 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 13, "unit": "ft" },
+          { "dimension": "length", "min_value": 14, "unit": "ft" },
+          { "dimension": "ceiling_height", "min_value": 10, "unit": "ft" }
+        ],
+        "notes": "Primary bedroom with attached bathroom and dressing room. Must be at the far end of the bedroom wing. King bed, wardrobe, dressing table, and seating area."
+      },
+      {
+        "name": "master_dressing",
+        "area": { "min_sqft": 40, "max_sqft": 70 },
+        "notes": "Walk-in dressing room attached to master bedroom. Accessed from master bedroom only."
+      },
+      {
+        "name": "bedroom_2",
+        "area": { "min_sqft": 140, "max_sqft": 210 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 11, "unit": "ft" },
+          { "dimension": "length", "min_value": 12, "unit": "ft" },
+          { "dimension": "ceiling_height", "min_value": 9, "unit": "ft" }
+        ],
+        "notes": "Second bedroom — typically for elderly parent or senior family member. Attached bathroom preferred. Ground floor placement preferred for accessibility."
+      },
+      {
+        "name": "bedroom_3",
+        "area": { "min_sqft": 130, "max_sqft": 200 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 11, "unit": "ft" },
+          { "dimension": "length", "min_value": 11, "unit": "ft" },
+          { "dimension": "ceiling_height", "min_value": 9, "unit": "ft" }
+        ],
+        "notes": "Third bedroom for child or young adult. Study table and wardrobe mandatory."
+      },
+      {
+        "name": "bedroom_4",
+        "area": { "min_sqft": 120, "max_sqft": 180 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 10, "unit": "ft" },
+          { "dimension": "length", "min_value": 11, "unit": "ft" },
+          { "dimension": "ceiling_height", "min_value": 9, "unit": "ft" }
+        ],
+        "notes": "Fourth bedroom for child or guest. Must have a closable door and independent access from the bedroom wing passage."
+      },
+      {
+        "name": "formal_hall",
+        "area": { "min_sqft": 220, "max_sqft": 350 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 14, "unit": "ft" },
+          { "dimension": "ceiling_height", "min_value": 10, "unit": "ft" }
+        ],
+        "notes": "Formal living room for receiving guests. Must receive direct natural light. Must be visible from the main entry. Sofa set for 8–10 persons."
+      },
+      {
+        "name": "family_lounge",
+        "area": { "min_sqft": 120, "max_sqft": 200 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 11, "unit": "ft" }
+        ],
+        "notes": "Informal family gathering space between the bedroom wing and the formal hall. Semi-private — not accessible to guests without passing through the formal hall. TV lounge for family use."
+      },
+      {
+        "name": "formal_dining",
+        "area": { "min_sqft": 110, "max_sqft": 180 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 11, "unit": "ft" }
+        ],
+        "notes": "Formal dining for 8 persons minimum. Adjacent to kitchen and formal hall. Must be presentable independently of the kitchen."
+      },
+      {
+        "name": "kitchen",
+        "area": { "min_sqft": 100, "max_sqft": 160 },
+        "dimensions": [
+          { "dimension": "counter_length", "min_value": 15, "unit": "ft" },
+          { "dimension": "width", "min_value": 9, "unit": "ft" }
+        ],
+        "notes": "Full working kitchen with cooking range, double sink, refrigerator, dishwasher space, and full storage. Must have a door to the formal dining and a separate service entry from the service zone."
+      },
+      {
+        "name": "master_bathroom",
+        "area": { "min_sqft": 55, "max_sqft": 85 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 6, "unit": "ft" }
+        ],
+        "notes": "Attached to master bedroom. WC, double wash basin, shower, and bathtub. Accessed only from master bedroom or dressing room."
+      },
+      {
+        "name": "bathroom_2",
+        "area": { "min_sqft": 45, "max_sqft": 65 },
+        "notes": "Attached to bedroom_2. WC, wash basin, shower. Accessible fittings if bedroom_2 is for elderly occupant."
+      },
+      {
+        "name": "common_bathroom",
+        "area": { "min_sqft": 40, "max_sqft": 60 },
+        "notes": "Shared bathroom for bedroom_3, bedroom_4, and guests. Accessible from bedroom wing passage."
+      },
+      {
+        "name": "servant_quarter",
+        "area": { "min_sqft": 80, "max_sqft": 120 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 8, "unit": "ft" }
+        ],
+        "notes": "Domestic staff bedroom in the service zone. Must have a window, independent access from the service zone, and must not be accessible from the family zone without passing through the kitchen."
+      },
+      {
+        "name": "servant_bathroom",
+        "area": { "min_sqft": 30, "max_sqft": 45 },
+        "notes": "Bathroom for domestic staff. Accessed from service zone only. WC, wash basin, shower."
+      },
+      {
+        "name": "utility_room",
+        "area": { "min_sqft": 40, "max_sqft": 70 },
+        "notes": "Washing machine, dryer, ironing, and storage. Accessed from service zone. Must have a drain point and ventilation."
+      },
+      {
+        "name": "bedroom_wing_passage",
+        "area": { "min_sqft": 45, "max_sqft": 80 },
+        "notes": "Dedicated passage serving all four bedrooms and common bathroom. Minimum 3.5 ft clear width. Threshold between social and private zones."
+      },
+      {
+        "name": "entry_foyer",
+        "area": { "min_sqft": 35, "max_sqft": 65 },
+        "notes": "Main entry zone distributing to formal hall and bedroom wing passage. Must allow 4 ft clear width."
+      }
+    ],
+
+    "optional_spaces": [
+      {
+        "name": "home_office",
+        "area": { "min_sqft": 80, "max_sqft": 130 },
+        "notes": "Dedicated work-from-home room. Positioned off the bedroom wing or as a fifth room. Must have a closable door."
+      },
+      {
+        "name": "pooja_room",
+        "area": { "min_sqft": 25, "max_sqft": 45 },
+        "notes": "Dedicated prayer room near entry foyer."
+      },
+      {
+        "name": "living_balcony",
+        "area": { "min_sqft": 60, "max_sqft": 120 },
+        "notes": "Outdoor extension of formal hall. Sliding or French door connection."
+      },
+      {
+        "name": "dry_balcony",
+        "area": { "min_sqft": 30, "max_sqft": 60 },
+        "notes": "Laundry drying. Accessed from utility room or service zone."
+      },
+      {
+        "name": "store_room",
+        "area": { "min_sqft": 30, "max_sqft": 60 },
+        "notes": "General storage. Accessed from service zone or bedroom wing passage."
+      }
+    ],
+
+    "space_relationships": [
+      {
+        "from_space": "master_bedroom",
+        "to_space": "master_dressing",
+        "relationship": "direct_access",
+        "notes": "Dressing room accessed from master bedroom only."
+      },
+      {
+        "from_space": "master_dressing",
+        "to_space": "master_bathroom",
+        "relationship": "direct_access",
+        "notes": "Master bathroom accessed through dressing room or directly from master bedroom."
+      },
+      {
+        "from_space": "bedroom_2",
+        "to_space": "bathroom_2",
+        "relationship": "direct_access",
+        "notes": "Bathroom_2 exclusively accessed from bedroom_2."
+      },
+      {
+        "from_space": "bedroom_wing_passage",
+        "to_space": "master_bedroom",
+        "relationship": "adjacent",
+        "notes": "Master bedroom at far end of wing passage."
+      },
+      {
+        "from_space": "bedroom_wing_passage",
+        "to_space": "bedroom_2",
+        "relationship": "adjacent"
+      },
+      {
+        "from_space": "bedroom_wing_passage",
+        "to_space": "bedroom_3",
+        "relationship": "adjacent"
+      },
+      {
+        "from_space": "bedroom_wing_passage",
+        "to_space": "bedroom_4",
+        "relationship": "adjacent"
+      },
+      {
+        "from_space": "bedroom_wing_passage",
+        "to_space": "common_bathroom",
+        "relationship": "adjacent"
+      },
+      {
+        "from_space": "family_lounge",
+        "to_space": "bedroom_wing_passage",
+        "relationship": "adjacent",
+        "notes": "Family lounge bridges the social and private zones."
+      },
+      {
+        "from_space": "formal_hall",
+        "to_space": "family_lounge",
+        "relationship": "adjacent",
+        "notes": "Family lounge accessible from formal hall but semi-private."
+      },
+      {
+        "from_space": "formal_hall",
+        "to_space": "formal_dining",
+        "relationship": "visual_connect",
+        "notes": "Hall and dining open-plan or partial wall separation."
+      },
+      {
+        "from_space": "formal_dining",
+        "to_space": "kitchen",
+        "relationship": "adjacent",
+        "notes": "Kitchen directly adjacent to dining."
+      },
+      {
+        "from_space": "kitchen",
+        "to_space": "servant_quarter",
+        "relationship": "near",
+        "notes": "Servant quarter in service zone, accessible from kitchen via service passage."
+      },
+      {
+        "from_space": "servant_quarter",
+        "to_space": "formal_hall",
+        "relationship": "separated",
+        "notes": "Servant quarter must not be directly accessible from the formal hall or bedroom wing."
+      },
+      {
+        "from_space": "servant_bathroom",
+        "to_space": "kitchen",
+        "relationship": "separated",
+        "notes": "Staff bathroom must not share a plumbing wall with the kitchen."
+      }
+    ],
+
+    "circulation": [
+      {
+        "rule": "The service zone must have an independent entry point separate from the main family entry.",
+        "rationale": "Domestic staff, deliveries, and service personnel must not enter through the main family foyer."
+      },
+      {
+        "rule": "Domestic staff must be able to move between the servant quarter, utility room, and kitchen without entering the formal hall or bedroom wing.",
+        "rationale": "Service circulation must be invisible to family and guests in the social zone."
+      },
+      {
+        "rule": "No bedroom must be accessible from the formal hall without passing through the bedroom wing passage.",
+        "rationale": "The bedroom wing passage is the privacy threshold for all four bedrooms."
+      },
+      {
+        "rule": "The formal hall must be reachable from the main entry without passing through the kitchen or service zone.",
+        "rationale": "Guests must reach the social zone directly."
+      },
+      {
+        "rule": "The formal dining must be reachable from the kitchen without passing through the formal hall seating area.",
+        "rationale": "Serving and clearing must not disrupt guests in the hall."
+      },
+      {
+        "rule": "The bedroom wing passage must not be visible from the main entry door.",
+        "rationale": "Visual privacy of the private zone from the entry."
+      }
+    ],
+
+    "ventilation": [
+      { "space": "master_bedroom", "requirement": "natural", "notes": "Minimum one operable window facing open aspect." },
+      { "space": "bedroom_2", "requirement": "natural", "notes": "Minimum one operable window." },
+      { "space": "bedroom_3", "requirement": "natural", "notes": "Minimum one operable window." },
+      { "space": "bedroom_4", "requirement": "natural", "notes": "Minimum one operable window." },
+      { "space": "formal_hall", "requirement": "natural", "notes": "Minimum two operable windows." },
+      { "space": "kitchen", "requirement": "either", "notes": "Ducted exhaust fan mandatory." },
+      { "space": "servant_quarter", "requirement": "natural", "notes": "Minimum one operable window. Mandatory — servant quarter must not be a windowless room." },
+      { "space": "utility_room", "requirement": "either", "notes": "Exhaust fan or operable window mandatory." },
+      { "space": "master_bathroom", "requirement": "mechanical", "notes": "Minimum 6 air changes per hour." },
+      { "space": "bathroom_2", "requirement": "mechanical", "notes": "Minimum 6 air changes per hour." },
+      { "space": "common_bathroom", "requirement": "mechanical", "notes": "Minimum 6 air changes per hour." },
+      { "space": "servant_bathroom", "requirement": "mechanical", "notes": "Minimum 6 air changes per hour." }
+    ],
+
+    "lighting": [
+      { "space": "master_bedroom", "requirement": "natural", "min_window_to_floor_ratio": 0.10 },
+      { "space": "bedroom_2", "requirement": "natural", "min_window_to_floor_ratio": 0.10 },
+      { "space": "bedroom_3", "requirement": "natural", "min_window_to_floor_ratio": 0.10 },
+      { "space": "bedroom_4", "requirement": "natural", "min_window_to_floor_ratio": 0.10 },
+      { "space": "formal_hall", "requirement": "natural", "min_window_to_floor_ratio": 0.12 },
+      { "space": "formal_dining", "requirement": "either", "notes": "Pendant lighting over dining table mandatory." },
+      { "space": "kitchen", "requirement": "either", "min_window_to_floor_ratio": 0.08, "notes": "Under-cabinet task lighting mandatory." },
+      { "space": "servant_quarter", "requirement": "natural", "min_window_to_floor_ratio": 0.08, "notes": "Mandatory — servant quarter must not be a dark room." },
+      { "space": "master_bathroom", "requirement": "artificial", "notes": "IP44-rated fixtures." },
+      { "space": "bathroom_2", "requirement": "artificial", "notes": "IP44-rated fixtures." },
+      { "space": "common_bathroom", "requirement": "artificial", "notes": "IP44-rated fixtures." },
+      { "space": "servant_bathroom", "requirement": "artificial", "notes": "IP44-rated fixtures." }
+    ],
+
+    "engineering": [
+      {
+        "category": "structural",
+        "constraint": "Minimum floor-to-floor height 10.5 ft to allow 10 ft clear ceiling in formal hall and master bedroom.",
+        "mandatory": true
+      },
+      {
+        "category": "plumbing",
+        "constraint": "Two wet cores required: family wet core (master bathroom, bathroom_2, common bathroom, kitchen) and service wet core (servant bathroom, utility room). Each core must have its own riser.",
+        "mandatory": true
+      },
+      {
+        "category": "electrical",
+        "constraint": "Dedicated 20A circuit for kitchen. Separate AC circuits for all four bedrooms and formal hall. Separate DB for service zone.",
+        "mandatory": true
+      },
+      {
+        "category": "hvac",
+        "constraint": "AC mandatory in master bedroom, bedroom_2, and formal hall. AC provision in bedroom_3, bedroom_4, and family lounge must be structurally provisioned.",
+        "mandatory": true
+      },
+      {
+        "category": "fire",
+        "constraint": "Smoke detectors in all four bedrooms, formal hall, and family lounge. Heat detector in kitchen. All interconnected with building fire alarm.",
+        "mandatory": true
+      },
+      {
+        "category": "code",
+        "constraint": "Servant quarter must meet minimum habitable room standards — minimum 80 sqft, natural light, and ventilation. Cannot be a converted storage room.",
+        "mandatory": true
+      }
+    ],
+
+    "construction": [
+      {
+        "category": "acoustic",
+        "guideline": "Inter-bedroom walls minimum STC 52. Master bedroom party wall minimum STC 55. Service zone walls separating servant quarter from family zone minimum STC 50."
+      },
+      {
+        "category": "finishing",
+        "guideline": "Formal hall and dining: marble or premium vitrified tile. Bedrooms: wood laminate or carpet. Kitchen and service zone: anti-skid vitrified tile. Servant quarter: standard vitrified tile."
+      },
+      {
+        "category": "storage",
+        "guideline": "Walk-in wardrobe in master bedroom. Built-in wardrobes in all other bedrooms minimum 5 ft wide. Full overhead and base kitchen cabinets. Dedicated linen cupboard in bedroom wing passage."
+      },
+      {
+        "category": "doors",
+        "guideline": "Solid-core doors for all bedrooms. Solid-core for kitchen and service zone entry. Hollow-core for bathrooms."
+      },
+      {
+        "category": "waterproofing",
+        "guideline": "All bathrooms fully waterproofed floor and walls to 7 ft. Utility room floor fully waterproofed. Kitchen floor waterproofed at wet areas."
+      }
+    ],
+
+    "supported_styles": ["modern", "contemporary", "traditional", "colonial", "art-deco"],
+
+    "constraints": [
+      "Total unit area: 1400–2000 sqft (gross)",
+      "All four bedrooms must be fully enclosed with closable doors",
+      "Master bedroom must have attached bathroom and dressing room",
+      "Service zone must have an independent entry point",
+      "Servant quarter must meet habitable room standards — natural light and ventilation mandatory",
+      "Two wet cores required — family and service",
+      "Maximum occupancy: 8 persons (family) + 2 domestic staff"
+    ],
+
+    "validation_rules": [
+      {
+        "rule_id": "4BHK-001",
+        "condition": "master_bedroom has attached master_dressing and master_bathroom",
+        "severity": "error"
+      },
+      {
+        "rule_id": "4BHK-002",
+        "condition": "all four bedrooms are present, enclosed, and have closable doors",
+        "severity": "error"
+      },
+      {
+        "rule_id": "4BHK-003",
+        "condition": "servant_quarter is present with natural light and ventilation",
+        "severity": "error"
+      },
+      {
+        "rule_id": "4BHK-004",
+        "condition": "service zone has an independent entry point separate from main family entry",
+        "severity": "error"
+      },
+      {
+        "rule_id": "4BHK-005",
+        "condition": "service circulation does not pass through formal_hall or bedroom_wing_passage",
+        "severity": "error"
+      },
+      {
+        "rule_id": "4BHK-006",
+        "condition": "two wet cores are present — family and service",
+        "severity": "error"
+      },
+      {
+        "rule_id": "4BHK-007",
+        "condition": "formal_hall receives direct natural light",
+        "severity": "error"
+      },
+      {
+        "rule_id": "4BHK-008",
+        "condition": "master_bedroom area >= 180 sqft",
+        "severity": "error"
+      },
+      {
+        "rule_id": "4BHK-009",
+        "condition": "servant_quarter area >= 80 sqft",
+        "severity": "error"
+      },
+      {
+        "rule_id": "4BHK-010",
+        "condition": "bedroom_wing_passage is not visible from main entry door",
+        "severity": "warning"
+      },
+      {
+        "rule_id": "4BHK-011",
+        "condition": "formal_dining is adjacent to kitchen",
+        "severity": "error"
+      }
+    ]
+  }
+}

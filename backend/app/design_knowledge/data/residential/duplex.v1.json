@@ -1,0 +1,381 @@
+{
+  "metadata": {
+    "id": "duplex",
+    "version": "v1.0.0",
+    "type": "residential",
+    "title": "Duplex Apartment",
+    "description": "Two-storey residential unit within a multi-storey building. The unit occupies two consecutive floors connected by an internal private staircase. Social functions on the lower floor, private sleeping functions on the upper floor. Distinguished from a villa by shared building structure and no private ground-plane garden.",
+    "owner": "rudra",
+    "status": "active",
+    "tags": ["duplex", "residential", "two-storey", "apartment", "premium", "vertical-zoning"]
+  },
+  "body": {
+    "purpose": "Provide a premium apartment unit that achieves villa-like vertical zoning within a multi-storey building. The duplex gives a family the spatial experience of a two-storey home — social life below, private life above — without requiring a private plot. The internal staircase is the defining spatial element that separates a duplex from a large single-floor apartment.",
+    "planning_philosophy": "The lower floor is the social floor — entry, living, dining, kitchen, and guest facilities. The upper floor is the private floor — all bedrooms, family lounge, and private bathrooms. The internal staircase must be positioned on the lower floor so it does not consume bedroom area on the upper floor. The staircase landing on the upper floor becomes the bedroom wing distribution point. The double-height volume over the living area, where structurally feasible, is the signature spatial quality of a duplex.",
+
+    "occupancy": {
+      "typical_occupants": 4,
+      "occupant_profile": "premium nuclear family or couple with children",
+      "lifestyle_notes": "Family values the separation of social and private life across floors. Children's bedrooms on the upper floor provide acoustic separation from ground-floor entertaining. Work-from-home is a standard requirement. Guests are received on the lower floor and must not need to access the upper floor."
+    },
+
+    "required_spaces": [
+      {
+        "name": "lower_living",
+        "area": { "min_sqft": 200, "max_sqft": 320 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 14, "unit": "ft" },
+          { "dimension": "ceiling_height", "min_value": 10, "unit": "ft" }
+        ],
+        "notes": "Lower floor. Primary social space. Must receive direct natural light. Double-height ceiling to upper floor is the preferred spatial treatment where structurally feasible."
+      },
+      {
+        "name": "lower_dining",
+        "area": { "min_sqft": 90, "max_sqft": 150 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 10, "unit": "ft" }
+        ],
+        "notes": "Lower floor. Dining for 6–8 persons. Open-plan with living or partial wall separation. Adjacent to kitchen."
+      },
+      {
+        "name": "kitchen",
+        "area": { "min_sqft": 90, "max_sqft": 150 },
+        "dimensions": [
+          { "dimension": "counter_length", "min_value": 14, "unit": "ft" },
+          { "dimension": "width", "min_value": 9, "unit": "ft" }
+        ],
+        "notes": "Lower floor. Full working kitchen. Must have a door or shutter to the dining area. Service entry from building service corridor preferred."
+      },
+      {
+        "name": "guest_toilet",
+        "area": { "min_sqft": 20, "max_sqft": 35 },
+        "notes": "Lower floor. Powder room for guests. WC and wash basin. Accessible from entry foyer without entering any bedroom."
+      },
+      {
+        "name": "lower_entry_foyer",
+        "area": { "min_sqft": 30, "max_sqft": 60 },
+        "notes": "Lower floor. Main entry zone distributing to living, kitchen, and internal staircase."
+      },
+      {
+        "name": "internal_staircase",
+        "area": { "min_sqft": 50, "max_sqft": 80 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 3.5, "unit": "ft" },
+          { "dimension": "tread_depth", "min_value": 10, "unit": "in" },
+          { "dimension": "riser_height", "min_value": 7, "unit": "in" }
+        ],
+        "notes": "Private staircase connecting lower and upper floors within the unit. Must be positioned on the lower floor so it does not consume bedroom area on the upper floor. Natural light at landing preferred."
+      },
+      {
+        "name": "master_bedroom",
+        "area": { "min_sqft": 180, "max_sqft": 280 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 13, "unit": "ft" },
+          { "dimension": "ceiling_height", "min_value": 9.5, "unit": "ft" }
+        ],
+        "notes": "Upper floor. Primary bedroom with attached bathroom and dressing area. Must be the most private room — furthest from the staircase landing."
+      },
+      {
+        "name": "master_bathroom",
+        "area": { "min_sqft": 55, "max_sqft": 85 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 6, "unit": "ft" }
+        ],
+        "notes": "Upper floor. Attached to master bedroom. WC, double wash basin, shower, and bathtub."
+      },
+      {
+        "name": "bedroom_2",
+        "area": { "min_sqft": 140, "max_sqft": 210 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 11, "unit": "ft" }
+        ],
+        "notes": "Upper floor. Second bedroom with attached or adjacent bathroom."
+      },
+      {
+        "name": "bedroom_3",
+        "area": { "min_sqft": 120, "max_sqft": 180 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 10, "unit": "ft" }
+        ],
+        "notes": "Upper floor. Third bedroom. Study table and wardrobe mandatory."
+      },
+      {
+        "name": "upper_common_bathroom",
+        "area": { "min_sqft": 45, "max_sqft": 70 },
+        "notes": "Upper floor. Shared bathroom for bedroom_2, bedroom_3, and upper floor guests."
+      },
+      {
+        "name": "upper_landing_passage",
+        "area": { "min_sqft": 35, "max_sqft": 65 },
+        "notes": "Upper floor. Staircase landing that distributes to all upper floor bedrooms and bathrooms. Minimum 3.5 ft clear width."
+      }
+    ],
+
+    "optional_spaces": [
+      {
+        "name": "family_lounge",
+        "area": { "min_sqft": 100, "max_sqft": 170 },
+        "notes": "Upper floor. Informal family gathering space adjacent to the bedroom wing. TV lounge for family use."
+      },
+      {
+        "name": "home_office",
+        "area": { "min_sqft": 80, "max_sqft": 130 },
+        "notes": "Lower or upper floor. Dedicated work-from-home room with closable door."
+      },
+      {
+        "name": "lower_balcony",
+        "area": { "min_sqft": 50, "max_sqft": 100 },
+        "notes": "Lower floor. Outdoor extension of living area."
+      },
+      {
+        "name": "master_balcony",
+        "area": { "min_sqft": 40, "max_sqft": 80 },
+        "notes": "Upper floor. Private balcony off master bedroom."
+      },
+      {
+        "name": "dry_balcony",
+        "area": { "min_sqft": 25, "max_sqft": 50 },
+        "notes": "Lower floor. Laundry and drying. Accessed from kitchen."
+      },
+      {
+        "name": "pooja_room",
+        "area": { "min_sqft": 20, "max_sqft": 40 },
+        "notes": "Lower floor near entry foyer."
+      },
+      {
+        "name": "double_height_void",
+        "area": { "min_sqft": 80, "max_sqft": 200 },
+        "notes": "Structural void over the lower living area creating a double-height volume. Upper floor gallery or mezzanine may overlook this void. Requires structural engineer approval."
+      }
+    ],
+
+    "space_relationships": [
+      {
+        "from_space": "lower_living",
+        "to_space": "lower_dining",
+        "relationship": "visual_connect",
+        "notes": "Living and dining open-plan or partial wall separation."
+      },
+      {
+        "from_space": "lower_dining",
+        "to_space": "kitchen",
+        "relationship": "adjacent",
+        "notes": "Kitchen directly adjacent to dining."
+      },
+      {
+        "from_space": "lower_entry_foyer",
+        "to_space": "internal_staircase",
+        "relationship": "adjacent",
+        "notes": "Staircase accessed from entry foyer — visible from entry but not from living seating area."
+      },
+      {
+        "from_space": "internal_staircase",
+        "to_space": "upper_landing_passage",
+        "relationship": "direct_access",
+        "notes": "Staircase arrives at the upper landing passage which distributes to all bedrooms."
+      },
+      {
+        "from_space": "upper_landing_passage",
+        "to_space": "master_bedroom",
+        "relationship": "adjacent",
+        "notes": "Master bedroom at the far end of the upper landing — maximum distance from staircase."
+      },
+      {
+        "from_space": "upper_landing_passage",
+        "to_space": "bedroom_2",
+        "relationship": "adjacent"
+      },
+      {
+        "from_space": "upper_landing_passage",
+        "to_space": "bedroom_3",
+        "relationship": "adjacent"
+      },
+      {
+        "from_space": "master_bedroom",
+        "to_space": "master_bathroom",
+        "relationship": "direct_access"
+      },
+      {
+        "from_space": "master_bedroom",
+        "to_space": "lower_living",
+        "relationship": "separated",
+        "notes": "Master bedroom on upper floor must not be directly visible or accessible from lower living."
+      },
+      {
+        "from_space": "double_height_void",
+        "to_space": "lower_living",
+        "relationship": "visual_connect",
+        "notes": "Double-height void creates visual connection between lower living and upper floor gallery."
+      }
+    ],
+
+    "circulation": [
+      {
+        "rule": "Guests on the lower floor must not need to access the internal staircase to move between lower floor spaces.",
+        "rationale": "The lower floor must function as a complete social unit. The staircase leads to the private upper floor and must not be a circulation path for lower floor movement."
+      },
+      {
+        "rule": "The upper floor bedroom wing must not be visible from the lower floor entry foyer.",
+        "rationale": "Visual privacy of the sleeping zone from the entry is essential."
+      },
+      {
+        "rule": "No upper floor bedroom must serve as a circulation path to any other space.",
+        "rationale": "All upper floor bedrooms are private zones."
+      },
+      {
+        "rule": "The internal staircase must have a minimum 6 ft 8 in headroom clearance throughout.",
+        "rationale": "Building code minimum. Furniture movement on the staircase requires this clearance."
+      },
+      {
+        "rule": "The staircase must not be positioned under a bedroom on the upper floor.",
+        "rationale": "Staircase noise — footsteps, conversation — must not penetrate the bedroom above."
+      }
+    ],
+
+    "ventilation": [
+      { "space": "lower_living", "requirement": "natural", "notes": "Minimum two operable windows or doors. Cross-ventilation preferred." },
+      { "space": "master_bedroom", "requirement": "natural", "notes": "Minimum one operable window facing open aspect." },
+      { "space": "bedroom_2", "requirement": "natural", "notes": "Minimum one operable window." },
+      { "space": "bedroom_3", "requirement": "natural", "notes": "Minimum one operable window." },
+      { "space": "kitchen", "requirement": "either", "notes": "Ducted exhaust fan mandatory." },
+      { "space": "master_bathroom", "requirement": "mechanical", "notes": "Minimum 6 air changes per hour." },
+      { "space": "upper_common_bathroom", "requirement": "mechanical", "notes": "Minimum 6 air changes per hour." },
+      { "space": "internal_staircase", "requirement": "either", "notes": "Natural light and ventilation at landing preferred. Mechanical ventilation acceptable." }
+    ],
+
+    "lighting": [
+      { "space": "lower_living", "requirement": "natural", "min_window_to_floor_ratio": 0.15, "notes": "Large glazed openings mandatory. Double-height void amplifies natural light." },
+      { "space": "master_bedroom", "requirement": "natural", "min_window_to_floor_ratio": 0.12 },
+      { "space": "bedroom_2", "requirement": "natural", "min_window_to_floor_ratio": 0.10 },
+      { "space": "bedroom_3", "requirement": "natural", "min_window_to_floor_ratio": 0.10 },
+      { "space": "lower_dining", "requirement": "either", "notes": "Pendant lighting over dining table mandatory." },
+      { "space": "kitchen", "requirement": "either", "min_window_to_floor_ratio": 0.08, "notes": "Under-cabinet task lighting mandatory." },
+      { "space": "internal_staircase", "requirement": "either", "notes": "Natural light at landing preferred. Continuous artificial lighting on staircase mandatory." },
+      { "space": "master_bathroom", "requirement": "artificial", "notes": "IP44-rated fixtures." },
+      { "space": "upper_common_bathroom", "requirement": "artificial", "notes": "IP44-rated fixtures." }
+    ],
+
+    "engineering": [
+      {
+        "category": "structural",
+        "constraint": "Internal staircase structural opening must be coordinated with building structural grid. Minimum 4 ft clear staircase width. Staircase slab opening must not compromise beam spans.",
+        "mandatory": true
+      },
+      {
+        "category": "structural",
+        "constraint": "Double-height void, if provided, requires structural engineer approval and must not compromise upper floor slab integrity.",
+        "mandatory": true
+      },
+      {
+        "category": "plumbing",
+        "constraint": "Upper floor wet areas must stack directly above lower floor wet areas. Vertical pipe runs must be within the unit boundary — no pipes through adjacent units.",
+        "mandatory": true
+      },
+      {
+        "category": "electrical",
+        "constraint": "Single DB for the unit with sub-circuits for lower and upper floors. Dedicated 20A circuit for kitchen. Separate AC circuits for all bedrooms and lower living.",
+        "mandatory": true
+      },
+      {
+        "category": "hvac",
+        "constraint": "AC mandatory in master bedroom and lower living. AC provision in all other bedrooms must be structurally provisioned. Outdoor units on building-designated ledges only.",
+        "mandatory": true
+      },
+      {
+        "category": "fire",
+        "constraint": "Smoke detectors on both floors — all bedrooms and lower living. Heat detector in kitchen. Staircase must be a protected route — fire-rated door at lower floor entry to staircase.",
+        "mandatory": true
+      },
+      {
+        "category": "structural",
+        "constraint": "Staircase balustrade minimum 3 ft 6 in height. Handrail on both sides if staircase width exceeds 4 ft 6 in.",
+        "mandatory": true
+      }
+    ],
+
+    "construction": [
+      {
+        "category": "acoustic",
+        "guideline": "Lower floor slab (upper floor floor) to achieve minimum IIC 55 for impact sound isolation — critical given the staircase and bedroom positions. Inter-bedroom walls minimum STC 52."
+      },
+      {
+        "category": "finishing",
+        "guideline": "Lower living and dining: premium vitrified tile or natural stone. Upper floor bedrooms: wood flooring or carpet for acoustic comfort. Staircase: wood treads on concrete structure."
+      },
+      {
+        "category": "waterproofing",
+        "guideline": "All upper floor wet areas fully waterproofed. Lower floor wet areas fully waterproofed. Staircase area waterproofed at lower floor level."
+      },
+      {
+        "category": "staircase",
+        "guideline": "Staircase design must be a spatial feature — open-riser or glass balustrade preferred in the double-height zone. Closed-riser staircase acceptable in compact layouts."
+      }
+    ],
+
+    "supported_styles": ["modern", "contemporary", "minimalist", "industrial", "art-deco"],
+
+    "constraints": [
+      "Total unit area: 1800–3000 sqft (gross across both floors)",
+      "Lower floor: social and service functions only",
+      "Upper floor: private sleeping functions only",
+      "Internal staircase mandatory — external or shared staircase does not qualify as a duplex",
+      "All upper floor bedrooms must be fully enclosed with closable doors",
+      "Master bedroom must have attached bathroom",
+      "Staircase minimum 3.5 ft clear width",
+      "Maximum occupancy: 6 persons"
+    ],
+
+    "validation_rules": [
+      {
+        "rule_id": "DUP-001",
+        "condition": "internal_staircase is present connecting lower and upper floors",
+        "severity": "error"
+      },
+      {
+        "rule_id": "DUP-002",
+        "condition": "all bedrooms are on the upper floor",
+        "severity": "error"
+      },
+      {
+        "rule_id": "DUP-003",
+        "condition": "master_bedroom has attached master_bathroom",
+        "severity": "error"
+      },
+      {
+        "rule_id": "DUP-004",
+        "condition": "lower floor has guest_toilet accessible without entering any bedroom",
+        "severity": "error"
+      },
+      {
+        "rule_id": "DUP-005",
+        "condition": "staircase is not positioned under any upper floor bedroom",
+        "severity": "error"
+      },
+      {
+        "rule_id": "DUP-006",
+        "condition": "lower_living receives direct natural light",
+        "severity": "error"
+      },
+      {
+        "rule_id": "DUP-007",
+        "condition": "staircase headroom >= 6 ft 8 in throughout",
+        "severity": "error"
+      },
+      {
+        "rule_id": "DUP-008",
+        "condition": "upper floor bedroom wing is not visible from lower floor entry foyer",
+        "severity": "warning"
+      },
+      {
+        "rule_id": "DUP-009",
+        "condition": "master_bedroom area >= 180 sqft",
+        "severity": "error"
+      },
+      {
+        "rule_id": "DUP-010",
+        "condition": "staircase fire-rated door present at lower floor entry",
+        "severity": "error"
+      }
+    ]
+  }
+}

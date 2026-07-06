@@ -1,0 +1,423 @@
+{
+  "metadata": {
+    "id": "villa",
+    "version": "v1.0.0",
+    "type": "residential",
+    "title": "Villa",
+    "description": "Detached or semi-detached two-storey residential property with private garden, outdoor living spaces, and a clear vertical zoning strategy — social and service functions on the ground floor, private sleeping functions on the upper floor.",
+    "owner": "rudra",
+    "status": "active",
+    "tags": ["villa", "residential", "luxury", "detached", "two-storey", "garden", "private"]
+  },
+  "body": {
+    "purpose": "Provide a premium detached dwelling where the family has complete ownership of the ground plane — garden, driveway, outdoor living — and a clear vertical separation between the social ground floor and the private upper floor. The villa is defined not by its room count but by its relationship to the outdoor environment and its independence from shared walls and shared entries.",
+    "planning_philosophy": "The ground floor is the social and service floor. It receives guests, contains the kitchen and dining, and connects to the garden and outdoor living. The upper floor is the private floor — all bedrooms are above grade, away from street-level noise and overlooking. The staircase is the vertical spine of the plan and must be positioned to allow the ground floor to function independently when the upper floor is occupied. The garden is not a leftover — it is a primary design element that the ground floor plan must actively engage.",
+
+    "occupancy": {
+      "typical_occupants": 5,
+      "occupant_profile": "affluent nuclear or joint family with domestic staff",
+      "lifestyle_notes": "Family entertains formally and informally. Outdoor dining and garden use are primary lifestyle activities. Children require outdoor play space. Domestic staff may be live-in. Home office is a standard requirement. Elderly members may require a ground-floor bedroom."
+    },
+
+    "required_spaces": [
+      {
+        "name": "formal_living",
+        "area": { "min_sqft": 250, "max_sqft": 400 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 15, "unit": "ft" },
+          { "dimension": "ceiling_height", "min_value": 11, "unit": "ft" }
+        ],
+        "notes": "Ground floor. Primary social space. Must connect visually and physically to the garden or outdoor terrace. Double-height ceiling optional but preferred."
+      },
+      {
+        "name": "formal_dining",
+        "area": { "min_sqft": 130, "max_sqft": 200 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 12, "unit": "ft" }
+        ],
+        "notes": "Ground floor. Dining for 8–10 persons. Adjacent to kitchen and living. Must connect to outdoor dining terrace."
+      },
+      {
+        "name": "kitchen",
+        "area": { "min_sqft": 120, "max_sqft": 200 },
+        "dimensions": [
+          { "dimension": "counter_length", "min_value": 18, "unit": "ft" },
+          { "dimension": "width", "min_value": 10, "unit": "ft" }
+        ],
+        "notes": "Ground floor. Full working kitchen with island or peninsula. Must have a service entry from the driveway or service yard. Must connect to dining and outdoor kitchen or BBQ area."
+      },
+      {
+        "name": "ground_floor_bedroom",
+        "area": { "min_sqft": 140, "max_sqft": 200 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 11, "unit": "ft" }
+        ],
+        "notes": "Ground floor bedroom for elderly parent or guest. Must have an attached accessible bathroom. Must not be accessible from the formal living without a closable door."
+      },
+      {
+        "name": "ground_floor_bathroom",
+        "area": { "min_sqft": 50, "max_sqft": 75 },
+        "notes": "Attached to ground floor bedroom. Accessible fittings mandatory if for elderly occupant."
+      },
+      {
+        "name": "guest_toilet",
+        "area": { "min_sqft": 20, "max_sqft": 35 },
+        "notes": "Ground floor powder room for guests. WC and wash basin only. Accessible from the entry foyer or passage without entering any bedroom."
+      },
+      {
+        "name": "master_bedroom",
+        "area": { "min_sqft": 220, "max_sqft": 350 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 14, "unit": "ft" },
+          { "dimension": "ceiling_height", "min_value": 10, "unit": "ft" }
+        ],
+        "notes": "Upper floor. Primary bedroom with attached dressing room and bathroom. Must have a private balcony or terrace. Must be the most private room in the plan."
+      },
+      {
+        "name": "master_dressing",
+        "area": { "min_sqft": 50, "max_sqft": 90 },
+        "notes": "Upper floor. Walk-in dressing room attached to master bedroom."
+      },
+      {
+        "name": "master_bathroom",
+        "area": { "min_sqft": 65, "max_sqft": 100 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 7, "unit": "ft" }
+        ],
+        "notes": "Upper floor. Attached to master bedroom. WC, double wash basin, shower, and bathtub. Accessed from master bedroom or dressing room only."
+      },
+      {
+        "name": "bedroom_2",
+        "area": { "min_sqft": 150, "max_sqft": 220 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 12, "unit": "ft" }
+        ],
+        "notes": "Upper floor. Second bedroom with attached or adjacent bathroom."
+      },
+      {
+        "name": "bedroom_3",
+        "area": { "min_sqft": 130, "max_sqft": 200 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 11, "unit": "ft" }
+        ],
+        "notes": "Upper floor. Third bedroom. Study table and wardrobe mandatory."
+      },
+      {
+        "name": "upper_common_bathroom",
+        "area": { "min_sqft": 45, "max_sqft": 70 },
+        "notes": "Upper floor. Shared bathroom for bedroom_2, bedroom_3, and upper floor guests."
+      },
+      {
+        "name": "staircase",
+        "area": { "min_sqft": 60, "max_sqft": 100 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 4, "unit": "ft" },
+          { "dimension": "tread_depth", "min_value": 11, "unit": "in" },
+          { "dimension": "riser_height", "min_value": 6, "unit": "in" }
+        ],
+        "notes": "Primary staircase connecting ground and upper floors. Must be positioned so the ground floor can function independently. Must have natural light — skylight or window at landing preferred."
+      },
+      {
+        "name": "entry_foyer",
+        "area": { "min_sqft": 50, "max_sqft": 90 },
+        "notes": "Ground floor. Main entry zone. Must distribute to formal living, staircase, and ground floor bedroom without passing through any of them."
+      },
+      {
+        "name": "garden",
+        "area": { "min_sqft": 400, "max_sqft": 2000 },
+        "notes": "Private garden on the ground plane. Must be accessible from the formal living and kitchen. Front garden (entry approach) and rear garden (private outdoor living) are distinct zones."
+      },
+      {
+        "name": "outdoor_terrace",
+        "area": { "min_sqft": 150, "max_sqft": 400 },
+        "notes": "Ground floor outdoor living terrace. Covered or semi-covered. Must connect to formal living and dining. Primary outdoor entertaining space."
+      }
+    ],
+
+    "optional_spaces": [
+      {
+        "name": "home_office",
+        "area": { "min_sqft": 90, "max_sqft": 150 },
+        "notes": "Ground floor or upper floor. Dedicated work-from-home room with closable door."
+      },
+      {
+        "name": "family_lounge",
+        "area": { "min_sqft": 100, "max_sqft": 180 },
+        "notes": "Upper floor. Informal family gathering space adjacent to the bedroom wing."
+      },
+      {
+        "name": "servant_quarter",
+        "area": { "min_sqft": 80, "max_sqft": 120 },
+        "notes": "Ground floor service zone. Natural light and ventilation mandatory."
+      },
+      {
+        "name": "servant_bathroom",
+        "area": { "min_sqft": 30, "max_sqft": 45 },
+        "notes": "Accessed from service zone only."
+      },
+      {
+        "name": "utility_room",
+        "area": { "min_sqft": 40, "max_sqft": 70 },
+        "notes": "Ground floor service zone. Washing machine, dryer, ironing."
+      },
+      {
+        "name": "pooja_room",
+        "area": { "min_sqft": 25, "max_sqft": 50 },
+        "notes": "Ground floor near entry foyer."
+      },
+      {
+        "name": "master_balcony",
+        "area": { "min_sqft": 60, "max_sqft": 120 },
+        "notes": "Upper floor. Private balcony off master bedroom. Must not be overlooked by adjacent properties."
+      },
+      {
+        "name": "garage",
+        "area": { "min_sqft": 200, "max_sqft": 400 },
+        "notes": "Ground floor or basement. Minimum 2-car capacity. Must connect to entry foyer via a covered path."
+      },
+      {
+        "name": "swimming_pool",
+        "area": { "min_sqft": 300, "max_sqft": 800 },
+        "notes": "In garden. Must be positioned for privacy from street and neighbours. Pool deck minimum 6 ft wide on all accessible sides."
+      }
+    ],
+
+    "space_relationships": [
+      {
+        "from_space": "formal_living",
+        "to_space": "garden",
+        "relationship": "direct_access",
+        "notes": "Formal living must open directly to the garden or outdoor terrace via full-height sliding or folding doors."
+      },
+      {
+        "from_space": "formal_living",
+        "to_space": "outdoor_terrace",
+        "relationship": "direct_access",
+        "notes": "Outdoor terrace is the primary extension of the formal living."
+      },
+      {
+        "from_space": "formal_dining",
+        "to_space": "kitchen",
+        "relationship": "adjacent",
+        "notes": "Kitchen directly adjacent to dining."
+      },
+      {
+        "from_space": "formal_dining",
+        "to_space": "outdoor_terrace",
+        "relationship": "adjacent",
+        "notes": "Outdoor dining extends from the formal dining area."
+      },
+      {
+        "from_space": "master_bedroom",
+        "to_space": "master_dressing",
+        "relationship": "direct_access"
+      },
+      {
+        "from_space": "master_dressing",
+        "to_space": "master_bathroom",
+        "relationship": "direct_access"
+      },
+      {
+        "from_space": "master_bedroom",
+        "to_space": "master_balcony",
+        "relationship": "direct_access",
+        "notes": "Master balcony accessed from master bedroom only."
+      },
+      {
+        "from_space": "staircase",
+        "to_space": "entry_foyer",
+        "relationship": "adjacent",
+        "notes": "Staircase accessed from entry foyer — visible from entry but not from formal living seating area."
+      },
+      {
+        "from_space": "ground_floor_bedroom",
+        "to_space": "formal_living",
+        "relationship": "separated",
+        "notes": "Ground floor bedroom must not be directly accessible from formal living without a closable door."
+      },
+      {
+        "from_space": "kitchen",
+        "to_space": "garden",
+        "relationship": "adjacent",
+        "notes": "Kitchen must have a service access to the garden for deliveries and outdoor cooking."
+      }
+    ],
+
+    "circulation": [
+      {
+        "rule": "The staircase must be positioned so the ground floor social zone can function independently when the upper floor is occupied.",
+        "rationale": "Guests on the ground floor must not need to access the staircase to move between ground floor spaces."
+      },
+      {
+        "rule": "The upper floor bedroom wing must not be visible from the ground floor entry foyer.",
+        "rationale": "Visual privacy of the sleeping zone from the entry is essential in a villa where guests are received on the ground floor."
+      },
+      {
+        "rule": "The garden must be accessible from the formal living without passing through the kitchen or service zone.",
+        "rationale": "The garden is a primary social space — access must be direct and dignified."
+      },
+      {
+        "rule": "The service entry must be separate from the main entry and must not be visible from the formal living or outdoor terrace.",
+        "rationale": "Service deliveries and staff movement must not intrude on the social experience."
+      },
+      {
+        "rule": "The staircase must have natural light at the landing.",
+        "rationale": "A naturally lit staircase is a spatial quality marker in a villa and reduces reliance on artificial lighting during the day."
+      }
+    ],
+
+    "ventilation": [
+      { "space": "formal_living", "requirement": "natural", "notes": "Cross-ventilation mandatory. Minimum two operable windows or doors on different walls." },
+      { "space": "master_bedroom", "requirement": "natural", "notes": "Minimum one operable window facing open aspect. Cross-ventilation preferred." },
+      { "space": "bedroom_2", "requirement": "natural", "notes": "Minimum one operable window." },
+      { "space": "bedroom_3", "requirement": "natural", "notes": "Minimum one operable window." },
+      { "space": "ground_floor_bedroom", "requirement": "natural", "notes": "Minimum one operable window facing garden or open aspect." },
+      { "space": "kitchen", "requirement": "either", "notes": "Ducted exhaust fan mandatory. Natural ventilation supplementary." },
+      { "space": "master_bathroom", "requirement": "mechanical", "notes": "Minimum 6 air changes per hour." },
+      { "space": "upper_common_bathroom", "requirement": "mechanical", "notes": "Minimum 6 air changes per hour." },
+      { "space": "ground_floor_bathroom", "requirement": "mechanical", "notes": "Minimum 6 air changes per hour." }
+    ],
+
+    "lighting": [
+      { "space": "formal_living", "requirement": "natural", "min_window_to_floor_ratio": 0.15, "notes": "Large glazed openings to garden mandatory." },
+      { "space": "master_bedroom", "requirement": "natural", "min_window_to_floor_ratio": 0.12 },
+      { "space": "bedroom_2", "requirement": "natural", "min_window_to_floor_ratio": 0.10 },
+      { "space": "bedroom_3", "requirement": "natural", "min_window_to_floor_ratio": 0.10 },
+      { "space": "ground_floor_bedroom", "requirement": "natural", "min_window_to_floor_ratio": 0.10 },
+      { "space": "formal_dining", "requirement": "either", "notes": "Pendant lighting over dining table mandatory." },
+      { "space": "kitchen", "requirement": "either", "min_window_to_floor_ratio": 0.08, "notes": "Under-cabinet task lighting mandatory." },
+      { "space": "staircase", "requirement": "natural", "notes": "Skylight or window at landing mandatory." },
+      { "space": "master_bathroom", "requirement": "artificial", "notes": "IP44-rated fixtures." },
+      { "space": "upper_common_bathroom", "requirement": "artificial", "notes": "IP44-rated fixtures." },
+      { "space": "ground_floor_bathroom", "requirement": "artificial", "notes": "IP44-rated fixtures." }
+    ],
+
+    "engineering": [
+      {
+        "category": "structural",
+        "constraint": "Ground floor slab to upper floor minimum 11 ft floor-to-floor height. Upper floor to roof minimum 10.5 ft. Staircase structural opening minimum 4 ft 6 in clear width.",
+        "mandatory": true
+      },
+      {
+        "category": "plumbing",
+        "constraint": "Wet core on each floor aligned vertically. Upper floor bathrooms must stack directly above or adjacent to ground floor wet areas. Rainwater harvesting provision mandatory.",
+        "mandatory": true
+      },
+      {
+        "category": "electrical",
+        "constraint": "Separate DB for ground floor and upper floor. Dedicated 20A circuit for kitchen. AC circuits for all bedrooms and formal living. External lighting circuit for garden and terrace.",
+        "mandatory": true
+      },
+      {
+        "category": "hvac",
+        "constraint": "AC mandatory in master bedroom and formal living. AC provision in all other bedrooms and dining must be structurally provisioned. Outdoor unit placement must not be visible from garden or terrace.",
+        "mandatory": true
+      },
+      {
+        "category": "structural",
+        "constraint": "Staircase balustrade minimum 3 ft 6 in height. Handrail on both sides if staircase width exceeds 5 ft.",
+        "mandatory": true
+      },
+      {
+        "category": "fire",
+        "constraint": "Smoke detectors in all bedrooms, formal living, and staircase landing. Heat detector in kitchen. All interconnected.",
+        "mandatory": true
+      },
+      {
+        "category": "code",
+        "constraint": "Boundary setbacks: minimum 3 ft from all property boundaries for the built structure. Garden walls maximum 5 ft height on street boundary.",
+        "mandatory": true
+      }
+    ],
+
+    "construction": [
+      {
+        "category": "acoustic",
+        "guideline": "Upper floor slab to achieve minimum IIC 50 for impact sound isolation. Inter-bedroom walls minimum STC 52."
+      },
+      {
+        "category": "finishing",
+        "guideline": "Formal living and dining: natural stone or premium vitrified tile. Bedrooms: wood flooring or carpet. Outdoor terrace: anti-skid stone or porcelain tile. Garden paths: natural stone or brick."
+      },
+      {
+        "category": "waterproofing",
+        "guideline": "Roof terrace and all upper floor wet areas fully waterproofed. Ground floor slab waterproofed if below grade. Outdoor terrace waterproofed with positive drainage slope minimum 1:80."
+      },
+      {
+        "category": "landscape",
+        "guideline": "Front garden: formal planting with defined entry path. Rear garden: lawn with planting borders and outdoor terrace. Minimum 30% of plot area to remain as soft landscape."
+      },
+      {
+        "category": "security",
+        "guideline": "Boundary wall or fence minimum 5 ft height. Main gate with intercom and camera. External lighting on all entry paths and garden perimeter."
+      }
+    ],
+
+    "supported_styles": ["modern", "contemporary", "mediterranean", "colonial", "tropical", "traditional"],
+
+    "constraints": [
+      "Total built area: 2500–5000 sqft (gross across both floors)",
+      "Plot area: minimum 2000 sqft",
+      "Ground floor: social and service functions only",
+      "Upper floor: private sleeping functions only",
+      "Garden mandatory — minimum 400 sqft",
+      "Outdoor terrace mandatory — minimum 150 sqft",
+      "Staircase must have natural light",
+      "Service entry must be separate from main entry",
+      "Maximum occupancy: 8 persons"
+    ],
+
+    "validation_rules": [
+      {
+        "rule_id": "VIL-001",
+        "condition": "formal_living connects directly to garden or outdoor_terrace",
+        "severity": "error"
+      },
+      {
+        "rule_id": "VIL-002",
+        "condition": "master_bedroom is on upper floor with attached master_dressing and master_bathroom",
+        "severity": "error"
+      },
+      {
+        "rule_id": "VIL-003",
+        "condition": "staircase has natural light at landing",
+        "severity": "error"
+      },
+      {
+        "rule_id": "VIL-004",
+        "condition": "service entry is separate from main entry",
+        "severity": "error"
+      },
+      {
+        "rule_id": "VIL-005",
+        "condition": "garden area >= 400 sqft",
+        "severity": "error"
+      },
+      {
+        "rule_id": "VIL-006",
+        "condition": "outdoor_terrace area >= 150 sqft",
+        "severity": "error"
+      },
+      {
+        "rule_id": "VIL-007",
+        "condition": "ground_floor_bedroom has attached accessible bathroom",
+        "severity": "error"
+      },
+      {
+        "rule_id": "VIL-008",
+        "condition": "upper floor bedroom wing is not visible from ground floor entry foyer",
+        "severity": "warning"
+      },
+      {
+        "rule_id": "VIL-009",
+        "condition": "staircase width >= 4 ft",
+        "severity": "error"
+      },
+      {
+        "rule_id": "VIL-010",
+        "condition": "formal_living ceiling height >= 11 ft",
+        "severity": "warning"
+      }
+    ]
+  }
+}

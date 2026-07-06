@@ -1,0 +1,444 @@
+{
+  "metadata": {
+    "id": "3bhk",
+    "version": "v1.0.0",
+    "type": "residential",
+    "title": "3 Bedroom Hall Kitchen (3BHK)",
+    "description": "Residential unit with three bedrooms, a living hall, dining area, and enclosed kitchen. Introduces the bedroom wing concept — bedrooms are grouped into a private zone accessed via a dedicated bedroom passage, separate from the social zone.",
+    "owner": "rudra",
+    "status": "active",
+    "tags": ["3bhk", "residential", "family", "urban", "joint-family", "three-generation"]
+  },
+  "body": {
+    "purpose": "Provide a complete dwelling for a family of 4–5 where parents, children, and an elderly grandparent or guest each occupy a dedicated bedroom. The 3BHK is the threshold unit type where a bedroom wing becomes necessary — three bedrooms cannot be distributed individually off a single passage without creating circulation conflicts.",
+    "planning_philosophy": "The plan is divided into two distinct zones separated by a threshold: the social zone (entry, hall, dining, kitchen) and the private zone (bedroom wing with its own internal passage). The master bedroom anchors the far end of the bedroom wing. The two secondary bedrooms flank the wing passage. This organisation ensures that guests in the hall never penetrate the private zone, and that bedroom-to-bedroom movement does not require crossing the social zone.",
+
+    "occupancy": {
+      "typical_occupants": 4,
+      "occupant_profile": "family of four or three-generation household",
+      "lifestyle_notes": "One bedroom typically serves an elderly parent who may require accessible bathroom fittings and proximity to the common bathroom. Children's bedrooms require acoustic separation from each other for study. Family entertains regularly — the hall and dining must support 6–8 persons."
+    },
+
+    "required_spaces": [
+      {
+        "name": "master_bedroom",
+        "area": { "min_sqft": 160, "max_sqft": 240 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 12, "unit": "ft" },
+          { "dimension": "length", "min_value": 13, "unit": "ft" },
+          { "dimension": "ceiling_height", "min_value": 9, "unit": "ft" }
+        ],
+        "notes": "Primary bedroom at the far end of the bedroom wing. Must accommodate a king bed, wardrobe, dressing table, and seating area. Attached bathroom mandatory."
+      },
+      {
+        "name": "bedroom_2",
+        "area": { "min_sqft": 120, "max_sqft": 190 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 10, "unit": "ft" },
+          { "dimension": "length", "min_value": 11, "unit": "ft" },
+          { "dimension": "ceiling_height", "min_value": 9, "unit": "ft" }
+        ],
+        "notes": "Children's bedroom or elderly parent's room. Must accommodate a double bed and study table. Must be acoustically separated from bedroom_3."
+      },
+      {
+        "name": "bedroom_3",
+        "area": { "min_sqft": 110, "max_sqft": 175 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 10, "unit": "ft" },
+          { "dimension": "length", "min_value": 10, "unit": "ft" },
+          { "dimension": "ceiling_height", "min_value": 9, "unit": "ft" }
+        ],
+        "notes": "Third bedroom for child or guest. Must have a closable door and independent access from the bedroom wing passage."
+      },
+      {
+        "name": "hall_living",
+        "area": { "min_sqft": 180, "max_sqft": 280 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 13, "unit": "ft" },
+          { "dimension": "ceiling_height", "min_value": 9, "unit": "ft" }
+        ],
+        "notes": "Primary social space. Must accommodate a sofa set for 6–8 persons and a TV unit. Must receive direct natural light from at least two windows."
+      },
+      {
+        "name": "dining_area",
+        "area": { "min_sqft": 80, "max_sqft": 130 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 9, "unit": "ft" }
+        ],
+        "notes": "Dining for 6 persons minimum. Open-plan with hall or separated by a partial wall. Must be directly adjacent to the kitchen."
+      },
+      {
+        "name": "kitchen",
+        "area": { "min_sqft": 80, "max_sqft": 130 },
+        "dimensions": [
+          { "dimension": "counter_length", "min_value": 12, "unit": "ft" },
+          { "dimension": "width", "min_value": 8, "unit": "ft" }
+        ],
+        "notes": "Enclosed kitchen with full cooking range, double sink, refrigerator space, and full overhead and base storage. Must have a door or shutter to the dining area."
+      },
+      {
+        "name": "master_bathroom",
+        "area": { "min_sqft": 45, "max_sqft": 70 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 5.5, "unit": "ft" }
+        ],
+        "notes": "Attached to master bedroom. WC, wash basin, shower, and provision for bathtub. Accessible only from master bedroom."
+      },
+      {
+        "name": "common_bathroom",
+        "area": { "min_sqft": 40, "max_sqft": 60 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 5, "unit": "ft" }
+        ],
+        "notes": "Shared bathroom for bedroom_2, bedroom_3, and guests. Accessible from the bedroom wing passage."
+      },
+      {
+        "name": "bedroom_wing_passage",
+        "area": { "min_sqft": 35, "max_sqft": 65 },
+        "notes": "Dedicated internal passage serving the three bedrooms and common bathroom. Minimum 3.5 ft clear width. This passage is the threshold between the social and private zones."
+      },
+      {
+        "name": "entry_foyer",
+        "area": { "min_sqft": 25, "max_sqft": 50 },
+        "notes": "Entry zone distributing to hall, kitchen, and bedroom wing passage. Must allow 4 ft clear width for furniture movement."
+      }
+    ],
+
+    "optional_spaces": [
+      {
+        "name": "dry_balcony",
+        "area": { "min_sqft": 30, "max_sqft": 60 },
+        "notes": "Laundry and drying. Accessed from kitchen."
+      },
+      {
+        "name": "living_balcony",
+        "area": { "min_sqft": 50, "max_sqft": 100 },
+        "notes": "Outdoor extension of the hall. Sliding or French door connection to hall."
+      },
+      {
+        "name": "pooja_room",
+        "area": { "min_sqft": 20, "max_sqft": 35 },
+        "notes": "Dedicated prayer room near entry or as a niche in the foyer."
+      },
+      {
+        "name": "study_room",
+        "area": { "min_sqft": 60, "max_sqft": 100 },
+        "notes": "Dedicated work-from-home or study room. Positioned off the bedroom wing passage or as a fourth room."
+      },
+      {
+        "name": "utility_room",
+        "area": { "min_sqft": 25, "max_sqft": 45 },
+        "notes": "Washing machine, dryer, and storage. Accessed from kitchen or dry balcony."
+      }
+    ],
+
+    "space_relationships": [
+      {
+        "from_space": "master_bedroom",
+        "to_space": "master_bathroom",
+        "relationship": "direct_access",
+        "notes": "Master bathroom exclusively accessed from master bedroom."
+      },
+      {
+        "from_space": "master_bedroom",
+        "to_space": "bedroom_wing_passage",
+        "relationship": "adjacent",
+        "notes": "Master bedroom at the far end of the wing passage — maximum distance from entry."
+      },
+      {
+        "from_space": "bedroom_2",
+        "to_space": "bedroom_wing_passage",
+        "relationship": "adjacent",
+        "notes": "Bedroom 2 accessed from wing passage with closable door."
+      },
+      {
+        "from_space": "bedroom_3",
+        "to_space": "bedroom_wing_passage",
+        "relationship": "adjacent",
+        "notes": "Bedroom 3 accessed from wing passage with closable door."
+      },
+      {
+        "from_space": "bedroom_2",
+        "to_space": "bedroom_3",
+        "relationship": "separated",
+        "notes": "The two secondary bedrooms must not share a door. Acoustic wall separation required — children studying in one room must not be disturbed by the other."
+      },
+      {
+        "from_space": "common_bathroom",
+        "to_space": "bedroom_wing_passage",
+        "relationship": "adjacent",
+        "notes": "Common bathroom accessed from wing passage, serving bedroom_2, bedroom_3, and guests."
+      },
+      {
+        "from_space": "entry_foyer",
+        "to_space": "bedroom_wing_passage",
+        "relationship": "adjacent",
+        "notes": "The bedroom wing passage is entered from the foyer — this is the threshold between public and private zones."
+      },
+      {
+        "from_space": "entry_foyer",
+        "to_space": "hall_living",
+        "relationship": "adjacent",
+        "notes": "Hall opens directly from the foyer."
+      },
+      {
+        "from_space": "hall_living",
+        "to_space": "dining_area",
+        "relationship": "visual_connect",
+        "notes": "Hall and dining open-plan or partial wall separation."
+      },
+      {
+        "from_space": "dining_area",
+        "to_space": "kitchen",
+        "relationship": "adjacent",
+        "notes": "Kitchen directly adjacent to dining for serving efficiency."
+      },
+      {
+        "from_space": "hall_living",
+        "to_space": "bedroom_wing_passage",
+        "relationship": "separated",
+        "notes": "The bedroom wing must not be visible or directly accessible from the hall. The foyer acts as the buffer."
+      }
+    ],
+
+    "circulation": [
+      {
+        "rule": "No bedroom must be accessible from the hall without passing through the bedroom wing passage.",
+        "rationale": "The bedroom wing passage is the privacy threshold. Direct hall-to-bedroom access collapses the public-private separation."
+      },
+      {
+        "rule": "The bedroom wing passage must not be visible from the main entry door.",
+        "rationale": "Guests at the entry must not have a sightline into the private zone."
+      },
+      {
+        "rule": "No bedroom must serve as a circulation path to any other space.",
+        "rationale": "All three bedrooms are private zones. Through-traffic is not acceptable in any of them."
+      },
+      {
+        "rule": "The kitchen must be reachable from the dining area without passing through the hall seating area.",
+        "rationale": "Serving and clearing the dining table must not disrupt guests seated in the hall."
+      },
+      {
+        "rule": "The bedroom wing passage must allow 3.5 ft clear width for furniture movement.",
+        "rationale": "Bedroom furniture delivery and rearrangement require this minimum clearance."
+      }
+    ],
+
+    "ventilation": [
+      {
+        "space": "master_bedroom",
+        "requirement": "natural",
+        "notes": "Minimum one operable window facing open aspect. Cross-ventilation preferred."
+      },
+      {
+        "space": "bedroom_2",
+        "requirement": "natural",
+        "notes": "Minimum one operable window. Must not rely on borrowed ventilation."
+      },
+      {
+        "space": "bedroom_3",
+        "requirement": "natural",
+        "notes": "Minimum one operable window. Must not rely on borrowed ventilation."
+      },
+      {
+        "space": "hall_living",
+        "requirement": "natural",
+        "notes": "Primary natural ventilation zone. Minimum two operable windows."
+      },
+      {
+        "space": "kitchen",
+        "requirement": "either",
+        "notes": "Ducted exhaust fan mandatory. Natural ventilation supplementary."
+      },
+      {
+        "space": "master_bathroom",
+        "requirement": "mechanical",
+        "notes": "Exhaust fan mandatory. Minimum 6 air changes per hour."
+      },
+      {
+        "space": "common_bathroom",
+        "requirement": "mechanical",
+        "notes": "Exhaust fan mandatory. Minimum 6 air changes per hour."
+      }
+    ],
+
+    "lighting": [
+      {
+        "space": "master_bedroom",
+        "requirement": "natural",
+        "min_window_to_floor_ratio": 0.10,
+        "notes": "Window facing open aspect."
+      },
+      {
+        "space": "bedroom_2",
+        "requirement": "natural",
+        "min_window_to_floor_ratio": 0.10,
+        "notes": "Window facing open aspect."
+      },
+      {
+        "space": "bedroom_3",
+        "requirement": "natural",
+        "min_window_to_floor_ratio": 0.10,
+        "notes": "Window facing open aspect."
+      },
+      {
+        "space": "hall_living",
+        "requirement": "natural",
+        "min_window_to_floor_ratio": 0.12,
+        "notes": "Primary natural light zone. Minimum two windows."
+      },
+      {
+        "space": "dining_area",
+        "requirement": "either",
+        "notes": "Pendant lighting over dining table mandatory."
+      },
+      {
+        "space": "kitchen",
+        "requirement": "either",
+        "min_window_to_floor_ratio": 0.08,
+        "notes": "Under-cabinet task lighting mandatory."
+      },
+      {
+        "space": "master_bathroom",
+        "requirement": "artificial",
+        "notes": "IP44-rated fixtures above wash basin."
+      },
+      {
+        "space": "common_bathroom",
+        "requirement": "artificial",
+        "notes": "IP44-rated fixtures above wash basin."
+      }
+    ],
+
+    "engineering": [
+      {
+        "category": "structural",
+        "constraint": "Minimum floor-to-floor height 10 ft. Beam depth must not reduce clear ceiling below 9 ft in any habitable room.",
+        "mandatory": true
+      },
+      {
+        "category": "plumbing",
+        "constraint": "Master bathroom, common bathroom, and kitchen must be grouped on a shared wet core. Maximum 25 ft horizontal pipe run from riser.",
+        "mandatory": true
+      },
+      {
+        "category": "electrical",
+        "constraint": "Dedicated 20A circuit for kitchen. Separate AC circuits for all three bedrooms. Minimum 3 double outlets per bedroom, 4 in hall.",
+        "mandatory": true
+      },
+      {
+        "category": "hvac",
+        "constraint": "AC provision mandatory in master bedroom and bedroom_2. AC provision in bedroom_3 and hall must be structurally provisioned.",
+        "mandatory": true
+      },
+      {
+        "category": "fire",
+        "constraint": "Smoke detectors in all three bedrooms and hall. Heat detector in kitchen. All interconnected with building fire alarm.",
+        "mandatory": true
+      },
+      {
+        "category": "code",
+        "constraint": "All three bedrooms must meet minimum habitable room area of 100 sqft per local building code.",
+        "mandatory": true
+      }
+    ],
+
+    "construction": [
+      {
+        "category": "acoustic",
+        "guideline": "Inter-bedroom walls (bedroom_2 to bedroom_3) to achieve minimum STC 52. Master bedroom party wall minimum STC 50. Bedroom-to-passage walls minimum STC 45."
+      },
+      {
+        "category": "finishing",
+        "guideline": "Bedroom floors: wood laminate or carpet. Hall, dining, kitchen: vitrified tile. Bathrooms: anti-skid ceramic tile."
+      },
+      {
+        "category": "storage",
+        "guideline": "Built-in wardrobe in master bedroom minimum 7 ft wide. Built-in wardrobes in bedroom_2 and bedroom_3 minimum 5 ft wide each. Full overhead kitchen cabinets."
+      },
+      {
+        "category": "doors",
+        "guideline": "Solid-core doors for all three bedrooms. Solid-core or shutter for kitchen. Hollow-core for bathrooms."
+      },
+      {
+        "category": "waterproofing",
+        "guideline": "All bathrooms fully waterproofed floor and walls to 7 ft. Kitchen floor waterproofed at wet areas."
+      }
+    ],
+
+    "supported_styles": ["modern", "contemporary", "traditional", "transitional", "colonial"],
+
+    "constraints": [
+      "Total unit area: 950–1350 sqft (gross)",
+      "All three bedrooms must be fully enclosed with closable doors",
+      "Master bedroom must have an attached bathroom",
+      "Bedrooms must be grouped in a dedicated wing with its own passage",
+      "Hall must receive direct natural light",
+      "Common bathroom must be accessible from the bedroom wing passage",
+      "Maximum occupancy: 6 persons"
+    ],
+
+    "validation_rules": [
+      {
+        "rule_id": "3BHK-001",
+        "condition": "master_bedroom is present, enclosed, and has attached master_bathroom",
+        "severity": "error"
+      },
+      {
+        "rule_id": "3BHK-002",
+        "condition": "bedroom_2 and bedroom_3 are present, enclosed, and have closable doors",
+        "severity": "error"
+      },
+      {
+        "rule_id": "3BHK-003",
+        "condition": "bedroom_wing_passage is present and connects all three bedrooms",
+        "severity": "error"
+      },
+      {
+        "rule_id": "3BHK-004",
+        "condition": "no bedroom is directly accessible from hall_living",
+        "severity": "error"
+      },
+      {
+        "rule_id": "3BHK-005",
+        "condition": "bedroom_2 and bedroom_3 are acoustically separated — no shared door",
+        "severity": "error"
+      },
+      {
+        "rule_id": "3BHK-006",
+        "condition": "common_bathroom is accessible from bedroom_wing_passage",
+        "severity": "error"
+      },
+      {
+        "rule_id": "3BHK-007",
+        "condition": "hall_living receives direct natural light",
+        "severity": "error"
+      },
+      {
+        "rule_id": "3BHK-008",
+        "condition": "dining_area is adjacent to kitchen",
+        "severity": "error"
+      },
+      {
+        "rule_id": "3BHK-009",
+        "condition": "master_bedroom area >= 160 sqft",
+        "severity": "error"
+      },
+      {
+        "rule_id": "3BHK-010",
+        "condition": "bedroom_2 area >= 120 sqft",
+        "severity": "error"
+      },
+      {
+        "rule_id": "3BHK-011",
+        "condition": "bedroom_3 area >= 110 sqft",
+        "severity": "error"
+      },
+      {
+        "rule_id": "3BHK-012",
+        "condition": "bedroom_wing_passage is not visible from main entry door",
+        "severity": "warning"
+      }
+    ]
+  }
+}

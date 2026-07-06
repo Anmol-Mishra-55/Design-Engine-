@@ -1,0 +1,391 @@
+{
+  "metadata": {
+    "id": "2bhk",
+    "version": "v1.0.0",
+    "type": "residential",
+    "title": "2 Bedroom Hall Kitchen (2BHK)",
+    "description": "Residential unit with two bedrooms, a living hall, dining area, and enclosed kitchen. Introduces a zone hierarchy — master bedroom versus secondary bedroom — and a clear separation between private and social zones.",
+    "owner": "rudra",
+    "status": "active",
+    "tags": ["2bhk", "residential", "family", "urban", "nuclear-family", "mid-range"]
+  },
+  "body": {
+    "purpose": "Provide a complete family dwelling for a nuclear family of 3–4 where parents and children occupy separate bedrooms. The 2BHK is the most common residential unit type in Indian urban housing and must balance privacy, social function, and spatial efficiency within a constrained footprint.",
+    "planning_philosophy": "The plan is organised around a clear public-to-private gradient. The entry and hall are fully public. The passage is semi-private. The bedrooms are fully private. The master bedroom is the primary private zone and must be positioned furthest from the entry. The secondary bedroom serves children or guests and may be positioned closer to the hall. The kitchen is a working zone — efficient, contained, and connected to the dining area.",
+
+    "occupancy": {
+      "typical_occupants": 3,
+      "occupant_profile": "nuclear family — couple with one child or elderly parent",
+      "lifestyle_notes": "Family entertains occasionally. Children require a dedicated study space. Elderly occupant may require accessible bathroom. Work-from-home is a growing requirement."
+    },
+
+    "required_spaces": [
+      {
+        "name": "master_bedroom",
+        "area": { "min_sqft": 140, "max_sqft": 220 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 11, "unit": "ft" },
+          { "dimension": "length", "min_value": 12, "unit": "ft" },
+          { "dimension": "ceiling_height", "min_value": 9, "unit": "ft" }
+        ],
+        "notes": "Primary bedroom for the couple. Must accommodate a king or queen bed with access on both long sides, a wardrobe, and a dressing area. Must be the most private room in the plan."
+      },
+      {
+        "name": "secondary_bedroom",
+        "area": { "min_sqft": 110, "max_sqft": 180 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 10, "unit": "ft" },
+          { "dimension": "length", "min_value": 10, "unit": "ft" },
+          { "dimension": "ceiling_height", "min_value": 9, "unit": "ft" }
+        ],
+        "notes": "Children's room or guest room. Must accommodate a single or double bed and a study table. Must have a closable door."
+      },
+      {
+        "name": "hall_living",
+        "area": { "min_sqft": 150, "max_sqft": 250 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 12, "unit": "ft" },
+          { "dimension": "ceiling_height", "min_value": 9, "unit": "ft" }
+        ],
+        "notes": "Primary social space. Must accommodate a sofa set for 4–6 persons and a TV unit. Must receive direct natural light."
+      },
+      {
+        "name": "dining_area",
+        "area": { "min_sqft": 60, "max_sqft": 100 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 8, "unit": "ft" }
+        ],
+        "notes": "Dining for 4 persons minimum. May be open-plan with the hall or separated by a partial wall. Must be adjacent to the kitchen."
+      },
+      {
+        "name": "kitchen",
+        "area": { "min_sqft": 65, "max_sqft": 110 },
+        "dimensions": [
+          { "dimension": "counter_length", "min_value": 10, "unit": "ft" },
+          { "dimension": "width", "min_value": 7, "unit": "ft" }
+        ],
+        "notes": "Enclosed kitchen with hob, sink, refrigerator space, and full overhead storage. Must have a door or shutter to the hall or dining area."
+      },
+      {
+        "name": "master_bathroom",
+        "area": { "min_sqft": 40, "max_sqft": 65 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 5, "unit": "ft" }
+        ],
+        "notes": "Attached to master bedroom. WC, wash basin, and shower. Accessible only from the master bedroom."
+      },
+      {
+        "name": "common_bathroom",
+        "area": { "min_sqft": 35, "max_sqft": 55 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 5, "unit": "ft" }
+        ],
+        "notes": "Shared bathroom for secondary bedroom and guests. Accessible from the passage, not exclusively from the secondary bedroom."
+      },
+      {
+        "name": "passage",
+        "area": { "min_sqft": 30, "max_sqft": 60 },
+        "notes": "Internal circulation spine connecting entry, hall, bedrooms, and bathrooms. Minimum 3.5 ft clear width."
+      }
+    ],
+
+    "optional_spaces": [
+      {
+        "name": "dry_balcony",
+        "area": { "min_sqft": 25, "max_sqft": 55 },
+        "notes": "Laundry and drying. Accessed from kitchen or passage."
+      },
+      {
+        "name": "living_balcony",
+        "area": { "min_sqft": 40, "max_sqft": 80 },
+        "notes": "Outdoor extension of the hall. Must have a sliding or French door connection to the hall."
+      },
+      {
+        "name": "pooja_room",
+        "area": { "min_sqft": 15, "max_sqft": 30 },
+        "notes": "Dedicated prayer room. Positioned near the entry or as a niche in the passage."
+      },
+      {
+        "name": "study_nook",
+        "area": { "min_sqft": 20, "max_sqft": 45 },
+        "notes": "Work-from-home alcove. Can be carved from the secondary bedroom or hall."
+      }
+    ],
+
+    "space_relationships": [
+      {
+        "from_space": "master_bedroom",
+        "to_space": "master_bathroom",
+        "relationship": "direct_access",
+        "notes": "Master bathroom is exclusively accessed from the master bedroom."
+      },
+      {
+        "from_space": "master_bedroom",
+        "to_space": "hall_living",
+        "relationship": "separated",
+        "notes": "Master bedroom must be the most private room — furthest from the entry and hall."
+      },
+      {
+        "from_space": "master_bedroom",
+        "to_space": "secondary_bedroom",
+        "relationship": "separated",
+        "notes": "The two bedrooms must not share a door. Acoustic separation is required."
+      },
+      {
+        "from_space": "secondary_bedroom",
+        "to_space": "common_bathroom",
+        "relationship": "near",
+        "notes": "Common bathroom should be within one room of the secondary bedroom."
+      },
+      {
+        "from_space": "hall_living",
+        "to_space": "dining_area",
+        "relationship": "visual_connect",
+        "notes": "Hall and dining may be open-plan or separated by a partial wall. Visual connection is preferred."
+      },
+      {
+        "from_space": "dining_area",
+        "to_space": "kitchen",
+        "relationship": "adjacent",
+        "notes": "Kitchen must be directly adjacent to the dining area for serving efficiency."
+      },
+      {
+        "from_space": "passage",
+        "to_space": "master_bedroom",
+        "relationship": "adjacent",
+        "notes": "Master bedroom accessed from passage with a closable door."
+      },
+      {
+        "from_space": "passage",
+        "to_space": "secondary_bedroom",
+        "relationship": "adjacent",
+        "notes": "Secondary bedroom accessed from passage with a closable door."
+      },
+      {
+        "from_space": "common_bathroom",
+        "to_space": "kitchen",
+        "relationship": "separated",
+        "notes": "Wet room and food preparation must not share a plumbing wall on the same face."
+      }
+    ],
+
+    "circulation": [
+      {
+        "rule": "Neither bedroom must serve as a circulation path to any other space.",
+        "rationale": "Both bedrooms are private zones. Through-traffic destroys bedroom privacy."
+      },
+      {
+        "rule": "The master bedroom must be positioned so that its door is not visible from the main entry door.",
+        "rationale": "Visual privacy of the master bedroom from the entry is a fundamental domestic requirement."
+      },
+      {
+        "rule": "The passage must allow a minimum 3.5 ft clear width throughout its length.",
+        "rationale": "Furniture movement and emergency egress require this minimum clearance."
+      },
+      {
+        "rule": "The hall must be reachable from the entry without passing through the kitchen or any bedroom.",
+        "rationale": "Guests must be able to reach the social zone directly."
+      },
+      {
+        "rule": "The dining area must be reachable from the kitchen without passing through the hall.",
+        "rationale": "Serving food from kitchen to dining must not require crossing the social seating area."
+      }
+    ],
+
+    "ventilation": [
+      {
+        "space": "master_bedroom",
+        "requirement": "natural",
+        "notes": "Minimum one operable window facing an open aspect. Cross-ventilation preferred."
+      },
+      {
+        "space": "secondary_bedroom",
+        "requirement": "natural",
+        "notes": "Minimum one operable window. Must not rely solely on borrowed ventilation."
+      },
+      {
+        "space": "hall_living",
+        "requirement": "natural",
+        "notes": "Primary natural ventilation zone. Operable windows mandatory."
+      },
+      {
+        "space": "kitchen",
+        "requirement": "either",
+        "notes": "Ducted exhaust fan mandatory. Natural ventilation supplements but does not replace mechanical extraction."
+      },
+      {
+        "space": "master_bathroom",
+        "requirement": "mechanical",
+        "notes": "Exhaust fan mandatory. Minimum 6 air changes per hour."
+      },
+      {
+        "space": "common_bathroom",
+        "requirement": "mechanical",
+        "notes": "Exhaust fan mandatory. Minimum 6 air changes per hour."
+      }
+    ],
+
+    "lighting": [
+      {
+        "space": "master_bedroom",
+        "requirement": "natural",
+        "min_window_to_floor_ratio": 0.10,
+        "notes": "Window must face an open aspect."
+      },
+      {
+        "space": "secondary_bedroom",
+        "requirement": "natural",
+        "min_window_to_floor_ratio": 0.10,
+        "notes": "Window must face an open aspect."
+      },
+      {
+        "space": "hall_living",
+        "requirement": "natural",
+        "min_window_to_floor_ratio": 0.12,
+        "notes": "Hall is the primary natural light zone of the unit."
+      },
+      {
+        "space": "dining_area",
+        "requirement": "either",
+        "notes": "Natural light preferred. Pendant lighting over dining table mandatory."
+      },
+      {
+        "space": "kitchen",
+        "requirement": "either",
+        "min_window_to_floor_ratio": 0.08,
+        "notes": "Under-cabinet task lighting mandatory."
+      },
+      {
+        "space": "master_bathroom",
+        "requirement": "artificial",
+        "notes": "IP44-rated fixtures above wash basin."
+      },
+      {
+        "space": "common_bathroom",
+        "requirement": "artificial",
+        "notes": "IP44-rated fixtures above wash basin."
+      }
+    ],
+
+    "engineering": [
+      {
+        "category": "structural",
+        "constraint": "Minimum floor-to-floor height 10 ft to allow 9 ft clear ceiling after slab and finish.",
+        "mandatory": true
+      },
+      {
+        "category": "plumbing",
+        "constraint": "Master bathroom, common bathroom, and kitchen must be grouped on a shared wet core or adjacent wet walls. Maximum 20 ft horizontal pipe run from riser.",
+        "mandatory": true
+      },
+      {
+        "category": "electrical",
+        "constraint": "Dedicated 20A circuit for kitchen. Separate AC circuits for master bedroom and secondary bedroom. Minimum 3 double outlets per bedroom, 4 in hall.",
+        "mandatory": true
+      },
+      {
+        "category": "hvac",
+        "constraint": "AC provision mandatory in master bedroom. AC provision in secondary bedroom and hall is optional but must be structurally provisioned.",
+        "mandatory": true
+      },
+      {
+        "category": "fire",
+        "constraint": "Smoke detectors in both bedrooms and hall. Heat detector in kitchen. All interconnected with building fire alarm.",
+        "mandatory": true
+      },
+      {
+        "category": "code",
+        "constraint": "Both bedrooms must meet minimum habitable room area of 100 sqft per local building code.",
+        "mandatory": true
+      }
+    ],
+
+    "construction": [
+      {
+        "category": "acoustic",
+        "guideline": "Master bedroom party wall and inter-bedroom wall to achieve minimum STC 50. Bedroom-to-hall wall minimum STC 45."
+      },
+      {
+        "category": "finishing",
+        "guideline": "Bedroom floors: wood laminate or carpet. Hall, dining, kitchen: vitrified tile. Bathroom: anti-skid ceramic tile."
+      },
+      {
+        "category": "storage",
+        "guideline": "Built-in wardrobe in master bedroom minimum 6 ft wide. Built-in wardrobe in secondary bedroom minimum 4 ft wide. Full overhead kitchen cabinets."
+      },
+      {
+        "category": "doors",
+        "guideline": "Solid-core doors for both bedrooms. Solid-core or shutter for kitchen. Hollow-core acceptable for bathrooms."
+      },
+      {
+        "category": "waterproofing",
+        "guideline": "Both bathrooms fully waterproofed floor and walls to 7 ft. Kitchen floor waterproofed at wet areas."
+      }
+    ],
+
+    "supported_styles": ["modern", "contemporary", "minimalist", "scandinavian", "traditional", "transitional"],
+
+    "constraints": [
+      "Total unit area: 650–950 sqft (gross)",
+      "Both bedrooms must be fully enclosed with closable doors",
+      "Master bedroom must have an attached bathroom",
+      "Hall must receive direct natural light",
+      "Kitchen must be separated from the hall by at least a shutter or door",
+      "Common bathroom must be accessible from the passage",
+      "Maximum occupancy: 4 persons"
+    ],
+
+    "validation_rules": [
+      {
+        "rule_id": "2BHK-001",
+        "condition": "master_bedroom is present, enclosed, and has a closable door",
+        "severity": "error"
+      },
+      {
+        "rule_id": "2BHK-002",
+        "condition": "secondary_bedroom is present, enclosed, and has a closable door",
+        "severity": "error"
+      },
+      {
+        "rule_id": "2BHK-003",
+        "condition": "master_bathroom is present and accessible only from master_bedroom",
+        "severity": "error"
+      },
+      {
+        "rule_id": "2BHK-004",
+        "condition": "common_bathroom is accessible from passage without passing through any bedroom",
+        "severity": "error"
+      },
+      {
+        "rule_id": "2BHK-005",
+        "condition": "hall_living receives direct natural light",
+        "severity": "error"
+      },
+      {
+        "rule_id": "2BHK-006",
+        "condition": "dining_area is adjacent to kitchen",
+        "severity": "error"
+      },
+      {
+        "rule_id": "2BHK-007",
+        "condition": "neither bedroom serves as a circulation path to any other space",
+        "severity": "error"
+      },
+      {
+        "rule_id": "2BHK-008",
+        "condition": "master_bedroom area >= 140 sqft",
+        "severity": "error"
+      },
+      {
+        "rule_id": "2BHK-009",
+        "condition": "secondary_bedroom area >= 110 sqft",
+        "severity": "error"
+      },
+      {
+        "rule_id": "2BHK-010",
+        "condition": "master_bedroom door is not visible from main entry door",
+        "severity": "warning"
+      }
+    ]
+  }
+}

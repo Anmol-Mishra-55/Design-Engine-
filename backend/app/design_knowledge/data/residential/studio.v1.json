@@ -1,0 +1,237 @@
+{
+  "metadata": {
+    "id": "studio",
+    "version": "v1.0.0",
+    "type": "residential",
+    "title": "Studio Apartment",
+    "description": "Single-room residential unit where living, sleeping, and cooking occupy one open space. Designed for maximum spatial efficiency.",
+    "owner": "rudra",
+    "status": "active",
+    "tags": ["studio", "residential", "compact", "urban", "single-occupant"]
+  },
+  "body": {
+    "purpose": "Provide a self-contained, affordable living unit for a single occupant or couple in high-density urban contexts where land cost demands maximum floor-area efficiency.",
+    "planning_philosophy": "Every square foot must serve at least one primary function. The plan is organised as a single open zone with a clearly separated wet core. Visual compression is countered through ceiling height, natural light, and unobstructed sightlines from entry to window.",
+
+    "occupancy": {
+      "typical_occupants": 1,
+      "occupant_profile": "single professional or student",
+      "lifestyle_notes": "Occupant spends significant time outside the unit. Storage and work-from-home provisions are secondary priorities."
+    },
+
+    "required_spaces": [
+      {
+        "name": "living_sleeping_zone",
+        "area": { "min_sqft": 180, "max_sqft": 320 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 12, "unit": "ft" },
+          { "dimension": "ceiling_height", "min_value": 9, "unit": "ft" }
+        ],
+        "notes": "Combined living and sleeping area. Must accommodate a full-size bed, a seating area, and a work surface without spatial conflict."
+      },
+      {
+        "name": "kitchen_kitchenette",
+        "area": { "min_sqft": 40, "max_sqft": 80 },
+        "dimensions": [
+          { "dimension": "counter_length", "min_value": 6, "unit": "ft" }
+        ],
+        "notes": "Minimum two-burner hob, sink, and under-counter refrigerator. May be open to living zone or separated by a breakfast counter."
+      },
+      {
+        "name": "bathroom",
+        "area": { "min_sqft": 35, "max_sqft": 55 },
+        "dimensions": [
+          { "dimension": "width", "min_value": 5, "unit": "ft" }
+        ],
+        "notes": "Combined wet room with WC, wash basin, and shower. Must be fully enclosed and ventilated."
+      },
+      {
+        "name": "entry_foyer",
+        "area": { "min_sqft": 15, "max_sqft": 30 },
+        "notes": "Transition zone between corridor and living area. Provides shoe storage and coat hanging without entering the main space."
+      }
+    ],
+
+    "optional_spaces": [
+      {
+        "name": "dry_balcony",
+        "area": { "min_sqft": 20, "max_sqft": 40 },
+        "notes": "Laundry and drying space. Preferred over internal laundry to preserve living area."
+      },
+      {
+        "name": "loft_sleeping_platform",
+        "area": { "min_sqft": 60, "max_sqft": 100 },
+        "dimensions": [
+          { "dimension": "ceiling_height_below_loft", "min_value": 6.5, "unit": "ft" },
+          { "dimension": "ceiling_height_above_loft", "min_value": 3.5, "unit": "ft" }
+        ],
+        "notes": "Only viable when floor-to-ceiling height exceeds 13 ft. Frees ground-level area for living and work."
+      }
+    ],
+
+    "space_relationships": [
+      {
+        "from_space": "entry_foyer",
+        "to_space": "living_sleeping_zone",
+        "relationship": "adjacent",
+        "notes": "Entry must transition directly into the main zone without passing through the kitchen or bathroom."
+      },
+      {
+        "from_space": "kitchen_kitchenette",
+        "to_space": "living_sleeping_zone",
+        "relationship": "visual_connect",
+        "notes": "Open-plan or counter-separated kitchen creates perceived spaciousness."
+      },
+      {
+        "from_space": "bathroom",
+        "to_space": "living_sleeping_zone",
+        "relationship": "adjacent",
+        "notes": "Bathroom door must not open directly into the kitchen or onto the main seating area."
+      },
+      {
+        "from_space": "bathroom",
+        "to_space": "kitchen_kitchenette",
+        "relationship": "separated",
+        "notes": "Wet room and food preparation must not share a wall with plumbing on the same face."
+      }
+    ],
+
+    "circulation": [
+      {
+        "rule": "A clear 3 ft movement corridor must exist from entry to window without furniture obstruction.",
+        "rationale": "Prevents the unit from feeling like a corridor. Maintains the psychological sense of depth."
+      },
+      {
+        "rule": "The bathroom door must not swing into the main living zone.",
+        "rationale": "An inward-swinging bathroom door in a compact unit creates collision risk and visual intrusion."
+      },
+      {
+        "rule": "The bed must be accessible from at least one long side and the foot end.",
+        "rationale": "Minimum ergonomic requirement for making the bed and emergency egress."
+      }
+    ],
+
+    "ventilation": [
+      {
+        "space": "living_sleeping_zone",
+        "requirement": "natural",
+        "notes": "Minimum one operable window. Cross-ventilation preferred where building orientation allows."
+      },
+      {
+        "space": "kitchen_kitchenette",
+        "requirement": "either",
+        "notes": "Exhaust fan mandatory if no operable window. Ducted extraction preferred over recirculating."
+      },
+      {
+        "space": "bathroom",
+        "requirement": "mechanical",
+        "notes": "Exhaust fan mandatory. Minimum 6 air changes per hour. Duct to external face, not into ceiling void."
+      }
+    ],
+
+    "lighting": [
+      {
+        "space": "living_sleeping_zone",
+        "requirement": "natural",
+        "min_window_to_floor_ratio": 0.12,
+        "notes": "Window must face an open aspect. Light well or internal courtyard is acceptable only if unobstructed."
+      },
+      {
+        "space": "kitchen_kitchenette",
+        "requirement": "either",
+        "min_window_to_floor_ratio": 0.08,
+        "notes": "Under-cabinet task lighting is mandatory regardless of natural light availability."
+      },
+      {
+        "space": "bathroom",
+        "requirement": "artificial",
+        "notes": "Waterproof IP44-rated fixtures above wash basin. Separate switched circuit from main living zone."
+      }
+    ],
+
+    "engineering": [
+      {
+        "category": "structural",
+        "constraint": "Minimum floor-to-floor height 10 ft to allow 9 ft clear ceiling after slab and finish.",
+        "mandatory": true
+      },
+      {
+        "category": "plumbing",
+        "constraint": "All wet areas (bathroom, kitchen) must be grouped on a single wet wall to minimise pipe runs.",
+        "mandatory": true
+      },
+      {
+        "category": "electrical",
+        "constraint": "Minimum 4 double power outlets in the living-sleeping zone. Dedicated circuit for kitchen appliances.",
+        "mandatory": true
+      },
+      {
+        "category": "fire",
+        "constraint": "Smoke detector mandatory in living-sleeping zone. Must be interconnected with building fire alarm system.",
+        "mandatory": true
+      },
+      {
+        "category": "code",
+        "constraint": "Minimum habitable room area 120 sqft per local building code. Studio must meet this as a single combined space.",
+        "mandatory": true
+      }
+    ],
+
+    "construction": [
+      {
+        "category": "acoustic",
+        "guideline": "Use 100mm dense concrete block or double-layer gypsum board for party walls to achieve minimum STC 50."
+      },
+      {
+        "category": "finishing",
+        "guideline": "Light-reflective finishes (LRV > 60) on walls and ceiling to counteract compact proportions."
+      },
+      {
+        "category": "storage",
+        "guideline": "Integrate full-height built-in storage along one wall. Minimum 30 sqft of storage volume."
+      },
+      {
+        "category": "flooring",
+        "guideline": "Single continuous flooring material across living-sleeping zone and kitchen to visually expand the space."
+      }
+    ],
+
+    "supported_styles": ["modern", "minimalist", "industrial", "scandinavian"],
+
+    "constraints": [
+      "Total unit area: 270–450 sqft (gross)",
+      "Maximum occupancy: 2 persons",
+      "Minimum ceiling height: 9 ft clear",
+      "Must include at least one operable window in the living-sleeping zone",
+      "Bathroom must be fully enclosed — open wet rooms are not permitted"
+    ],
+
+    "validation_rules": [
+      {
+        "rule_id": "STU-001",
+        "condition": "living_sleeping_zone area >= 180 sqft",
+        "severity": "error"
+      },
+      {
+        "rule_id": "STU-002",
+        "condition": "bathroom is present and fully enclosed",
+        "severity": "error"
+      },
+      {
+        "rule_id": "STU-003",
+        "condition": "kitchen_kitchenette is present",
+        "severity": "error"
+      },
+      {
+        "rule_id": "STU-004",
+        "condition": "bathroom does not share a plumbing wall with kitchen",
+        "severity": "warning"
+      },
+      {
+        "rule_id": "STU-005",
+        "condition": "living_sleeping_zone has at least one natural light source",
+        "severity": "error"
+      }
+    ]
+  }
+}
