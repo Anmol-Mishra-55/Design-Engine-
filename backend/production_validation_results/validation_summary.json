@@ -1,0 +1,321 @@
+{
+  "generated_by": "run_production_validation.py",
+  "run_at": "2026-07-09T16:11:18.931411+00:00",
+  "status": "VALIDATED",
+  "cities_tested": 4,
+  "cases_per_city": 5,
+  "total_cases": 20,
+  "passed": 20,
+  "failed": 0,
+  "pass_rate": 100.0,
+  "results_by_city": {
+    "Mumbai": {
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "cases": [
+        {
+          "spec_id": "val_mumbai_1_47d77f94",
+          "city": "Mumbai",
+          "prompt": "Design a 3BHK apartment with modern kitchen",
+          "status": "passed",
+          "trace_id": "core_bucket_val_mumbai_1_47d77f94",
+          "latency_ms": 5343.4,
+          "artifact_urls": {
+            "glb": "https://bhiv-bucket.onrender.com/bucket/artifact/285ed139-512c-433d-be9d-a1538bc2bbec",
+            "stl": "https://bhiv-bucket.onrender.com/bucket/artifact/7060cb6b-d001-440e-a325-4953b0e57613",
+            "step": "https://bhiv-bucket.onrender.com/bucket/artifact/396151f3-0554-4eaf-85cc-74d1db2e6eea",
+            "spec": "https://bhiv-bucket.onrender.com/bucket/artifact/2b916d2e-d9ed-4e74-84b4-0d16eb4b7b0a"
+          }
+        },
+        {
+          "spec_id": "val_mumbai_2_cf1bedae",
+          "city": "Mumbai",
+          "prompt": "Create a commercial office space with parking",
+          "status": "passed",
+          "trace_id": "core_bucket_val_mumbai_2_cf1bedae",
+          "latency_ms": 5018.1,
+          "artifact_urls": {
+            "glb": "https://bhiv-bucket.onrender.com/bucket/artifact/b102deb8-8e30-4d74-ace9-99f726f507c7",
+            "stl": "https://bhiv-bucket.onrender.com/bucket/artifact/e1a618c7-4752-4fa0-92b4-263255d6833a",
+            "step": "https://bhiv-bucket.onrender.com/bucket/artifact/d13ee487-48e9-4da2-b2e3-9e68f7fceb6e",
+            "spec": "https://bhiv-bucket.onrender.com/bucket/artifact/919753e2-3a5d-4a3f-b898-a4b8c624659b"
+          }
+        },
+        {
+          "spec_id": "val_mumbai_3_f4358c3e",
+          "city": "Mumbai",
+          "prompt": "Design a residential building with 4 floors",
+          "status": "passed",
+          "trace_id": "core_bucket_val_mumbai_3_f4358c3e",
+          "latency_ms": 5300.5,
+          "artifact_urls": {
+            "glb": "https://bhiv-bucket.onrender.com/bucket/artifact/0923b1d3-6a69-4e51-83e2-ff52ed9b5a92",
+            "stl": "https://bhiv-bucket.onrender.com/bucket/artifact/47b7ec0b-c9b6-4ab6-bbd1-50a3eb9d8e74",
+            "step": "https://bhiv-bucket.onrender.com/bucket/artifact/834c4334-a734-4c08-9ac8-4c14df738355",
+            "spec": "https://bhiv-bucket.onrender.com/bucket/artifact/fca9d84f-6913-4a14-af1e-9cb66d82436a"
+          }
+        },
+        {
+          "spec_id": "val_mumbai_4_45bf3e2e",
+          "city": "Mumbai",
+          "prompt": "Build a luxury penthouse with terrace",
+          "status": "passed",
+          "trace_id": "core_bucket_val_mumbai_4_45bf3e2e",
+          "latency_ms": 5277.9,
+          "artifact_urls": {
+            "glb": "https://bhiv-bucket.onrender.com/bucket/artifact/38cf9cf7-8d7c-4122-b7b3-396b2371a023",
+            "stl": "https://bhiv-bucket.onrender.com/bucket/artifact/4f549bb2-6c01-4ec5-9751-4f20f2d0c001",
+            "step": "https://bhiv-bucket.onrender.com/bucket/artifact/4ff78a64-f48d-40a6-bbd0-4b8389a86dd2",
+            "spec": "https://bhiv-bucket.onrender.com/bucket/artifact/515201f0-7a26-48fc-a50b-06e65053d428"
+          }
+        },
+        {
+          "spec_id": "val_mumbai_5_f9286d5a",
+          "city": "Mumbai",
+          "prompt": "Design a compact studio apartment",
+          "status": "passed",
+          "trace_id": "core_bucket_val_mumbai_5_f9286d5a",
+          "latency_ms": 4779.4,
+          "artifact_urls": {
+            "glb": "https://bhiv-bucket.onrender.com/bucket/artifact/e7562e07-8366-4823-9532-ed6bea65f755",
+            "stl": "https://bhiv-bucket.onrender.com/bucket/artifact/4227213d-b7fe-4ef5-90a2-6b183b65fd61",
+            "step": "https://bhiv-bucket.onrender.com/bucket/artifact/e29dab34-f053-46a1-aa10-6c41304dc10b",
+            "spec": "https://bhiv-bucket.onrender.com/bucket/artifact/99e8e111-587f-4da9-a6a7-02b247da2b41"
+          }
+        }
+      ]
+    },
+    "Pune": {
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "cases": [
+        {
+          "spec_id": "val_pune_1_35d4a6ee",
+          "city": "Pune",
+          "prompt": "Design a residential villa with garden and parking for 2 cars",
+          "status": "passed",
+          "trace_id": "core_bucket_val_pune_1_35d4a6ee",
+          "latency_ms": 4807.3,
+          "artifact_urls": {
+            "glb": "https://bhiv-bucket.onrender.com/bucket/artifact/9bdefcd4-0b96-473a-a992-5c77a378c6d4",
+            "stl": "https://bhiv-bucket.onrender.com/bucket/artifact/b6382449-156d-42b0-9bab-b66aa972654c",
+            "step": "https://bhiv-bucket.onrender.com/bucket/artifact/88ea8813-3c81-430a-8d94-1fd5b37b4bf0",
+            "spec": "https://bhiv-bucket.onrender.com/bucket/artifact/48aa6685-d49c-4ab6-b142-acc8876a9118"
+          }
+        },
+        {
+          "spec_id": "val_pune_2_0a8cb7f3",
+          "city": "Pune",
+          "prompt": "Create a tech office with open workspace",
+          "status": "passed",
+          "trace_id": "core_bucket_val_pune_2_0a8cb7f3",
+          "latency_ms": 4382.3,
+          "artifact_urls": {
+            "glb": "https://bhiv-bucket.onrender.com/bucket/artifact/9f4c1cc0-6c44-4045-ae99-bcc42979b707",
+            "stl": "https://bhiv-bucket.onrender.com/bucket/artifact/cec6a149-6e8a-472d-86f3-47f14ea7f58d",
+            "step": "https://bhiv-bucket.onrender.com/bucket/artifact/df2aba04-8642-49f8-bbf3-80fdb7af1772",
+            "spec": "https://bhiv-bucket.onrender.com/bucket/artifact/90e2cc1f-0744-4318-a7d6-21635f029658"
+          }
+        },
+        {
+          "spec_id": "val_pune_3_ed71d2d2",
+          "city": "Pune",
+          "prompt": "Design a row house with 3 bedrooms",
+          "status": "passed",
+          "trace_id": "core_bucket_val_pune_3_ed71d2d2",
+          "latency_ms": 4537.7,
+          "artifact_urls": {
+            "glb": "https://bhiv-bucket.onrender.com/bucket/artifact/a4da8e07-cf04-47b6-ba55-4621bacfb74d",
+            "stl": "https://bhiv-bucket.onrender.com/bucket/artifact/bc95634b-3cf3-4ef7-b32b-2adcee1be069",
+            "step": "https://bhiv-bucket.onrender.com/bucket/artifact/08edf548-4bea-4d93-bebb-c3818ad59053",
+            "spec": "https://bhiv-bucket.onrender.com/bucket/artifact/4b2e7511-ac63-42a3-b1fe-f217523a71b6"
+          }
+        },
+        {
+          "spec_id": "val_pune_4_2bf229f9",
+          "city": "Pune",
+          "prompt": "Build a duplex with rooftop access",
+          "status": "passed",
+          "trace_id": "core_bucket_val_pune_4_2bf229f9",
+          "latency_ms": 4679.3,
+          "artifact_urls": {
+            "glb": "https://bhiv-bucket.onrender.com/bucket/artifact/71334fa1-c52c-48a5-bf33-fbeef4ad36ab",
+            "stl": "https://bhiv-bucket.onrender.com/bucket/artifact/8d0af037-711d-42fa-82d8-ed85890ca558",
+            "step": "https://bhiv-bucket.onrender.com/bucket/artifact/a33b5aaf-22a1-4399-99bf-90a48725f871",
+            "spec": "https://bhiv-bucket.onrender.com/bucket/artifact/22b88b32-9da5-49ba-848c-6f6311d787d2"
+          }
+        },
+        {
+          "spec_id": "val_pune_5_cdb7bf8f",
+          "city": "Pune",
+          "prompt": "Design a bungalow with swimming pool",
+          "status": "passed",
+          "trace_id": "core_bucket_val_pune_5_cdb7bf8f",
+          "latency_ms": 4769.7,
+          "artifact_urls": {
+            "glb": "https://bhiv-bucket.onrender.com/bucket/artifact/77da4fee-92a0-444d-a20b-72407c399c41",
+            "stl": "https://bhiv-bucket.onrender.com/bucket/artifact/93f46003-8d82-4971-953b-19de06e11ad1",
+            "step": "https://bhiv-bucket.onrender.com/bucket/artifact/bd5ea7d9-b51e-45e5-85b4-48feda05e48a",
+            "spec": "https://bhiv-bucket.onrender.com/bucket/artifact/04698e9a-8001-4e5a-a2e5-c6d589d23e68"
+          }
+        }
+      ]
+    },
+    "Ahmedabad": {
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "cases": [
+        {
+          "spec_id": "val_ahmedabad_1_ffe76c6c",
+          "city": "Ahmedabad",
+          "prompt": "Design a traditional house with courtyard",
+          "status": "passed",
+          "trace_id": "core_bucket_val_ahmedabad_1_ffe76c6c",
+          "latency_ms": 4650.7,
+          "artifact_urls": {
+            "glb": "https://bhiv-bucket.onrender.com/bucket/artifact/3fc2bd81-f63a-4340-9e31-96b460960ae3",
+            "stl": "https://bhiv-bucket.onrender.com/bucket/artifact/2ec39640-7d82-4892-8a5e-3588f63bfb18",
+            "step": "https://bhiv-bucket.onrender.com/bucket/artifact/c84c0e75-d408-4707-a95d-6b71d1c41ff4",
+            "spec": "https://bhiv-bucket.onrender.com/bucket/artifact/29c5876a-dbab-4bb4-ac21-0079e31693a6"
+          }
+        },
+        {
+          "spec_id": "val_ahmedabad_2_2d25472a",
+          "city": "Ahmedabad",
+          "prompt": "Create a commercial complex with shops",
+          "status": "passed",
+          "trace_id": "core_bucket_val_ahmedabad_2_2d25472a",
+          "latency_ms": 4294.9,
+          "artifact_urls": {
+            "glb": "https://bhiv-bucket.onrender.com/bucket/artifact/0580a970-41f5-4eac-ae6f-2f7401313d99",
+            "stl": "https://bhiv-bucket.onrender.com/bucket/artifact/6c2d4e6f-ab3f-4ed4-9a81-1d704ddfd045",
+            "step": "https://bhiv-bucket.onrender.com/bucket/artifact/6dbe760c-a3b6-47cf-8f84-e2f1407aaee7",
+            "spec": "https://bhiv-bucket.onrender.com/bucket/artifact/676f5c95-19eb-4a0f-a86d-b3b2d2002765"
+          }
+        },
+        {
+          "spec_id": "val_ahmedabad_3_34e7d1c6",
+          "city": "Ahmedabad",
+          "prompt": "Design a residential tower with amenities",
+          "status": "passed",
+          "trace_id": "core_bucket_val_ahmedabad_3_34e7d1c6",
+          "latency_ms": 4548.2,
+          "artifact_urls": {
+            "glb": "https://bhiv-bucket.onrender.com/bucket/artifact/058c5e1f-f69d-41f5-a918-a40b458ef896",
+            "stl": "https://bhiv-bucket.onrender.com/bucket/artifact/8818f0a0-3707-4061-8d28-120428d16227",
+            "step": "https://bhiv-bucket.onrender.com/bucket/artifact/df601eb2-194b-4037-b0d2-4ae07defd236",
+            "spec": "https://bhiv-bucket.onrender.com/bucket/artifact/60e40495-bacb-417f-befb-97bd6a751ef5"
+          }
+        },
+        {
+          "spec_id": "val_ahmedabad_4_494c1171",
+          "city": "Ahmedabad",
+          "prompt": "Build a warehouse with loading dock",
+          "status": "passed",
+          "trace_id": "core_bucket_val_ahmedabad_4_494c1171",
+          "latency_ms": 4947.8,
+          "artifact_urls": {
+            "glb": "https://bhiv-bucket.onrender.com/bucket/artifact/7daed4e4-bfc1-465a-9c42-8ab48a39ce00",
+            "stl": "https://bhiv-bucket.onrender.com/bucket/artifact/ceac67fc-1ea2-4a4a-87f0-b8ae70740267",
+            "step": "https://bhiv-bucket.onrender.com/bucket/artifact/c03d7ed1-16f4-4b1c-ac09-4d260eb94c71",
+            "spec": "https://bhiv-bucket.onrender.com/bucket/artifact/3edd73b0-e54e-4943-b0e2-fb28f60a5b01"
+          }
+        },
+        {
+          "spec_id": "val_ahmedabad_5_894ab0f9",
+          "city": "Ahmedabad",
+          "prompt": "Design a farmhouse with guest rooms",
+          "status": "passed",
+          "trace_id": "core_bucket_val_ahmedabad_5_894ab0f9",
+          "latency_ms": 5944.0,
+          "artifact_urls": {
+            "glb": "https://bhiv-bucket.onrender.com/bucket/artifact/394f69f2-a974-4f6c-9cbc-c2fac3d32ce0",
+            "stl": "https://bhiv-bucket.onrender.com/bucket/artifact/1cdd3951-65e1-4faa-a812-f8037e56f0e5",
+            "step": "https://bhiv-bucket.onrender.com/bucket/artifact/39109ed5-77d5-4f1a-84d6-cd7cd4d1ff31",
+            "spec": "https://bhiv-bucket.onrender.com/bucket/artifact/4fa7d7d1-7f30-4fe5-899a-8a54e0045ee1"
+          }
+        }
+      ]
+    },
+    "Nashik": {
+      "total": 5,
+      "passed": 5,
+      "failed": 0,
+      "cases": [
+        {
+          "spec_id": "val_nashik_1_37ae156a",
+          "city": "Nashik",
+          "prompt": "Design a vineyard resort with cottages",
+          "status": "passed",
+          "trace_id": "core_bucket_val_nashik_1_37ae156a",
+          "latency_ms": 5685.7,
+          "artifact_urls": {
+            "glb": "https://bhiv-bucket.onrender.com/bucket/artifact/2ebbaab8-90de-4a17-8d3a-8797aa575fb1",
+            "stl": "https://bhiv-bucket.onrender.com/bucket/artifact/c724dcd0-ecc7-4ede-a649-870991724737",
+            "step": "https://bhiv-bucket.onrender.com/bucket/artifact/d4c14208-9c95-4dc2-9842-d97f0982e8dd",
+            "spec": "https://bhiv-bucket.onrender.com/bucket/artifact/b5084f27-0dcf-4000-a128-db60548ef25f"
+          }
+        },
+        {
+          "spec_id": "val_nashik_2_6044f1f5",
+          "city": "Nashik",
+          "prompt": "Create a residential colony layout",
+          "status": "passed",
+          "trace_id": "core_bucket_val_nashik_2_6044f1f5",
+          "latency_ms": 4529.9,
+          "artifact_urls": {
+            "glb": "https://bhiv-bucket.onrender.com/bucket/artifact/19ba70f2-17d0-4e38-befb-b5ccd8a5e71e",
+            "stl": "https://bhiv-bucket.onrender.com/bucket/artifact/f002c040-b743-4d40-b2b9-574233b25f8a",
+            "step": "https://bhiv-bucket.onrender.com/bucket/artifact/8bc1c38f-b85a-46b4-8293-5a38bccb3614",
+            "spec": "https://bhiv-bucket.onrender.com/bucket/artifact/9f705f54-c29b-42b9-9d9c-cf528a98bad4"
+          }
+        },
+        {
+          "spec_id": "val_nashik_3_29ffad25",
+          "city": "Nashik",
+          "prompt": "Design a temple complex with halls",
+          "status": "passed",
+          "trace_id": "core_bucket_val_nashik_3_29ffad25",
+          "latency_ms": 4532.9,
+          "artifact_urls": {
+            "glb": "https://bhiv-bucket.onrender.com/bucket/artifact/16ef3571-94bb-41ed-90ca-afe0020ac1d5",
+            "stl": "https://bhiv-bucket.onrender.com/bucket/artifact/2c4eaf41-6a35-4f1a-82ea-036ed60f842b",
+            "step": "https://bhiv-bucket.onrender.com/bucket/artifact/1e1ad9be-9479-4af0-a142-9b8a07e612b8",
+            "spec": "https://bhiv-bucket.onrender.com/bucket/artifact/7b8326df-9077-4b6f-b317-cdf3362c6cd0"
+          }
+        },
+        {
+          "spec_id": "val_nashik_4_b2ec0daa",
+          "city": "Nashik",
+          "prompt": "Build a school building with playground",
+          "status": "passed",
+          "trace_id": "core_bucket_val_nashik_4_b2ec0daa",
+          "latency_ms": 4401.1,
+          "artifact_urls": {
+            "glb": "https://bhiv-bucket.onrender.com/bucket/artifact/48862c00-2997-4227-b2e3-e4f0695b5b95",
+            "stl": "https://bhiv-bucket.onrender.com/bucket/artifact/5f79faf1-f395-4af9-99c7-94c9c080b3c8",
+            "step": "https://bhiv-bucket.onrender.com/bucket/artifact/d9edaf5d-30c8-4c9a-b6d6-1afbf67890ab",
+            "spec": "https://bhiv-bucket.onrender.com/bucket/artifact/35486f89-744c-4289-bc5a-f79dd043b329"
+          }
+        },
+        {
+          "spec_id": "val_nashik_5_cdcb76ea",
+          "city": "Nashik",
+          "prompt": "Design a hospital with emergency wing",
+          "status": "passed",
+          "trace_id": "core_bucket_val_nashik_5_cdcb76ea",
+          "latency_ms": 4457.8,
+          "artifact_urls": {
+            "glb": "https://bhiv-bucket.onrender.com/bucket/artifact/2e94b6b6-814d-499c-9617-61d437314ecd",
+            "stl": "https://bhiv-bucket.onrender.com/bucket/artifact/b3fe39d7-5ea2-4d30-a633-8195ecd6d103",
+            "step": "https://bhiv-bucket.onrender.com/bucket/artifact/5814681e-3b02-4c35-9af0-d4a5ed901f5b",
+            "spec": "https://bhiv-bucket.onrender.com/bucket/artifact/3bd86758-6d8f-4886-be05-bf691cd420f2"
+          }
+        }
+      ]
+    }
+  }
+}

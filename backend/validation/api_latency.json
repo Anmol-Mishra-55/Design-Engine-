@@ -1,0 +1,33 @@
+{
+  "generated_by": "run_benchmarks.py",
+  "collected_at": "2026-07-09T16:24:59.486806+00:00",
+  "total_health_check_ms": 6257.77,
+  "components": {
+    "database": {
+      "status": "disconnected",
+      "error": "MongoDB client not connected",
+      "latency_ms": 0
+    },
+    "redis": {
+      "status": "unhealthy",
+      "error": "Timeout connecting to server",
+      "latency_ms": 5099.94
+    },
+    "bucket": {
+      "status": "healthy",
+      "latency_ms": 1465.01
+    }
+  },
+  "external_services": {
+    "sohum_mcp": {
+      "status": "unhealthy",
+      "error": "",
+      "latency_ms": 5852.05
+    },
+    "ranjeet_rl": {
+      "status": "unhealthy",
+      "error": "",
+      "latency_ms": 5462.58
+    }
+  }
+}

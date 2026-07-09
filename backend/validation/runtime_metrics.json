@@ -1,0 +1,43 @@
+{
+  "generated_by": "run_benchmarks.py",
+  "collected_at": "2026-07-09T16:24:52.549880+00:00",
+  "source": "production_validation_results/validation_summary.json",
+  "validation_run_at": "2026-07-09T16:11:18.931411+00:00",
+  "total_cases": 20,
+  "pass_rate_pct": 100.0,
+  "latency_ms": {
+    "mean": 4844.4,
+    "median": 4724.5,
+    "p95": 5698.6,
+    "p99": 5894.9,
+    "min": 4294.9,
+    "max": 5944.0,
+    "stdev": 454.1
+  },
+  "by_city": {
+    "Mumbai": {
+      "count": 5,
+      "mean_ms": 5143.9,
+      "min_ms": 4779.4,
+      "max_ms": 5343.4
+    },
+    "Pune": {
+      "count": 5,
+      "mean_ms": 4635.3,
+      "min_ms": 4382.3,
+      "max_ms": 4807.3
+    },
+    "Ahmedabad": {
+      "count": 5,
+      "mean_ms": 4877.1,
+      "min_ms": 4294.9,
+      "max_ms": 5944.0
+    },
+    "Nashik": {
+      "count": 5,
+      "mean_ms": 4721.5,
+      "min_ms": 4401.1,
+      "max_ms": 5685.7
+    }
+  }
+}

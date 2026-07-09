@@ -1,0 +1,10 @@
+{
+  "generated_by": "run_benchmarks.py",
+  "collected_at": "2026-07-09T16:25:00.968634+00:00",
+  "original_spec_id": "spec_6547c732a587",
+  "replay_spec_id": "replay_spec_6547c73_bdacaaf9",
+  "status": "failed",
+  "replay_duration_ms": 1467.59,
+  "artifacts_produced": [],
+  "error": "Platform adapter execution failed: Platform adapter failed: Invalid input"
+}

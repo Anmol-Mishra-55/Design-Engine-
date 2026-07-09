@@ -35,6 +35,7 @@ from app.api import (
     mobile,
     monitoring_system,
     multi_city_testing,
+    replay,
     reports,
     rl,
     switch,
@@ -43,6 +44,7 @@ from app.api import (
 )
 from app.config import settings
 from app.database_mongodb import close_mongo_connection, connect_to_mongo
+from app.middleware.trace_context import TraceContextMiddleware
 from app.multi_city.city_data_loader import city_router
 from app.utils import setup_logging
 from fastapi import FastAPI, HTTPException, Request
@@ -176,6 +178,7 @@ app.add_middleware(
     allow_methods=settings.CORS_METHODS,
     allow_headers=settings.CORS_HEADERS,
 )
+app.add_middleware(TraceContextMiddleware)
 
 
 # Phase 3: /api/v1/generate is a hard-blocked route (always 403).
@@ -241,6 +244,7 @@ app.include_router(integration_layer.router, include_in_schema=False)
 app.include_router(workflow_consolidation.router, include_in_schema=False)
 app.include_router(multi_city_testing.router, include_in_schema=False)
 app.include_router(geometry_generator.router)
+app.include_router(replay.router, prefix="/api/v1", tags=["Replay"])
 
 
 if __name__ == "__main__":

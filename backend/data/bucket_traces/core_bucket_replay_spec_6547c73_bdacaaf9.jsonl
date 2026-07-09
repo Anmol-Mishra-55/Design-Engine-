@@ -1,0 +1,2 @@
+{"timestamp": "2026-07-09T16:24:59.516336+00:00", "trace_id": "core_bucket_replay_spec_6547c73_bdacaaf9", "stage": "core_ingress", "payload": {"spec_id": "replay_spec_6547c73_bdacaaf9", "user_id": "smoke_user", "city": "Mumbai"}}
+{"timestamp": "2026-07-09T16:25:00.964602+00:00", "trace_id": "core_bucket_replay_spec_6547c73_bdacaaf9", "stage": "bucket_request_stored", "payload": {"bucket_path": "requests/core_bucket_replay_spec_6547c73_bdacaaf9.json", "url": "https://bhiv-bucket.onrender.com/bucket/artifact/9a7dc39b-2b4f-4496-85d4-9fe148b840bb"}}

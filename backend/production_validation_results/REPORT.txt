@@ -1,0 +1,41 @@
+======================================================================
+PRODUCTION VALIDATION REPORT
+======================================================================
+Generated:      2026-07-09T21:42:13.050083
+Source:         production_validation_results\validation_summary.json
+Validation Run: 2026-07-09T16:11:18.931411+00:00
+Status:         VALIDATED
+Total Cases:    20
+Passed:         20
+Failed:         0
+Pass Rate:      100.0%
+
+CITY BREAKDOWN
+----------------------------------------------------------------------
+Mumbai: 5/5 passed
+Pune: 5/5 passed
+Ahmedabad: 5/5 passed
+Nashik: 5/5 passed
+
+DETAILED RESULTS
+----------------------------------------------------------------------
+  PASS val_mumbai_1_47d77f94  5343.4ms  trace=core_bucket_val_mumbai_1_47d77f9
+  PASS val_mumbai_2_cf1bedae  5018.1ms  trace=core_bucket_val_mumbai_2_cf1beda
+  PASS val_mumbai_3_f4358c3e  5300.5ms  trace=core_bucket_val_mumbai_3_f4358c3
+  PASS val_mumbai_4_45bf3e2e  5277.9ms  trace=core_bucket_val_mumbai_4_45bf3e2
+  PASS val_mumbai_5_f9286d5a  4779.4ms  trace=core_bucket_val_mumbai_5_f9286d5
+  PASS val_pune_1_35d4a6ee  4807.3ms  trace=core_bucket_val_pune_1_35d4a6ee
+  PASS val_pune_2_0a8cb7f3  4382.3ms  trace=core_bucket_val_pune_2_0a8cb7f3
+  PASS val_pune_3_ed71d2d2  4537.7ms  trace=core_bucket_val_pune_3_ed71d2d2
+  PASS val_pune_4_2bf229f9  4679.3ms  trace=core_bucket_val_pune_4_2bf229f9
+  PASS val_pune_5_cdb7bf8f  4769.7ms  trace=core_bucket_val_pune_5_cdb7bf8f
+  PASS val_ahmedabad_1_ffe76c6c  4650.7ms  trace=core_bucket_val_ahmedabad_1_ffe7
+  PASS val_ahmedabad_2_2d25472a  4294.9ms  trace=core_bucket_val_ahmedabad_2_2d25
+  PASS val_ahmedabad_3_34e7d1c6  4548.2ms  trace=core_bucket_val_ahmedabad_3_34e7
+  PASS val_ahmedabad_4_494c1171  4947.8ms  trace=core_bucket_val_ahmedabad_4_494c
+  PASS val_ahmedabad_5_894ab0f9  5944.0ms  trace=core_bucket_val_ahmedabad_5_894a
+  PASS val_nashik_1_37ae156a  5685.7ms  trace=core_bucket_val_nashik_1_37ae156
+  PASS val_nashik_2_6044f1f5  4529.9ms  trace=core_bucket_val_nashik_2_6044f1f
+  PASS val_nashik_3_29ffad25  4532.9ms  trace=core_bucket_val_nashik_3_29ffad2
+  PASS val_nashik_4_b2ec0daa  4401.1ms  trace=core_bucket_val_nashik_4_b2ec0da
+  PASS val_nashik_5_cdcb76ea  4457.8ms  trace=core_bucket_val_nashik_5_cdcb76e

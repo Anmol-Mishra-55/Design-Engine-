@@ -1,0 +1,100 @@
+{
+  "generated_by": "run_benchmarks.py",
+  "collected_at": "2026-07-09T16:25:00.971263+00:00",
+  "startup": {
+    "generated_by": "run_benchmarks.py",
+    "collected_at": "2026-07-09T16:24:52.546965+00:00",
+    "process_start_epoch": 1783614292.542,
+    "application_ready_epoch": 1783614292.547,
+    "startup_duration_ms": 5.0,
+    "module_import_ms": 260.35,
+    "source": "app.utils.START_TIME",
+    "note": "startup_duration_ms = time between app.utils import and benchmark collection"
+  },
+  "runtime": {
+    "generated_by": "run_benchmarks.py",
+    "collected_at": "2026-07-09T16:24:52.549880+00:00",
+    "source": "production_validation_results/validation_summary.json",
+    "validation_run_at": "2026-07-09T16:11:18.931411+00:00",
+    "total_cases": 20,
+    "pass_rate_pct": 100.0,
+    "latency_ms": {
+      "mean": 4844.4,
+      "median": 4724.5,
+      "p95": 5698.6,
+      "p99": 5894.9,
+      "min": 4294.9,
+      "max": 5944.0,
+      "stdev": 454.1
+    },
+    "by_city": {
+      "Mumbai": {
+        "count": 5,
+        "mean_ms": 5143.9,
+        "min_ms": 4779.4,
+        "max_ms": 5343.4
+      },
+      "Pune": {
+        "count": 5,
+        "mean_ms": 4635.3,
+        "min_ms": 4382.3,
+        "max_ms": 4807.3
+      },
+      "Ahmedabad": {
+        "count": 5,
+        "mean_ms": 4877.1,
+        "min_ms": 4294.9,
+        "max_ms": 5944.0
+      },
+      "Nashik": {
+        "count": 5,
+        "mean_ms": 4721.5,
+        "min_ms": 4401.1,
+        "max_ms": 5685.7
+      }
+    }
+  },
+  "api_latency": {
+    "generated_by": "run_benchmarks.py",
+    "collected_at": "2026-07-09T16:24:59.486806+00:00",
+    "total_health_check_ms": 6257.77,
+    "components": {
+      "database": {
+        "status": "disconnected",
+        "error": "MongoDB client not connected",
+        "latency_ms": 0
+      },
+      "redis": {
+        "status": "unhealthy",
+        "error": "Timeout connecting to server",
+        "latency_ms": 5099.94
+      },
+      "bucket": {
+        "status": "healthy",
+        "latency_ms": 1465.01
+      }
+    },
+    "external_services": {
+      "sohum_mcp": {
+        "status": "unhealthy",
+        "error": "",
+        "latency_ms": 5852.05
+      },
+      "ranjeet_rl": {
+        "status": "unhealthy",
+        "error": "",
+        "latency_ms": 5462.58
+      }
+    }
+  },
+  "replay": {
+    "generated_by": "run_benchmarks.py",
+    "collected_at": "2026-07-09T16:25:00.968634+00:00",
+    "original_spec_id": "spec_6547c732a587",
+    "replay_spec_id": "replay_spec_6547c73_bdacaaf9",
+    "status": "failed",
+    "replay_duration_ms": 1467.59,
+    "artifacts_produced": [],
+    "error": "Platform adapter execution failed: Platform adapter failed: Invalid input"
+  }
+}

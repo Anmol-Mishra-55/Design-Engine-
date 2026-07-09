@@ -7,84 +7,21 @@ import warnings
 
 import pytest
 import warnings_filter  # Must be first import
-from app.database_mongodb import Base, get_db
 from app.main import app
 from fastapi.testclient import TestClient
-from sqlalchemy.orm import sessionmaker
 
 # Suppress all warnings
 warnings.filterwarnings("ignore")
 os.environ["PYTHONWARNINGS"] = "ignore"
 
 
-# Use SQLite in-memory database for tests
-SQLALCHEMY_TEST_URL = "sqlite:///:memory:"
-
-
 @pytest.fixture(scope="function")
-def test_engine():
-    """Create test database engine"""
-    engine = create_engine(
-        SQLALCHEMY_TEST_URL, connect_args={"check_same_thread": False}, pool_pre_ping=True, pool_recycle=300
-    )
-    Base.metadata.create_all(bind=engine)
-    yield engine
-    Base.metadata.drop_all(bind=engine)
-    engine.dispose()
-
-
-@pytest.fixture(scope="function")
-def test_db(test_engine):
-    """Create test database session"""
-    # Ensure tables are created for this test session
-    Base.metadata.create_all(bind=test_engine)
-
-    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
-    db = TestingSessionLocal()
-
-    try:
-        # Seed with demo user
-        demo_user = User(email="demo@test.com", hashed_password="hashed_demo123")
-        db.add(demo_user)
-        db.commit()
-
-        yield db
-    finally:
-        db.rollback()
-        db.close()
-
-
-@pytest.fixture(scope="function")
-def client(test_engine):
-    """Create test client with overridden database dependency"""
-    # Create tables for this test session
-    Base.metadata.create_all(bind=test_engine)
-
-    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
-
-    def override_get_db():
-        db = TestingSessionLocal()
-        try:
-            yield db
-        finally:
-            try:
-                db.rollback()
-                db.close()
-            except:
-                pass
-
-    app.dependency_overrides[get_db] = override_get_db
-
+def client():
+    """Create test client"""
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         with TestClient(app) as test_client:
             yield test_client
-
-    app.dependency_overrides.clear()
-    try:
-        test_engine.dispose()
-    except:
-        pass
 
 
 @pytest.fixture(scope="function")
