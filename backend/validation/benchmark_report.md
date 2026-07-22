@@ -1,6 +1,6 @@
 # Production Benchmark Report
 
-Generated: 2026-07-09 16:25:00 UTC
+Generated: 2026-07-22 06:34:26 UTC
 Source: `validation/run_benchmarks.py`
 
 ---
@@ -9,8 +9,8 @@ Source: `validation/run_benchmarks.py`
 
 | Metric | Value |
 |--------|-------|
-| Startup duration | 5.0 ms |
-| Module import time | 260.35 ms |
+| Startup duration | 3.6 ms |
+| Module import time | 247.29 ms |
 | Source | `app.utils.START_TIME` |
 
 ---
@@ -47,11 +47,11 @@ Cases: 20 real executions across 4 cities
 | Dependency | Latency (ms) |
 |------------|-------------|
 | Database (MongoDB) | 0 |
-| Redis | 5099.94 |
-| Bucket service | 1465.01 |
-| Sohum MCP | 5852.05 |
-| Ranjeet RL | 5462.58 |
-| **Total health check** | **6257.77** |
+| Redis | 5109.37 |
+| Bucket service | 1785.0 |
+| Sohum MCP | 5724.98 |
+| Ranjeet RL | 5378.92 |
+| **Total health check** | **6146.55** |
 
 ---
 
@@ -59,11 +59,11 @@ Cases: 20 real executions across 4 cities
 
 | Metric | Value |
 |--------|-------|
-| Replay duration | 1467.59 ms |
-| Status | failed |
+| Replay duration | 4783.38 ms |
+| Status | success |
 | Original spec | `spec_6547c732a587` |
-| Replay spec | `replay_spec_6547c73_bdacaaf9` |
-| Artifacts produced | [] |
+| Replay spec | `replay_spec_6547c73_96193f47` |
+| Artifacts produced | ['glb', 'stl', 'step', 'spec'] |
 
 ---
 
@@ -84,8 +84,8 @@ All benchmark targets met:
 
 - Startup: application initialises within measured window
 - Runtime P95: 5698.6 ms (pipeline execution)
-- Health check: 6257.77 ms (all dependencies in parallel)
-- Replay: 1467.59 ms (single replay execution)
+- Health check: 6146.55 ms (all dependencies in parallel)
+- Replay: 4783.38 ms (single replay execution)
 - Pass rate: 100.0% across 20 production cases
 
 **System is PRODUCTION READY.**

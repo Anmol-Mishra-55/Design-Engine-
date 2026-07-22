@@ -38,11 +38,13 @@ Python packages (`requirements.txt`), and application code are all baked in at b
 | Service | Image | Port |
 |---------|-------|------|
 | `backend` | `multi-city-backend:latest` (built from Dockerfile) | 8000 |
-| `db` | `postgres:14` | 5432 |
+| `db` | `mongo:7` | 27017 |
 | `redis` | `redis:7-alpine` | 6379 |
 | `nginx` | `nginx:alpine` | 80 / 443 |
 
-Persistent volumes: `backend_data`, `backend_reports`, `backend_logs`, `postgres_data`.
+Note: The application migrated from PostgreSQL to MongoDB Atlas. The compose `db` service should use `mongo:7` for local development parity. In production, `MONGODB_URL` points to MongoDB Atlas — no local DB container is required.
+
+Persistent volumes: `backend_data`, `backend_reports`, `backend_logs`, `mongo_data`.
 All services restart on failure (`restart: unless-stopped`).
 
 ---
@@ -116,16 +118,77 @@ Terminates TLS, proxies to `backend:8000`, sets standard security headers.
 
 ## 8. Environment Configuration
 
-**File:** `deployment/.env.example`
+**Files:** `deployment/.env.example`, `.env.example` (root)
 
-Documents all required environment variables.
-Secrets are never committed — they are injected at runtime via:
-- Render.com secret management (production)
-- `.env` file (local development, git-ignored)
+Secrets are never committed — injected at runtime via Render secret management (production) or `.env` file (local, git-ignored).
+
+### Required variables for production
+
+| Variable | Description |
+|----------|-------------|
+| `MONGODB_URL` | MongoDB Atlas connection string (`mongodb+srv://...`) |
+| `MONGODB_DATABASE` | Database name (e.g. `bhiv_db`) |
+| `JWT_SECRET_KEY` | JWT signing secret — minimum 32 characters in production |
+| `BUCKET_URL` | Bucket storage service URL (`https://bhiv-bucket.onrender.com`) |
+| `CORE_INTERNAL_TOKEN` | Internal token blocking direct `/generate` calls |
+| `PUBLIC_API_URL` | Deployed service URL used in download URLs |
+| `SOHUM_MCP_URL` | Sohum compliance MCP service URL |
+| `RANJEET_RL_URL` | Ranjeet land utilization RL service URL |
+| `ENVIRONMENT` | Set to `production` |
+
+### Optional variables
+
+| Variable | Description |
+|----------|-------------|
+| `REDIS_URL` | Redis cache — system works without it |
+| `SENTRY_DSN` | Sentry error tracking |
+| `MESHY_API_KEY` | Meshy AI 3D generation |
+| `TRIPO_API_KEY` | Tripo AI 3D generation |
 
 ---
 
-## 9. Reproducibility Checklist
+## 9. MongoDB Atlas Setup
+
+The application uses MongoDB Atlas as its primary database.
+
+1. Create a free cluster at https://cloud.mongodb.com
+2. Create a database user with read/write access
+3. Whitelist your deployment IP (or `0.0.0.0/0` for Render)
+4. Copy the connection string: `mongodb+srv://<user>:<pass>@<cluster>.mongodb.net/`
+5. Set `MONGODB_URL` to this string and `MONGODB_DATABASE=bhiv_db`
+
+Collections created automatically on first use: `users`, `specs`, `feedback`.
+
+---
+
+## 10. First Deployment Walkthrough (Render.com)
+
+1. Push repository to GitHub
+2. Render dashboard: New → Web Service → connect repository
+3. Build command: `pip install -r requirements.txt`
+4. Start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+5. Add all required environment variables from Section 8
+6. Deploy — Render runs health check at `GET /api/v1/health` every 30s
+7. Verify:
+
+```bash
+curl https://<your-service>.onrender.com/health
+# {"status": "ok", "service": "Design Engine API", "version": "0.1.0"}
+
+curl https://<your-service>.onrender.com/api/v1/health/detailed
+# {"overall": "healthy", "components": {...}}
+```
+
+8. Run production validation:
+
+```bash
+python run_production_validation.py
+# Expected: 20/20 PASS
+```
+
+---
+
+## 11. Reproducibility Checklist
 
 | Item | Status | Evidence |
 |------|--------|----------|

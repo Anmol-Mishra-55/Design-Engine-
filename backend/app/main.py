@@ -33,6 +33,7 @@ from app.api import (
     iterate,
     mcp_integration,
     mobile,
+    monitoring,
     monitoring_system,
     multi_city_testing,
     replay,
@@ -222,6 +223,7 @@ app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
 app.include_router(files.router, prefix="/api/v1", tags=["File Download"])
 app.include_router(downloads.router, tags=["File Downloads"])
 app.include_router(health.router, prefix="/api/v1", tags=["System Health"], include_in_schema=False)
+app.include_router(monitoring.router, prefix="/api/v1", tags=["Monitoring"], include_in_schema=False)
 app.include_router(monitoring_system.router, include_in_schema=False)
 app.include_router(data_privacy.router, prefix="/api/v1", tags=["Data Privacy"], include_in_schema=False)
 app.include_router(data_audit.router, tags=["Data Audit"], include_in_schema=False)

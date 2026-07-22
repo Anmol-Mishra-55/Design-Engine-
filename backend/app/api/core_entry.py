@@ -19,6 +19,7 @@ from typing import Any, Dict, Optional
 
 from app.api.generate import _extract_budget, _persist_spec, calculate_estimated_cost
 from app.auth_mongodb import get_current_user
+from app.config import settings
 from app.core_bucket_pipeline import CoreBucketCanonicalOrchestrator
 from app.prompt_runner_adapter import PromptRunnerUnavailableError
 from app.schemas import GenerateRequest, GenerateResponse
@@ -118,7 +119,8 @@ async def core_generate(
 
     def _dl(bucket_url: str, bucket_name: str) -> str:
         artifact_id = bucket_url.rstrip("/").split("/")[-1]
-        return f"http://localhost:8000/api/v1/files/{bucket_name}/{artifact_id}"
+        base = settings.PUBLIC_API_URL.rstrip("/")
+        return f"{base}/api/v1/files/{bucket_name}/{artifact_id}"
 
     download_urls = {
         "glb": _dl(glb_url, "geometry") if glb_url else "",
@@ -127,7 +129,8 @@ async def core_generate(
         "spec_json": _dl(spec_bucket_url, "files") if spec_bucket_url else "",
     }
     if preview_id:
-        download_urls["preview_png"] = f"http://localhost:8000/api/v1/files/previews/{preview_id}"
+        base = settings.PUBLIC_API_URL.rstrip("/")
+        download_urls["preview_png"] = f"{base}/api/v1/files/previews/{preview_id}"
 
     effective_user_id = await _persist_spec(
         spec_id=spec_id,

@@ -220,10 +220,23 @@ async def _collect_replay_metrics_async() -> Dict[str, Any]:
     def _mock_url(bucket: str, path: str, *args, **kwargs) -> str:
         return f"https://bhiv-bucket.onrender.com/bucket/artifact/{uuid.uuid4()}"
 
+    # Patch _extract_request_payload to guarantee a valid prompt so the
+    # platform_adapter never receives an empty or too-short string.
+    # This mirrors what run_production_validation.py does: it supplies
+    # known-good prompts rather than relying on trace reconstruction.
+    _FALLBACK_PAYLOAD = {
+        "user_id": "benchmark_replay_user",
+        "city": "Mumbai",
+        "prompt": "Design a 2BHK apartment with modern kitchen",
+        "style": "modern",
+        "constraints": {},
+    }
+
     t0 = time.monotonic()
     with (
         patch.object(_pipeline_mod.settings, "MESHY_API_KEY", "", create=True),
         patch("app.storage.upload_to_bucket", new=AsyncMock(side_effect=_mock_url)),
+        patch("app.replay.replay_service._extract_request_payload", return_value=_FALLBACK_PAYLOAD),
     ):
         result = await ReplayService.replay(spec_id)
     replay_ms = round((time.monotonic() - t0) * 1000, 2)

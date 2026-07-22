@@ -24,6 +24,13 @@ class Settings(BaseSettings):
     PORT: int = Field(default=8000, description="Server port")
     RELOAD: bool = Field(default=False, description="Auto-reload on code changes")
 
+    # Public base URL used to construct download links returned to clients.
+    # Override with the deployed service URL in production (e.g. https://bhiv-backend.onrender.com).
+    PUBLIC_API_URL: str = Field(
+        default="http://localhost:8000",
+        description="Public base URL of this API service (used in download_urls)",
+    )
+
     CORS_ORIGINS: List[str] = Field(
         default=["http://localhost:3000", "http://localhost:3001"], description="Allowed CORS origins"
     )
@@ -301,6 +308,8 @@ def validate_settings():
             errors.append("JWT_SECRET_KEY must be overridden in production")
         if settings.MONGODB_URL.startswith("mongodb://localhost"):
             errors.append("MONGODB_URL must be overridden in production")
+        if settings.PUBLIC_API_URL == "http://localhost:8000":
+            warnings.append("PUBLIC_API_URL is still localhost — set to the deployed service URL")
         if settings.DEMO_MODE:
             warnings.append("DEMO_MODE is enabled in production")
 

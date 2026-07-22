@@ -192,6 +192,8 @@ def test_error_handling():
         response = client.get(f"/api/v1/cities/{city}/rules")
 
         assert response.status_code == 404
-        assert "not supported" in response.json()["detail"]
+        body = response.json()
+        error_text = body.get("detail") or body.get("error", {}).get("message", "")
+        assert "not supported" in error_text
 
         print(f"{city}: Properly rejected")

@@ -1,19 +1,19 @@
 {
   "generated_by": "run_benchmarks.py",
-  "collected_at": "2026-07-09T16:25:00.971263+00:00",
+  "collected_at": "2026-07-22T06:34:26.091672+00:00",
   "startup": {
     "generated_by": "run_benchmarks.py",
-    "collected_at": "2026-07-09T16:24:52.546965+00:00",
-    "process_start_epoch": 1783614292.542,
-    "application_ready_epoch": 1783614292.547,
-    "startup_duration_ms": 5.0,
-    "module_import_ms": 260.35,
+    "collected_at": "2026-07-22T06:34:14.505209+00:00",
+    "process_start_epoch": 1784702054.502,
+    "application_ready_epoch": 1784702054.505,
+    "startup_duration_ms": 3.6,
+    "module_import_ms": 247.29,
     "source": "app.utils.START_TIME",
     "note": "startup_duration_ms = time between app.utils import and benchmark collection"
   },
   "runtime": {
     "generated_by": "run_benchmarks.py",
-    "collected_at": "2026-07-09T16:24:52.549880+00:00",
+    "collected_at": "2026-07-22T06:34:14.520724+00:00",
     "source": "production_validation_results/validation_summary.json",
     "validation_run_at": "2026-07-09T16:11:18.931411+00:00",
     "total_cases": 20,
@@ -56,8 +56,8 @@
   },
   "api_latency": {
     "generated_by": "run_benchmarks.py",
-    "collected_at": "2026-07-09T16:24:59.486806+00:00",
-    "total_health_check_ms": 6257.77,
+    "collected_at": "2026-07-22T06:34:21.293268+00:00",
+    "total_health_check_ms": 6146.55,
     "components": {
       "database": {
         "status": "disconnected",
@@ -67,34 +67,39 @@
       "redis": {
         "status": "unhealthy",
         "error": "Timeout connecting to server",
-        "latency_ms": 5099.94
+        "latency_ms": 5109.37
       },
       "bucket": {
         "status": "healthy",
-        "latency_ms": 1465.01
+        "latency_ms": 1785.0
       }
     },
     "external_services": {
       "sohum_mcp": {
         "status": "unhealthy",
         "error": "",
-        "latency_ms": 5852.05
+        "latency_ms": 5724.98
       },
       "ranjeet_rl": {
         "status": "unhealthy",
         "error": "",
-        "latency_ms": 5462.58
+        "latency_ms": 5378.92
       }
     }
   },
   "replay": {
     "generated_by": "run_benchmarks.py",
-    "collected_at": "2026-07-09T16:25:00.968634+00:00",
+    "collected_at": "2026-07-22T06:34:26.089761+00:00",
     "original_spec_id": "spec_6547c732a587",
-    "replay_spec_id": "replay_spec_6547c73_bdacaaf9",
-    "status": "failed",
-    "replay_duration_ms": 1467.59,
-    "artifacts_produced": [],
-    "error": "Platform adapter execution failed: Platform adapter failed: Invalid input"
+    "replay_spec_id": "replay_spec_6547c73_96193f47",
+    "status": "success",
+    "replay_duration_ms": 4783.38,
+    "artifacts_produced": [
+      "glb",
+      "stl",
+      "step",
+      "spec"
+    ],
+    "error": null
   }
 }

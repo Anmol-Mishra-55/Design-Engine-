@@ -66,7 +66,7 @@ async def call_sohum_compliance(spec_json: Dict, city: str, project_id: str) -> 
     except Exception as e:
         logger.error(f"Sohum MCP service failed: {e}")
         service_manager.service_health["sohum_mcp"] = ServiceStatus.UNHEALTHY
-        return sohum_client.get_mock_compliance_response(case_data)
+        return {"compliant": False, "violations": [], "geometry_url": None, "case_id": None}
 
 
 async def call_ranjeet_rl(spec_json: Dict, city: str) -> Optional[Dict]:
